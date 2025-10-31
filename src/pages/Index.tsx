@@ -76,7 +76,6 @@ const Index = () => {
                       {feature.step}
                     </div>
                     <div className="relative">
-                      <div className="text-primary font-bold text-sm mb-3">{feature.step}</div>
                       <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
                       <p className="text-muted-foreground">{feature.description}</p>
                     </div>
