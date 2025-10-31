@@ -25,21 +25,21 @@ const Index = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 border border-primary/20 backdrop-blur-sm">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Configuração Personalizada</span>
+              <span className="text-sm text-muted-foreground">Custom Configuration</span>
             </div>
 
             {/* Title */}
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight">
-              Encontre o PC
+              Find Your
               <span className="block mt-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Perfeito para Si
+                Perfect PC
               </span>
             </h1>
 
             {/* Description */}
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Responda a algumas perguntas simples e receba recomendações personalizadas 
-              baseadas nas suas necessidades e orçamento.
+              Answer a few simple questions and get personalized recommendations 
+              based on your needs and budget.
             </p>
 
             {/* CTA */}
@@ -50,7 +50,7 @@ const Index = () => {
                 className="group relative overflow-hidden bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] transition-all duration-300"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Começar Quiz
+                  Start Quiz
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
@@ -59,9 +59,9 @@ const Index = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto">
               {[
-                { icon: Cpu, label: "Componentes", value: "500+" },
+                { icon: Cpu, label: "Components", value: "500+" },
                 { icon: Monitor, label: "Builds", value: "50+" },
-                { icon: Sparkles, label: "Satisfação", value: "98%" },
+                { icon: Sparkles, label: "Satisfaction", value: "98%" },
               ].map((stat, i) => (
                 <Card key={i} className="p-6 bg-card/50 border-primary/10 backdrop-blur-sm hover:border-primary/30 transition-colors">
                   <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
@@ -77,23 +77,23 @@ const Index = () => {
       {/* Features */}
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Como Funciona</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 step: "01",
-                title: "Responda",
-                description: "Perguntas simples sobre o uso pretendido e preferências",
+                title: "Answer",
+                description: "Simple questions about intended use and preferences",
               },
               {
                 step: "02",
-                title: "Analise",
-                description: "O nosso sistema analisa as suas respostas e orçamento",
+                title: "Analyze",
+                description: "Our system analyzes your answers and budget",
               },
               {
                 step: "03",
-                title: "Receba",
-                description: "Builds personalizadas com explicações detalhadas",
+                title: "Receive",
+                description: "Personalized builds with detailed explanations",
               },
             ].map((feature, i) => (
               <Card key={i} className="p-8 bg-gradient-to-br from-card to-card/50 border-primary/10 relative overflow-hidden group hover:border-primary/30 transition-all">

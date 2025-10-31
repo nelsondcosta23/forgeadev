@@ -33,8 +33,8 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
   
   // Budget-friendly build
   const budgetBuild: Build = {
-    name: "Custo/Benefício",
-    description: "Máximo desempenho pelo melhor preço",
+    name: "Best Value",
+    description: "Maximum performance for the best price",
     price: Math.min(budget * 0.7, budget - 300),
     components: {
       cpu: purpose === "gaming" ? "AMD Ryzen 5 7600" : "AMD Ryzen 5 7600X",
@@ -47,22 +47,22 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
       cooler: "Torre Air Cooler",
     },
     performance: [
-      answers.purpose === "gaming" ? "1080p: 144+ FPS em jogos competitivos" : "",
-      answers.purpose === "gaming" ? "1440p: 60-100 FPS em AAA" : "",
-      "Multitasking fluido",
+      answers.purpose === "gaming" ? "1080p: 144+ FPS in competitive games" : "",
+      answers.purpose === "gaming" ? "1440p: 60-100 FPS in AAA" : "",
+      "Smooth multitasking",
     ].filter(Boolean),
     reasoning: [
-      `O Ryzen 5 7600 oferece excelente desempenho para ${purpose === "gaming" ? "gaming" : "tarefas profissionais"}`,
-      `A RTX 4060 Ti é ideal para ${answers.resolution || "1080p"} com ray tracing`,
-      "16GB de RAM DDR5 rápida garante fluidez em multitasking",
-      answers.upgradability === "yes" ? "Plataforma AM5 permite upgrades futuros" : "",
+      `The Ryzen 5 7600 offers excellent performance for ${purpose === "gaming" ? "gaming" : "professional tasks"}`,
+      `The RTX 4060 Ti is ideal for ${answers.resolution || "1080p"} with ray tracing`,
+      "16GB of fast DDR5 RAM ensures smooth multitasking",
+      answers.upgradability === "yes" ? "AM5 platform allows future upgrades" : "",
     ].filter(Boolean),
   };
 
   // Balanced build
   const balancedBuild: Build = {
-    name: "Equilibrada",
-    description: "Performance premium com componentes de qualidade",
+    name: "Balanced",
+    description: "Premium performance with quality components",
     price: Math.min(budget * 0.85, budget - 150),
     components: {
       cpu: purpose === "content" ? "AMD Ryzen 7 7800X3D" : "AMD Ryzen 7 7700X",
@@ -75,23 +75,23 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
       cooler: "280mm AIO Liquid Cooler",
     },
     performance: [
-      answers.purpose === "gaming" ? "1440p: 144+ FPS em todos os jogos" : "",
-      answers.purpose === "gaming" ? "4K: 60+ FPS com ray tracing" : "",
-      answers.purpose === "content" ? "Render 4K: 2-3x mais rápido" : "",
-      "Multitasking extremo sem limitações",
+      answers.purpose === "gaming" ? "1440p: 144+ FPS in all games" : "",
+      answers.purpose === "gaming" ? "4K: 60+ FPS with ray tracing" : "",
+      answers.purpose === "content" ? "4K Render: 2-3x faster" : "",
+      "Extreme multitasking without limitations",
     ].filter(Boolean),
     reasoning: [
-      purpose === "gaming" ? "O Ryzen 7 7800X3D é o melhor CPU para gaming do mercado" : "Ryzen 7 7700X oferece 8 cores para multitasking pesado",
-      `A RTX 4070 Super domina ${answers.resolution || "1440p"} com ray tracing completo`,
-      "32GB de RAM permite edição profissional e VMs",
-      "AIO 280mm mantém temperaturas baixas sob carga extrema",
+      purpose === "gaming" ? "The Ryzen 7 7800X3D is the best gaming CPU on the market" : "Ryzen 7 7700X offers 8 cores for heavy multitasking",
+      `The RTX 4070 Super dominates ${answers.resolution || "1440p"} with full ray tracing`,
+      "32GB of RAM allows professional editing and VMs",
+      "280mm AIO keeps temperatures low under extreme load",
     ].filter(Boolean),
   };
 
   // High-end build
   const highEndBuild: Build = {
-    name: "Alto Desempenho",
-    description: "O melhor do mercado sem compromissos",
+    name: "High Performance",
+    description: "The best on the market without compromises",
     price: budget,
     components: {
       cpu: "AMD Ryzen 9 7950X",
@@ -104,17 +104,17 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
       cooler: "360mm AIO Liquid Cooler RGB",
     },
     performance: [
-      answers.purpose === "gaming" ? "4K: 120+ FPS em todos os jogos" : "",
-      answers.purpose === "gaming" ? "VR: Performance extrema" : "",
-      answers.purpose === "content" ? "Render 4K: 4x mais rápido que média" : "",
-      "Workstation profissional completa",
+      answers.purpose === "gaming" ? "4K: 120+ FPS in all games" : "",
+      answers.purpose === "gaming" ? "VR: Extreme performance" : "",
+      answers.purpose === "content" ? "4K Render: 4x faster than average" : "",
+      "Complete professional workstation",
     ].filter(Boolean),
     reasoning: [
-      "Ryzen 9 7950X: 16 cores para as tarefas mais exigentes",
-      answers.resolution === "4k" ? "RTX 4090: A GPU mais poderosa do mercado" : "RTX 4080 Super: Potência extrema para 4K",
-      "64GB de RAM para edição 8K e projetos massivos",
-      "Armazenamento Gen5 para velocidades recordes",
-      answers.streaming === "yes" ? "Encoder NVENC para streaming sem perda de FPS" : "",
+      "Ryzen 9 7950X: 16 cores for the most demanding tasks",
+      answers.resolution === "4k" ? "RTX 4090: The most powerful GPU on the market" : "RTX 4080 Super: Extreme power for 4K",
+      "64GB of RAM for 8K editing and massive projects",
+      "Gen5 storage for record-breaking speeds",
+      answers.streaming === "yes" ? "NVENC encoder for streaming without FPS loss" : "",
     ].filter(Boolean),
   };
 
@@ -125,11 +125,11 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
   const builds = generateBuilds(answers);
 
   const handleShare = () => {
-    toast.success("Link de partilha copiado!");
+    toast.success("Share link copied!");
   };
 
   const handleExport = () => {
-    toast.success("Build exportada!");
+    toast.success("Build exported!");
   };
 
   return (
@@ -143,18 +143,18 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
             className="mb-6 hover:bg-card"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Refazer Quiz
+            Retake Quiz
           </Button>
 
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl lg:text-5xl font-bold">
-              As Suas Builds
+              Your Custom
               <span className="block mt-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Personalizadas
+                Builds
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Baseado nas suas respostas, recomendamos estas configurações
+              Based on your answers, we recommend these configurations
             </p>
           </div>
 
@@ -162,11 +162,11 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
           <div className="flex justify-center gap-4">
             <Button variant="outline" onClick={handleShare} className="gap-2">
               <Share2 className="w-4 h-4" />
-              Partilhar
+              Share
             </Button>
             <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="w-4 h-4" />
-              Exportar PDF
+              Export PDF
             </Button>
           </div>
         </div>
@@ -186,23 +186,23 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
                     <p className="text-muted-foreground">{build.description}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-primary">{build.price}€</div>
-                    <div className="text-sm text-muted-foreground">Estimativa</div>
+                    <div className="text-3xl font-bold text-primary">${build.price}</div>
+                    <div className="text-sm text-muted-foreground">Estimate</div>
                   </div>
                 </div>
 
                 {/* Components Grid */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold mb-4">Componentes</h3>
+                    <h3 className="text-lg font-semibold mb-4">Components</h3>
                     {[
                       { icon: Cpu, label: "CPU", value: build.components.cpu },
                       { icon: Box, label: "GPU", value: build.components.gpu },
                       { icon: MemoryStick, label: "RAM", value: build.components.ram },
-                      { icon: HardDrive, label: "Armazenamento", value: build.components.storage },
+                      { icon: HardDrive, label: "Storage", value: build.components.storage },
                       { icon: Zap, label: "Motherboard", value: build.components.motherboard },
                       { icon: Zap, label: "PSU", value: build.components.psu },
-                      { icon: Box, label: "Caixa", value: build.components.case },
+                      { icon: Box, label: "Case", value: build.components.case },
                       { icon: Fan, label: "Cooler", value: build.components.cooler },
                     ].map((component, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-background/50">
@@ -218,7 +218,7 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
                   <div className="space-y-6">
                     {/* Performance */}
                     <div>
-                      <h3 className="text-lg font-semibold mb-4">Performance Esperada</h3>
+                      <h3 className="text-lg font-semibold mb-4">Expected Performance</h3>
                       <div className="space-y-3">
                         {build.performance.map((perf, i) => (
                           <div key={i} className="p-3 rounded-lg bg-background/50 text-sm">
@@ -230,7 +230,7 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
 
                     {/* Reasoning */}
                     <div>
-                      <h3 className="text-lg font-semibold mb-4">Porque Esta Build?</h3>
+                      <h3 className="text-lg font-semibold mb-4">Why This Build?</h3>
                       <div className="space-y-3">
                         {build.reasoning.map((reason, i) => (
                           <div key={i} className="p-3 rounded-lg bg-primary/5 text-sm">
@@ -245,7 +245,7 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
                 {/* CTA */}
                 <div className="pt-6 border-t border-border">
                   <Button className="w-full md:w-auto bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]">
-                    Ver Componentes Detalhados
+                    View Detailed Components
                   </Button>
                 </div>
               </div>

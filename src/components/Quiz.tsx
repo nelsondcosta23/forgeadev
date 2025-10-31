@@ -62,12 +62,12 @@ const Quiz = ({ onBack }: QuizProps) => {
             className="mb-6 hover:bg-card"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
+            Back
           </Button>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm text-muted-foreground">
-              <span>Pergunta {currentStep + 1} de {currentQuestions.length}</span>
+              <span>Question {currentStep + 1} of {currentQuestions.length}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />

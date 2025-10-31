@@ -107,7 +107,7 @@ const QuestionCard = ({ question, onAnswer }: QuestionCardProps) => {
               className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
               size="lg"
             >
-              Continuar
+              Continue
             </Button>
           </div>
         )}
