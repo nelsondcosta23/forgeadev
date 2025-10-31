@@ -50,57 +50,40 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto">
-              {[
-                { icon: Cpu, label: "Components", value: "500+" },
-                { icon: Monitor, label: "Builds", value: "50+" },
-                { icon: Sparkles, label: "Satisfaction", value: "98%" },
-              ].map((stat, i) => (
-                <Card key={i} className="p-6 bg-card/50 border-primary/10 backdrop-blur-sm hover:border-primary/30 transition-colors">
-                  <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </Card>
-              ))}
+            {/* How It Works */}
+            <div className="pt-12 max-w-5xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+              <div className="grid md:grid-cols-3 gap-8">
+                {[
+                  {
+                    step: "01",
+                    title: "Answer",
+                    description: "Simple questions about intended use and preferences",
+                  },
+                  {
+                    step: "02",
+                    title: "Analyze",
+                    description: "Our system analyzes your answers and budget",
+                  },
+                  {
+                    step: "03",
+                    title: "Receive",
+                    description: "Personalized builds with detailed explanations",
+                  },
+                ].map((feature, i) => (
+                  <Card key={i} className="p-8 bg-gradient-to-br from-card to-card/50 border-primary/10 relative overflow-hidden group hover:border-primary/30 transition-all">
+                    <div className="absolute top-0 right-0 text-8xl font-bold text-primary/5 -mr-4 -mt-4">
+                      {feature.step}
+                    </div>
+                    <div className="relative">
+                      <div className="text-primary font-bold text-sm mb-3">{feature.step}</div>
+                      <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                      <p className="text-muted-foreground">{feature.description}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Features */}
-      <div className="container mx-auto px-4 py-20">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Answer",
-                description: "Simple questions about intended use and preferences",
-              },
-              {
-                step: "02",
-                title: "Analyze",
-                description: "Our system analyzes your answers and budget",
-              },
-              {
-                step: "03",
-                title: "Receive",
-                description: "Personalized builds with detailed explanations",
-              },
-            ].map((feature, i) => (
-              <Card key={i} className="p-8 bg-gradient-to-br from-card to-card/50 border-primary/10 relative overflow-hidden group hover:border-primary/30 transition-all">
-                <div className="absolute top-0 right-0 text-8xl font-bold text-primary/5 -mr-4 -mt-4">
-                  {feature.step}
-                </div>
-                <div className="relative">
-                  <div className="text-primary font-bold text-sm mb-3">{feature.step}</div>
-                  <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </div>
-              </Card>
-            ))}
           </div>
         </div>
       </div>
