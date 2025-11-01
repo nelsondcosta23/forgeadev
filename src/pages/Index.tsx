@@ -77,7 +77,7 @@ const Index = () => {
                   },
                 ].map((feature, i) => (
                   <Card key={i} className="p-8 bg-gradient-to-br from-card to-card/50 border-primary/50 relative overflow-hidden group hover:border-primary hover:shadow-[var(--glow-primary)] transition-all">
-                    <div className="absolute top-0 right-0 text-8xl font-bold text-primary/5 -mr-4 -mt-4">
+                    <div className="absolute top-0 right-0 text-8xl font-bold text-primary -mr-4 -mt-4">
                       {feature.step}
                     </div>
                     <div className="relative">
