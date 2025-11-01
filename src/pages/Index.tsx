@@ -22,6 +22,11 @@ const Index = () => {
         
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
           <div className="max-w-4xl mx-auto text-center space-y-8">
+            {/* Logo/Brand */}
+            <div className="mb-4">
+              <h2 className="text-2xl lg:text-3xl font-bold text-primary tracking-wider">FORGEA</h2>
+            </div>
+            
             {/* Title */}
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight">
               Find Your
@@ -91,7 +96,7 @@ const Index = () => {
       <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2025 PC Builder. All rights reserved.</p>
+            <p>© 2025 Forgea. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="/terms" className="hover:text-primary transition-colors">
                 Terms & Conditions
