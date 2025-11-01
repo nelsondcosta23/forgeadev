@@ -133,14 +133,14 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="container mx-auto px-4 py-8 flex-1">
         {/* Header */}
         <div className="max-w-6xl mx-auto mb-12">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={onRestart}
-            className="mb-6 hover:bg-card"
+            className="mb-6 border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retake Quiz
@@ -253,6 +253,23 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
           ))}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+            <p>© 2025 Forgea. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="/terms" className="hover:text-primary transition-colors">
+                Terms & Conditions
+              </a>
+              <a href="/privacy" className="hover:text-primary transition-colors">
+                Privacy Policy
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
