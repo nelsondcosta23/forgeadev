@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -6,6 +6,8 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import QuestionCard from "./quiz/QuestionCard";
 import Results from "./quiz/Results";
 import { questions, QuizAnswers } from "./quiz/questions";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuizProps {
   onBack: () => void;
@@ -15,6 +17,33 @@ const Quiz = ({ onBack }: QuizProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [showResults, setShowResults] = useState(false);
+  const [sessionId, setSessionId] = useState<string>("");
+  const { toast } = useToast();
+
+  // Create a quiz session when component mounts
+  useEffect(() => {
+    const createSession = async () => {
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      setSessionId(newSessionId);
+
+      const { error } = await supabase
+        .from('quiz_sessions')
+        .insert({
+          session_id: newSessionId,
+        });
+
+      if (error) {
+        console.error('Error creating quiz session:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível iniciar a sessão do quiz.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    createSession();
+  }, []);
 
   const currentQuestions = questions.filter(q => {
     if (!q.condition) return true;
@@ -24,13 +53,43 @@ const Quiz = ({ onBack }: QuizProps) => {
   const currentQuestion = currentQuestions[currentStep];
   const progress = ((currentStep + 1) / currentQuestions.length) * 100;
 
-  const handleAnswer = (answer: string | number) => {
+  const handleAnswer = async (answer: string | number) => {
     const newAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(newAnswers);
+
+    // Save the response to database
+    if (sessionId) {
+      const { error } = await supabase
+        .from('quiz_responses')
+        .insert({
+          session_id: sessionId,
+          question_number: currentStep + 1,
+          question_text: currentQuestion.question,
+          selected_answer: String(answer),
+        });
+
+      if (error) {
+        console.error('Error saving quiz response:', error);
+      }
+    }
 
     if (currentStep < currentQuestions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      // Calculate total score (example: count all answers)
+      const totalScore = Object.keys(newAnswers).length;
+      
+      // Update session as completed
+      if (sessionId) {
+        await supabase
+          .from('quiz_sessions')
+          .update({
+            completed_at: new Date().toISOString(),
+            total_score: totalScore,
+          })
+          .eq('session_id', sessionId);
+      }
+
       setShowResults(true);
     }
   };
@@ -44,10 +103,24 @@ const Quiz = ({ onBack }: QuizProps) => {
   };
 
   if (showResults) {
-    return <Results answers={answers} onRestart={() => {
+    return <Results answers={answers} sessionId={sessionId} onRestart={() => {
       setAnswers({});
       setCurrentStep(0);
       setShowResults(false);
+      // Create new session for restart
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      setSessionId(newSessionId);
+      
+      supabase
+        .from('quiz_sessions')
+        .insert({
+          session_id: newSessionId,
+        })
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error creating new quiz session:', error);
+          }
+        });
     }} />;
   }
 

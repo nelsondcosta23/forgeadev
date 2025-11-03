@@ -7,6 +7,7 @@ import { toast } from "sonner";
 interface ResultsProps {
   answers: QuizAnswers;
   onRestart: () => void;
+  sessionId: string;
 }
 
 interface Build {
@@ -121,7 +122,7 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
   return [budgetBuild, balancedBuild, highEndBuild];
 };
 
-const Results = ({ answers, onRestart }: ResultsProps) => {
+const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
   const builds = generateBuilds(answers);
 
   const handleShare = () => {
