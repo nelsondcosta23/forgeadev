@@ -26,10 +26,26 @@ const Quiz = ({ onBack }: QuizProps) => {
       const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       setSessionId(newSessionId);
 
+      // Detect user's country
+      let countryCode = null;
+      let countryName = null;
+      
+      try {
+        const { data: countryData } = await supabase.functions.invoke('detect-country');
+        if (countryData && !countryData.error) {
+          countryCode = countryData.country_code;
+          countryName = countryData.country_name;
+        }
+      } catch (error) {
+        console.error('Error detecting country:', error);
+      }
+
       const { error } = await supabase
         .from('quiz_sessions')
         .insert({
           session_id: newSessionId,
+          country_code: countryCode,
+          country_name: countryName,
         });
 
       if (error) {
@@ -103,7 +119,7 @@ const Quiz = ({ onBack }: QuizProps) => {
   };
 
   if (showResults) {
-    return <Results answers={answers} sessionId={sessionId} onRestart={() => {
+    return <Results answers={answers} sessionId={sessionId} onRestart={async () => {
       setAnswers({});
       setCurrentStep(0);
       setShowResults(false);
@@ -111,16 +127,31 @@ const Quiz = ({ onBack }: QuizProps) => {
       const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       setSessionId(newSessionId);
       
-      supabase
+      // Detect country for new session
+      let countryCode = null;
+      let countryName = null;
+      
+      try {
+        const { data: countryData } = await supabase.functions.invoke('detect-country');
+        if (countryData && !countryData.error) {
+          countryCode = countryData.country_code;
+          countryName = countryData.country_name;
+        }
+      } catch (error) {
+        console.error('Error detecting country:', error);
+      }
+
+      const { error } = await supabase
         .from('quiz_sessions')
         .insert({
           session_id: newSessionId,
-        })
-        .then(({ error }) => {
-          if (error) {
-            console.error('Error creating new quiz session:', error);
-          }
+          country_code: countryCode,
+          country_name: countryName,
         });
+
+      if (error) {
+        console.error('Error creating new quiz session:', error);
+      }
     }} />;
   }
 
