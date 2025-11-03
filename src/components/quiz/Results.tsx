@@ -137,14 +137,19 @@ const Results = ({ answers, onRestart }: ResultsProps) => {
       <div className="container mx-auto px-4 py-8 flex-1">
         {/* Header */}
         <div className="max-w-6xl mx-auto mb-12">
-          <Button
-            variant="outline"
-            onClick={onRestart}
-            className="mb-6 border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retake Quiz
-          </Button>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              FORGEA
+            </h1>
+            <Button
+              variant="outline"
+              onClick={onRestart}
+              className="border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retake Quiz
+            </Button>
+          </div>
 
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl lg:text-5xl font-bold">

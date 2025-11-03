@@ -56,14 +56,19 @@ const Quiz = ({ onBack }: QuizProps) => {
       <div className="container mx-auto px-4 py-8 flex-1">
         {/* Header */}
         <div className="max-w-3xl mx-auto mb-8">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            className="mb-6 border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              FORGEA
+            </h1>
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+          </div>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm text-muted-foreground">
