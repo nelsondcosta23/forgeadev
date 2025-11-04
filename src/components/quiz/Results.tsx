@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { QuizAnswers } from "./questions";
 import { ArrowLeft, Share2, Download, Cpu, MemoryStick, HardDrive, Zap, Box, Fan } from "lucide-react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -130,7 +131,152 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
   };
 
   const handleExport = () => {
-    toast.success("Build exported!");
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPos = 20;
+
+    // Header with Forgea branding
+    doc.setFillColor(20, 20, 20);
+    doc.rect(0, 0, pageWidth, 40, "F");
+    
+    doc.setTextColor(255, 120, 50);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("FORGEA", pageWidth / 2, 20, { align: "center" });
+    
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(10);
+    doc.text("www.forgea.com", pageWidth / 2, 30, { align: "center" });
+
+    yPos = 50;
+
+    // Title
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("Your Custom PC Builds", pageWidth / 2, yPos, { align: "center" });
+    
+    yPos += 10;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Based on your preferences", pageWidth / 2, yPos, { align: "center" });
+    
+    yPos += 15;
+
+    // Build details
+    builds.forEach((build, index) => {
+      if (index > 0) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      // Build header
+      doc.setFillColor(255, 120, 50);
+      doc.rect(15, yPos, pageWidth - 30, 12, "F");
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(build.name, 20, yPos + 8);
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.text(`$${build.price}`, pageWidth - 20, yPos + 8, { align: "right" });
+      
+      yPos += 18;
+
+      // Description
+      doc.setTextColor(80, 80, 80);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "italic");
+      doc.text(build.description, 20, yPos);
+      yPos += 10;
+
+      // Components section
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(50, 50, 50);
+      doc.text("Components:", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+      
+      const components = [
+        `CPU: ${build.components.cpu}`,
+        `GPU: ${build.components.gpu}`,
+        `RAM: ${build.components.ram}`,
+        `Storage: ${build.components.storage}`,
+        `Motherboard: ${build.components.motherboard}`,
+        `PSU: ${build.components.psu}`,
+        `Case: ${build.components.case}`,
+        `Cooler: ${build.components.cooler}`,
+      ];
+
+      components.forEach((component) => {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(20, yPos - 4, pageWidth - 40, 6, "F");
+        doc.text(component, 25, yPos);
+        yPos += 7;
+      });
+
+      yPos += 5;
+
+      // Performance section
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(50, 50, 50);
+      doc.text("Expected Performance:", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+      
+      build.performance.forEach((perf) => {
+        doc.text(`• ${perf}`, 25, yPos);
+        yPos += 6;
+      });
+
+      yPos += 5;
+
+      // Reasoning section
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(50, 50, 50);
+      doc.text("Why This Build?", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+      
+      build.reasoning.forEach((reason) => {
+        const lines = doc.splitTextToSize(reason, pageWidth - 50);
+        lines.forEach((line: string) => {
+          if (yPos > pageHeight - 20) {
+            doc.addPage();
+            yPos = 20;
+          }
+          doc.text(line, 25, yPos);
+          yPos += 5;
+        });
+        yPos += 2;
+      });
+
+      // Footer on each page
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text("© 2025 Forgea. All rights reserved.", pageWidth / 2, pageHeight - 10, { align: "center" });
+      doc.text("www.forgea.com", pageWidth / 2, pageHeight - 5, { align: "center" });
+    });
+
+    // Save the PDF
+    doc.save(`Forgea-PC-Builds-${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success("PDF downloaded successfully!");
   };
 
   return (
