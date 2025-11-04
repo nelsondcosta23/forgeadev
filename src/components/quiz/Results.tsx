@@ -328,7 +328,7 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
 
           {/* Action Buttons */}
           <div className="flex justify-center gap-4">
-            <Button variant="outline" onClick={handleCopyLink} className="gap-2">
+            <Button variant="outline" onClick={handleCopyLink} className="hidden md:flex gap-2">
               {copied ? (
                 <>
                   <Check className="w-4 h-4" />
