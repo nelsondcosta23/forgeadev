@@ -4,32 +4,54 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminLoginProps {
   onLogin: () => void;
 }
 
 export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const ADMIN_PASSWORD = "Olaf12323!**";
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate a small delay for better UX
-    setTimeout(() => {
-      if (password === ADMIN_PASSWORD) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error("Login failed: " + error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Check if user has admin role
+        const { data: hasAdminRole, error: roleError } = await supabase.rpc('has_role', {
+          _user_id: data.user.id,
+          _role: 'admin'
+        });
+
+        if (roleError || !hasAdminRole) {
+          toast.error("Access denied. Admin privileges required.");
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return;
+        }
+
         toast.success("Access granted!");
         onLogin();
-      } else {
-        toast.error("Incorrect password!");
-        setPassword("");
       }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
@@ -50,21 +72,30 @@ export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
+                type="email"
+                placeholder="Admin email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
                 type="password"
-                placeholder="Enter password"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                className="text-center"
-                autoFocus
+                autoComplete="current-password"
               />
             </div>
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoading || !password}
+              disabled={isLoading || !email || !password}
             >
-              {isLoading ? "Verifying..." : "Enter"}
+              {isLoading ? "Verifying..." : "Sign In"}
             </Button>
           </form>
         </CardContent>

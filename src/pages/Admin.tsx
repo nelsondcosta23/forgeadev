@@ -69,6 +69,7 @@ interface CountryStats {
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [quizSessions, setQuizSessions] = useState<QuizSession[]>([]);
   const [countryStats, setCountryStats] = useState<CountryStats[]>([]);
   const [totalQuizzes, setTotalQuizzes] = useState(0);
@@ -86,12 +87,32 @@ const Admin = () => {
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
+  // Check authentication on mount
   useEffect(() => {
-    // Check if user is already authenticated in this session
-    const adminAuth = sessionStorage.getItem("admin_authenticated");
-    if (adminAuth === "true") {
-      setIsAuthenticated(true);
-    }
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      // Verify admin role
+      const { data: hasAdminRole, error } = await supabase.rpc('has_role', {
+        _user_id: session.user.id,
+        _role: 'admin'
+      });
+
+      if (!error && hasAdminRole) {
+        setIsAuthenticated(true);
+        fetchQuizData();
+        fetchPrompt();
+      }
+      
+      setIsCheckingAuth(false);
+    };
+
+    checkAuth();
   }, []);
 
   useEffect(() => {
@@ -157,12 +178,13 @@ const Admin = () => {
   };
 
   const handleLogin = () => {
-    sessionStorage.setItem("admin_authenticated", "true");
     setIsAuthenticated(true);
+    fetchQuizData();
+    fetchPrompt();
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("admin_authenticated");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
   };
 
@@ -326,6 +348,17 @@ const Admin = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCountry, dateFrom, dateTo]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Verifying credentials...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <AdminLogin onLogin={handleLogin} />;

@@ -1,25 +1,65 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+
   try {
     const { answers, questions, sessionId } = await req.json();
     
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Received request for session:', sessionId);
+    
+    if (!answers || !questions || !sessionId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-    // Fetch the latest prompt from admin_prompts
+    // Validate session exists and hasn't been analyzed already
+    const { data: session, error: sessionError } = await supabase
+      .from('quiz_sessions')
+      .select('id, completed_at')
+      .eq('session_id', sessionId)
+      .maybeSingle();
+
+    if (sessionError || !session) {
+      console.error('Invalid session:', sessionId);
+      return new Response(
+        JSON.stringify({ error: 'Invalid session ID' }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Check if session has already been analyzed
+    const { data: existingRecommendation } = await supabase
+      .from('ai_recommendations')
+      .select('id')
+      .eq('session_id', sessionId)
+      .maybeSingle();
+
+    if (existingRecommendation) {
+      console.log('Session already analyzed:', sessionId);
+      return new Response(
+        JSON.stringify({ error: 'Session already analyzed' }),
+        { status: 409, headers: corsHeaders }
+      );
+    }
+
+    // Fetch the latest prompt
     const { data: promptData, error: promptError } = await supabase
       .from('admin_prompts')
       .select('prompt_text')
@@ -31,112 +71,91 @@ serve(async (req) => {
       console.error('Error fetching prompt:', promptError);
     }
 
-    let customPrompt = promptData?.prompt_text;
+    const customPrompt = promptData?.prompt_text || '';
     
-    // Sanitize and truncate prompt to prevent issues
-    if (customPrompt) {
-      customPrompt = customPrompt.replace(/[^\x20-\x7E\n\r\t]/g, '').substring(0, 2000);
-      console.log('Using custom prompt (sanitized, length:', customPrompt.length, ')');
-    } else {
-      console.log('Using default prompt');
-    }
+    // Sanitize and truncate custom prompt
+    const sanitizedPrompt = customPrompt
+      .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
+      .trim()
+      .substring(0, 2000); // Max 2000 chars
+    
+    console.log('Custom prompt length:', sanitizedPrompt.length);
 
-    // Format questions and answers for AI
-    let quizContent = "Análise do Quiz de PC:\n\n";
-    
-    questions.forEach((q: any, index: number) => {
-      const answer = answers[q.id];
-      quizContent += `${index + 1}. ${q.question}\n`;
+    // Format the quiz data for AI analysis
+    const quizData = questions.map((q: any) => ({
+      question: q.question,
+      answer: answers[q.id],
+      options: q.options
+    }));
+
+    const systemPrompt = sanitizedPrompt || 
+      `You are an expert PC building advisor. Analyze the user's quiz responses and provide detailed, personalized PC component recommendations. Consider their budget, intended use (gaming, work, content creation), and preferences.
+
+Provide recommendations in a clear, structured format with:
+1. CPU recommendation with reasoning
+2. GPU recommendation based on their gaming/work needs
+3. RAM amount and speed suggestions
+4. Storage recommendations (SSD/HDD mix)
+5. Power supply wattage
+6. Case and cooling suggestions
+7. Estimated total cost
+
+Be specific with model numbers when possible and explain why each component fits their needs.`;
+
+    const userPrompt = `Based on these quiz responses, provide comprehensive PC build recommendations:\n\n${JSON.stringify(quizData, null, 2)}`;
+
+    // Call AI with retry logic
+    const callAIWithRetry = async (model: string, maxRetries = 3): Promise<string> => {
+      const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
       
-      if (q.type === 'single' && q.options) {
-        const selectedOption = q.options.find((opt: any) => opt.value === answer);
-        quizContent += `   Resposta: ${selectedOption?.label || answer}\n`;
-      } else {
-        quizContent += `   Resposta: ${answer}\n`;
+      if (!lovableApiKey) {
+        throw new Error('LOVABLE_API_KEY not configured');
       }
-      quizContent += '\n';
-    });
 
-    // Call Lovable AI
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY não está configurada');
-    }
-
-    const systemPrompt = customPrompt || 
-      `Você é um especialista em hardware de computadores. Analise as respostas do quiz e forneça uma recomendação personalizada de PC em formato Markdown.
-
-Inclua:
-- Análise do orçamento
-- Componentes recomendados (CPU, GPU, RAM, Armazenamento, Placa-mãe, Fonte)
-- Performance esperada
-- Dicas extras
-
-Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara com cabeçalhos (##), negrito (**texto**) e bullet points.`;
-
-    // Helper function to call AI with retry logic
-    async function callAIWithRetry(maxRetries = 3) {
-      let lastError: any = null;
-      
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          console.log(`AI call attempt ${attempt}/${maxRetries}`);
+          console.log(`Attempt ${attempt}/${maxRetries} with model: ${model}`);
           
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 120000);
-
-          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const response = await fetch('https://api.lovable.app/v1/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Authorization': `Bearer ${lovableApiKey}`,
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
             body: JSON.stringify({
-              model: 'google/gemini-2.5-flash',
+              model,
               messages: [
                 { role: 'system', content: systemPrompt },
-                { role: 'user', content: quizContent }
+                { role: 'user', content: userPrompt }
               ],
               stream: false,
             }),
-            signal: controller.signal,
           });
-          
-          clearTimeout(timeoutId);
+
+          const contentType = response.headers.get('content-type') || '';
+          console.log('Response content-type:', contentType, 'status:', response.status);
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error(`API error ${response.status}:`, errorText);
+            console.error(`API error (${response.status}):`, errorText.substring(0, 500));
             
-            // Don't retry on 402 (no credits) or 401 (auth error)
             if (response.status === 402) {
               throw new Error('CREDITS_EXHAUSTED');
-            }
-            if (response.status === 401) {
+            } else if (response.status === 429) {
+              throw new Error('RATE_LIMIT');
+            } else if (response.status === 401 || response.status === 403) {
               throw new Error('AUTH_ERROR');
-            }
-            
-            // Retry on 429 (rate limit) or 5xx errors
-            if (attempt < maxRetries && (response.status === 429 || response.status >= 500)) {
-              const delay = Math.pow(2, attempt) * 1000;
-              console.log(`Rate limit or server error. Retrying in ${delay}ms...`);
-              await new Promise(resolve => setTimeout(resolve, delay));
-              continue;
             }
             
             throw new Error(`API_ERROR_${response.status}`);
           }
 
-          const contentType = response.headers.get('content-type') || '';
-          console.log('Response content-type:', contentType);
-          
-          let aiContent: string;
+          let aiContent = '';
           
           // Try parsing as JSON first
           try {
             const aiResponse = await response.json();
-            console.log('Parsed as JSON successfully');
             
             if (!aiResponse.choices?.[0]?.message?.content) {
               console.error('Invalid JSON structure:', JSON.stringify(aiResponse).substring(0, 300));
@@ -199,147 +218,106 @@ Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara
             aiContent = aiContent.substring(0, 50000);
           }
           
-          console.log('Final content length:', aiContent.length);
+          console.log('AI analysis successful, content length:', aiContent.length);
           return aiContent;
 
-        } catch (error: any) {
-          lastError = error;
+        } catch (error) {
           console.error(`Attempt ${attempt} failed:`, error.message);
           
           // Don't retry on specific errors
-          if (error.message === 'CREDITS_EXHAUSTED' || error.message === 'AUTH_ERROR') {
+          if (error.message === 'CREDITS_EXHAUSTED' || 
+              error.message === 'AUTH_ERROR' ||
+              error.message === 'RATE_LIMIT') {
             throw error;
           }
           
-          // Last attempt with main model failed
+          // Last attempt
           if (attempt === maxRetries) {
-            break; // Will try fallback model
+            throw error;
           }
           
-          // Wait before retry
-          const delay = Math.pow(2, attempt) * 1000;
-          console.log(`Retrying in ${delay}ms...`);
+          // Wait before retry (exponential backoff)
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+          console.log(`Waiting ${delay}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
       
-      // Fallback: Try with flash-lite model (1 attempt)
-      console.log('All attempts with gemini-2.5-flash failed. Trying fallback model: gemini-2.5-flash-lite');
+      throw new Error('Max retries exceeded');
+    };
+
+    // Try main model first
+    let recommendation = '';
+    try {
+      recommendation = await callAIWithRetry('google/gemini-2.5-pro');
+    } catch (error) {
+      console.error('Primary model failed:', error.message);
       
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
-
-        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-lite',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: quizContent }
-            ],
-            stream: false,
-          }),
-          signal: controller.signal,
-        });
-        
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const aiResponse = await response.json();
-          const content = aiResponse.choices?.[0]?.message?.content;
-          
-          if (content && content.length > 100) {
-            console.log('Fallback model succeeded! Content length:', content.length);
-            return content;
-          }
+      // Fallback to lite model on certain errors
+      if (error.message === 'SSE_PARSE_FAILED' || 
+          error.message === 'PARSE_FAILED' ||
+          error.message === 'CONTENT_TOO_SHORT') {
+        console.log('Attempting fallback to gemini-2.5-flash-lite...');
+        try {
+          recommendation = await callAIWithRetry('google/gemini-2.5-flash-lite', 1);
+        } catch (fallbackError) {
+          console.error('Fallback model also failed:', fallbackError.message);
+          throw error; // Throw original error
         }
-      } catch (fallbackError) {
-        console.error('Fallback model also failed:', fallbackError);
+      } else {
+        throw error;
       }
-      
-      // All attempts failed
-      throw lastError || new Error('All retry attempts failed');
     }
 
-    console.log('Calling Lovable AI with quiz data...');
-    const recommendation = await callAIWithRetry();
+    // Save to database
+    const { error: insertError } = await supabase
+      .from('ai_recommendations')
+      .insert({
+        session_id: sessionId,
+        recommendation_text: recommendation,
+        prompt_used: systemPrompt,
+        model_used: 'google/gemini-2.5-pro',
+      });
 
-    console.log('AI analysis completed successfully');
-
-    // Save recommendation to database
-    if (sessionId) {
-      try {
-        const { error: insertError } = await supabase
-          .from('ai_recommendations')
-          .insert({
-            session_id: sessionId,
-            recommendation_text: recommendation,
-            prompt_used: customPrompt ? 'custom' : 'default',
-            model_used: 'google/gemini-2.5-flash',
-          });
-
-        if (insertError) {
-          console.error('Error saving AI recommendation to database:', insertError);
-          // Don't fail the entire request if just the database save fails
-        } else {
-          console.log('AI recommendation saved to database successfully');
-        }
-      } catch (dbError) {
-        console.error('Exception saving AI recommendation:', dbError);
-        // Don't fail the entire request
-      }
+    if (insertError) {
+      console.error('Error saving recommendation:', insertError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to save recommendation' }),
+        { status: 500, headers: corsHeaders }
+      );
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        recommendation,
-        promptUsed: customPrompt ? 'custom' : 'default'
+        recommendation 
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in analyze-quiz function:', error);
     
-    // Return specific error codes
-    let status = 500;
-    let errorMessage = 'Unknown error occurred';
+    let statusCode = 500;
+    let errorMessage = 'Internal server error';
     
-    if (error instanceof Error) {
-      if (error.message === 'CREDITS_EXHAUSTED') {
-        status = 402;
-        errorMessage = 'Insufficient credits. Please add more credits to continue.';
-      } else if (error.message === 'AUTH_ERROR') {
-        status = 401;
-        errorMessage = 'Authentication error. Please contact support.';
-      } else if (error.message.includes('429')) {
-        status = 429;
-        errorMessage = 'Rate limit exceeded. Please wait a few moments and try again.';
-      } else if (error.message === 'PARSE_FAILED' || error.message === 'SSE_PARSE_FAILED') {
-        errorMessage = 'AI service returned an invalid response. Please try again.';
-      } else if (error.message === 'CONTENT_TOO_SHORT') {
-        errorMessage = 'AI generated incomplete response. Please try again.';
-      } else {
-        errorMessage = error.message;
-      }
+    if (error.message === 'CREDITS_EXHAUSTED') {
+      statusCode = 402;
+      errorMessage = 'AI credits exhausted';
+    } else if (error.message === 'RATE_LIMIT') {
+      statusCode = 429;
+      errorMessage = 'Rate limit exceeded';
+    } else if (error.message === 'AUTH_ERROR') {
+      statusCode = 500;
+      errorMessage = 'Authentication error';
+    } else if (error.message.includes('PARSE_FAILED') || error.message === 'CONTENT_TOO_SHORT') {
+      statusCode = 500;
+      errorMessage = 'Failed to parse AI response';
     }
     
     return new Response(
-      JSON.stringify({ 
-        error: errorMessage, 
-        success: false 
-      }),
-      { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: errorMessage }),
+      { status: statusCode, headers: corsHeaders }
     );
   }
 });

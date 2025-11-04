@@ -8,6 +8,14 @@ import Results from "./quiz/Results";
 import { questions, QuizAnswers } from "./quiz/questions";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const quizResponseSchema = z.object({
+  session_id: z.string().min(1).max(100),
+  question_number: z.number().int().positive(),
+  question_text: z.string().min(1).max(500),
+  selected_answer: z.string().min(1).max(200),
+});
 
 interface QuizProps {
   onBack: () => void;
@@ -41,7 +49,9 @@ const Quiz = ({ onBack }: QuizProps) => {
           countryName = countryData.country_name;
         }
       } catch (error) {
-        console.error('Error detecting country:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error detecting country:', error);
+        }
       }
 
       const { error } = await supabase
@@ -53,7 +63,9 @@ const Quiz = ({ onBack }: QuizProps) => {
         });
 
       if (error) {
-        console.error('Error creating quiz session:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error creating quiz session:', error);
+        }
         toast({
           title: "Error",
           description: "Unable to start quiz session.",
@@ -80,19 +92,44 @@ const Quiz = ({ onBack }: QuizProps) => {
     const newAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(newAnswers);
 
-    // Save the response to database
+    // Save the response to database with validation
     if (sessionId) {
-      const { error } = await supabase
-        .from('quiz_responses')
-        .insert({
+      try {
+        const responseData = {
           session_id: sessionId,
           question_number: currentStep + 1,
           question_text: currentQuestion.question,
           selected_answer: String(answer),
-        });
+        };
 
-      if (error) {
-        console.error('Error saving quiz response:', error);
+        // Validate data before inserting
+        quizResponseSchema.parse(responseData);
+
+        const { error } = await supabase
+          .from('quiz_responses')
+          .insert(responseData);
+
+        if (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error saving quiz response:', error);
+          }
+          toast({
+            title: "Error",
+            description: "Unable to save your response. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (validationError) {
+        if (import.meta.env.DEV) {
+          console.error('Validation error:', validationError);
+        }
+        toast({
+          title: "Error",
+          description: "Invalid response data.",
+          variant: "destructive",
+        });
+        return;
       }
     }
 
@@ -265,7 +302,9 @@ const Quiz = ({ onBack }: QuizProps) => {
           countryName = countryData.country_name;
         }
       } catch (error) {
-        console.error('Error detecting country:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error detecting country:', error);
+        }
       }
 
       const { error } = await supabase
@@ -277,7 +316,9 @@ const Quiz = ({ onBack }: QuizProps) => {
         });
 
       if (error) {
-        console.error('Error creating new quiz session:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error creating new quiz session:', error);
+        }
       } else {
         // Session ready for new answers
         setIsSessionReady(true);
