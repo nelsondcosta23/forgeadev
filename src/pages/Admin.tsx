@@ -96,8 +96,27 @@ const Admin = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchQuizData();
+      fetchPrompt();
     }
   }, [isAuthenticated]);
+
+  const fetchPrompt = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("admin_prompts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setPromptText(data.prompt_text);
+      }
+    } catch (error) {
+      console.error("Error fetching prompt:", error);
+    }
+  };
 
   const fetchQuizData = async () => {
     setIsLoading(true);
@@ -268,9 +287,20 @@ const Admin = () => {
                   </div>
                   <DialogFooter>
                     <Button
-                      onClick={() => {
-                        toast.success("Prompt salvo com sucesso!");
-                        setPromptDialogOpen(false);
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from("admin_prompts")
+                            .insert({ prompt_text: promptText });
+
+                          if (error) throw error;
+
+                          toast.success("Prompt salvo com sucesso!");
+                          setPromptDialogOpen(false);
+                        } catch (error) {
+                          console.error("Error saving prompt:", error);
+                          toast.error("Erro ao salvar prompt");
+                        }
                       }}
                     >
                       Guardar
