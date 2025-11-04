@@ -1,12 +1,13 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -222,12 +223,13 @@ Be specific with model numbers when possible and explain why each component fits
           return aiContent;
 
         } catch (error) {
-          console.error(`Attempt ${attempt} failed:`, error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          console.error(`Attempt ${attempt} failed:`, errorMessage);
           
           // Don't retry on specific errors
-          if (error.message === 'CREDITS_EXHAUSTED' || 
-              error.message === 'AUTH_ERROR' ||
-              error.message === 'RATE_LIMIT') {
+          if (errorMessage === 'CREDITS_EXHAUSTED' || 
+              errorMessage === 'AUTH_ERROR' ||
+              errorMessage === 'RATE_LIMIT') {
             throw error;
           }
           
@@ -251,17 +253,19 @@ Be specific with model numbers when possible and explain why each component fits
     try {
       recommendation = await callAIWithRetry('google/gemini-2.5-pro');
     } catch (error) {
-      console.error('Primary model failed:', error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Primary model failed:', errorMessage);
       
       // Fallback to lite model on certain errors
-      if (error.message === 'SSE_PARSE_FAILED' || 
-          error.message === 'PARSE_FAILED' ||
-          error.message === 'CONTENT_TOO_SHORT') {
+      if (errorMessage === 'SSE_PARSE_FAILED' || 
+          errorMessage === 'PARSE_FAILED' ||
+          errorMessage === 'CONTENT_TOO_SHORT') {
         console.log('Attempting fallback to gemini-2.5-flash-lite...');
         try {
           recommendation = await callAIWithRetry('google/gemini-2.5-flash-lite', 1);
         } catch (fallbackError) {
-          console.error('Fallback model also failed:', fallbackError.message);
+          const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
+          console.error('Fallback model also failed:', fallbackMessage);
           throw error; // Throw original error
         }
       } else {
@@ -296,27 +300,28 @@ Be specific with model numbers when possible and explain why each component fits
     );
 
   } catch (error) {
-    console.error('Error in analyze-quiz function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in analyze-quiz function:', errorMessage);
     
     let statusCode = 500;
-    let errorMessage = 'Internal server error';
+    let errorResponse = 'Internal server error';
     
-    if (error.message === 'CREDITS_EXHAUSTED') {
+    if (errorMessage === 'CREDITS_EXHAUSTED') {
       statusCode = 402;
-      errorMessage = 'AI credits exhausted';
-    } else if (error.message === 'RATE_LIMIT') {
+      errorResponse = 'AI credits exhausted';
+    } else if (errorMessage === 'RATE_LIMIT') {
       statusCode = 429;
-      errorMessage = 'Rate limit exceeded';
-    } else if (error.message === 'AUTH_ERROR') {
+      errorResponse = 'Rate limit exceeded';
+    } else if (errorMessage === 'AUTH_ERROR') {
       statusCode = 500;
-      errorMessage = 'Authentication error';
-    } else if (error.message.includes('PARSE_FAILED') || error.message === 'CONTENT_TOO_SHORT') {
+      errorResponse = 'Authentication error';
+    } else if (errorMessage.includes('PARSE_FAILED') || errorMessage === 'CONTENT_TOO_SHORT') {
       statusCode = 500;
-      errorMessage = 'Failed to parse AI response';
+      errorResponse = 'Failed to parse AI response';
     }
     
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: errorResponse }),
       { status: statusCode, headers: corsHeaders }
     );
   }
