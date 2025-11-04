@@ -4,6 +4,8 @@ import { QuizAnswers } from "./questions";
 import { ArrowLeft, Share2, Download, Cpu, MemoryStick, HardDrive, Zap, Box, Fan } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { ShareDialog } from "./ShareDialog";
+import { useState } from "react";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -125,14 +127,11 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
 
 const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
   const builds = generateBuilds(answers);
+  const shareUrl = `${window.location.origin}/build/${sessionId}`;
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const handleShare = () => {
-    const shareUrl = `${window.location.origin}/build/${sessionId}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success("Share link copied to clipboard!");
-    }).catch(() => {
-      toast.error("Failed to copy link");
-    });
+    setShareDialogOpen(true);
   };
 
   const handleExport = () => {
@@ -427,6 +426,12 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
           </div>
         </div>
       </footer>
+
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        shareUrl={shareUrl}
+      />
     </div>
   );
 };
