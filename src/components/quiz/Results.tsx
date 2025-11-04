@@ -327,6 +327,31 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Based on your answers, we recommend these configurations
             </p>
+            
+            {/* Action Buttons - Moved to top */}
+            <div className="flex justify-center gap-4 pt-4">
+              <Button variant="outline" onClick={handleCopyLink} className="hidden md:flex gap-2">
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Link Copiado!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copiar Link
+                  </>
+                )}
+              </Button>
+              <Button variant="outline" onClick={handleShare} className="gap-2">
+                <Share2 className="w-4 h-4" />
+                Share
+              </Button>
+              <Button variant="outline" onClick={handleExport} className="gap-2">
+                <Download className="w-4 h-4" />
+                Export PDF
+              </Button>
+            </div>
           </div>
 
           {/* AI Recommendation */}
@@ -349,31 +374,6 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
               </div>
             </Card>
           )}
-
-          {/* Action Buttons */}
-          <div className="flex justify-center gap-4">
-            <Button variant="outline" onClick={handleCopyLink} className="hidden md:flex gap-2">
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Link Copiado!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  Copiar Link
-                </>
-              )}
-            </Button>
-            <Button variant="outline" onClick={handleShare} className="gap-2">
-              <Share2 className="w-4 h-4" />
-              Share
-            </Button>
-            <Button variant="outline" onClick={handleExport} className="gap-2">
-              <Download className="w-4 h-4" />
-              Export PDF
-            </Button>
-          </div>
         </div>
 
         {/* Builds */}
@@ -449,8 +449,11 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
 
                 {/* CTA */}
                 <div className="pt-6 border-t border-border">
-                  <Button className="w-full md:w-auto bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]">
-                    View Detailed Components
+                  <Button 
+                    className="w-full md:w-auto bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
+                    disabled
+                  >
+                    Coming Soon
                   </Button>
                 </div>
               </div>
