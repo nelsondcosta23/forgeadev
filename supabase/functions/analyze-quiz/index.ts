@@ -56,147 +56,136 @@ serve(async (req) => {
     }
 
     const systemPrompt = customPrompt || 
-      `Você é um especialista em hardware de computadores. Analise as respostas do quiz e forneça uma recomendação COMPLETA em formato MARKDOWN.
+      `Você é um especialista em hardware de computadores. Analise as respostas do quiz e forneça uma recomendação personalizada de PC em formato Markdown.
 
-IMPORTANTE: Sua resposta DEVE estar em formato Markdown com:
-- Use # para títulos principais
-- Use ## para subtítulos
-- Use **negrito** para componentes importantes
-- Use listas numeradas ou com bullet points
-- Use \`código\` para nomes técnicos de componentes
+Inclua:
+- Análise do orçamento
+- Componentes recomendados (CPU, GPU, RAM, Armazenamento, Placa-mãe, Fonte)
+- Performance esperada
+- Dicas extras
 
-Estruture sua resposta assim:
+Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara com cabeçalhos (##), negrito (**texto**) e bullet points.`;
 
-# Recomendação Personalizada
+    // Helper function to call AI with retry logic
+    async function callAIWithRetry(maxRetries = 3) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`AI call attempt ${attempt}/${maxRetries}`);
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 120000);
 
-## 💰 Orçamento Ideal
-[análise do orçamento]
+          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: quizContent }
+              ],
+              // No temperature parameter for Gemini 2.5
+            }),
+            signal: controller.signal,
+          });
+          
+          clearTimeout(timeoutId);
 
-## 🎯 Componentes Recomendados
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Attempt ${attempt} - AI API error:`, response.status, errorText);
+            
+            // Don't retry on 402 (no credits) or 401 (auth error)
+            if (response.status === 402) {
+              return new Response(
+                JSON.stringify({ error: 'Insufficient credits. Please add credits to the workspace.', success: false }), 
+                { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+            
+            if (response.status === 401) {
+              throw new Error('Authentication error');
+            }
+            
+            // Retry on 429 (rate limit) or 5xx errors
+            if (attempt < maxRetries && (response.status === 429 || response.status >= 500)) {
+              const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+              console.log(`Retrying in ${delay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue;
+            }
+            
+            return new Response(
+              JSON.stringify({ error: 'The AI service is temporarily unavailable. Please try again.', success: false }), 
+              { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
 
-### Processador (CPU)
-- **Modelo**: [nome específico]
-- **Por quê**: [explicação]
+          const responseText = await response.text();
+          console.log('AI response received, length:', responseText.length);
 
-### Placa Gráfica (GPU)
-- **Modelo**: [nome específico]
-- **Por quê**: [explicação]
+          if (!responseText || responseText.trim().length === 0) {
+            throw new Error('Empty response');
+          }
 
-### Memória RAM
-- **Especificação**: [quantidade e tipo]
-- **Por quê**: [explicação]
+          // Try to parse JSON
+          let aiResponse;
+          try {
+            aiResponse = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error('Failed to parse AI response.');
+            console.error('Response length:', responseText.length);
+            console.error('First 500 chars:', responseText.substring(0, 500));
+            console.error('Last 500 chars:', responseText.substring(responseText.length - 500));
+            console.error('Parse error:', parseError);
+            throw new Error('Invalid JSON response');
+          }
+          
+          // Validate structure
+          if (!aiResponse.choices?.[0]?.message?.content) {
+            console.error('AI response missing expected structure:', aiResponse);
+            throw new Error('Invalid response structure');
+          }
 
-### Armazenamento
-- **Tipo**: [SSD/HDD e capacidade]
-- **Por quê**: [explicação]
+          return aiResponse.choices[0].message.content;
 
-### Outros Componentes
-- **Motherboard**: [recomendação]
-- **Fonte (PSU)**: [potência e certificação]
-- **Gabinete**: [tipo]
-- **Cooler**: [tipo]
-
-## 📊 Performance Esperada
-[lista de benchmarks e FPS esperados]
-
-## 💡 Dicas Extras
-[otimizações e considerações]
-
-Seja específico, técnico mas acessível. Use modelos reais de 2024-2025.`;
+        } catch (error: any) {
+          console.error(`Attempt ${attempt} failed:`, error.message);
+          
+          // Handle timeout
+          if (error.name === 'AbortError') {
+            if (attempt === maxRetries) {
+              return new Response(
+                JSON.stringify({ error: 'AI analysis timed out. Please try again.', success: false }), 
+                { status: 408, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+            const delay = Math.pow(2, attempt) * 1000;
+            console.log(`Timeout - retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          // Last attempt, throw error
+          if (attempt === maxRetries) {
+            throw error;
+          }
+          
+          // Wait before retry (exponential backoff)
+          const delay = Math.pow(2, attempt) * 1000;
+          console.log(`Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+      
+      throw new Error('All retry attempts failed');
+    }
 
     console.log('Calling Lovable AI with quiz data...');
-
-    // Add timeout to the AI API call
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
-
-    let response;
-    try {
-      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: quizContent }
-          ],
-          temperature: 0.7,
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-    } catch (fetchError: any) {
-      clearTimeout(timeoutId);
-      if (fetchError.name === 'AbortError') {
-        console.error('AI request timed out');
-        return new Response(
-          JSON.stringify({ error: 'AI analysis timed out. Please try again.', success: false }), 
-          { status: 408, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      throw fetchError;
-    }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.', success: false }), 
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Insufficient credits. Please add credits to the workspace.', success: false }), 
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      return new Response(
-        JSON.stringify({ error: 'The AI service is temporarily unavailable. Please try again.', success: false }), 
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Get response text and validate before parsing
-    const responseText = await response.text();
-    console.log('AI response received, length:', responseText.length);
-
-    if (!responseText || responseText.length === 0) {
-      console.error('AI returned empty response');
-      return new Response(
-        JSON.stringify({ error: 'AI returned empty response. Please try again.', success: false }), 
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    let aiResponse;
-    try {
-      aiResponse = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', responseText.substring(0, 500));
-      return new Response(
-        JSON.stringify({ error: 'AI returned invalid response format. Please try again.', success: false }), 
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!aiResponse.choices || !aiResponse.choices[0] || !aiResponse.choices[0].message) {
-      console.error('AI response missing expected structure:', aiResponse);
-      return new Response(
-        JSON.stringify({ error: 'AI returned incomplete response. Please try again.', success: false }), 
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const recommendation = aiResponse.choices[0].message.content;
+    const recommendation = await callAIWithRetry();
 
     console.log('AI analysis completed successfully');
 
