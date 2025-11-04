@@ -45,6 +45,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
@@ -265,6 +266,16 @@ const Admin = () => {
                       className="min-h-[400px] resize-none font-mono text-sm"
                     />
                   </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={() => {
+                        toast.success("Prompt salvo com sucesso!");
+                        setPromptDialogOpen(false);
+                      }}
+                    >
+                      Guardar
+                    </Button>
+                  </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
