@@ -192,8 +192,8 @@ const Quiz = ({ onBack }: QuizProps) => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm">
+      {/* Footer - Hidden on mobile during quiz */}
+      <footer className="hidden md:block border-t border-border/50 bg-card/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <p>© 2025 Forgea. All rights reserved.</p>
