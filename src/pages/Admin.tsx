@@ -297,23 +297,18 @@ const Admin = () => {
               ) : countryStats.length === 0 ? (
                 <p className="text-muted-foreground">Nenhum dado disponível</p>
               ) : (
-                <div className="space-y-3">
-                  {countryStats.slice(0, 5).map((stat, i) => (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {countryStats.map((stat, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-3 rounded-lg bg-background/50"
+                      className="flex flex-col p-3 rounded-lg bg-background/50 border border-border hover:bg-accent/50 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 mb-2">
                         <Globe className="w-4 h-4 text-primary" />
-                        <div>
-                          <p className="font-medium">{stat.country_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {stat.country_code}
-                          </p>
-                        </div>
+                        <p className="font-medium text-sm truncate">{stat.country_name}</p>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold">{stat.count}</div>
+                      <div className="flex items-baseline gap-2">
+                        <div className="text-2xl font-bold">{stat.count}</div>
                         <div className="text-xs text-muted-foreground">
                           {totalQuizzes > 0
                             ? `${Math.round((stat.count / totalQuizzes) * 100)}%`
