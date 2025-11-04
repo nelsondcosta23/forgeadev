@@ -11,6 +11,7 @@ interface ResultsProps {
   answers: QuizAnswers;
   onRestart: () => void;
   sessionId: string;
+  aiRecommendation?: string;
 }
 
 interface Build {
@@ -125,7 +126,7 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
   return [budgetBuild, balancedBuild, highEndBuild];
 };
 
-const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
+const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsProps) => {
   const builds = generateBuilds(answers);
   const shareUrl = `${window.location.origin}/build/${sessionId}`;
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -325,6 +326,25 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
               Based on your answers, we recommend these configurations
             </p>
           </div>
+
+          {/* AI Recommendation */}
+          {aiRecommendation && (
+            <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+              <div className="flex items-start gap-4">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Cpu className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    Recomendação Personalizada da AI
+                  </h3>
+                  <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
+                    {aiRecommendation}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-center gap-4">

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import QuestionCard from "./quiz/QuestionCard";
 import Results from "./quiz/Results";
 import { questions, QuizAnswers } from "./quiz/questions";
@@ -18,6 +18,8 @@ const Quiz = ({ onBack }: QuizProps) => {
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [showResults, setShowResults] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
+  const [aiRecommendation, setAiRecommendation] = useState<string>("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
 
   // Create a quiz session when component mounts
@@ -92,21 +94,57 @@ const Quiz = ({ onBack }: QuizProps) => {
     if (currentStep < currentQuestions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Calculate total score (example: count all answers)
-      const totalScore = Object.keys(newAnswers).length;
+      // Last question - analyze with AI before showing results
+      setIsAnalyzing(true);
       
-      // Update session as completed
-      if (sessionId) {
-        await supabase
-          .from('quiz_sessions')
-          .update({
-            completed_at: new Date().toISOString(),
-            total_score: totalScore,
-          })
-          .eq('session_id', sessionId);
-      }
+      try {
+        // Get all questions that were answered
+        const answeredQuestions = currentQuestions.filter(q => newAnswers[q.id] !== undefined);
+        
+        console.log('Calling analyze-quiz function...');
+        const { data, error } = await supabase.functions.invoke('analyze-quiz', {
+          body: {
+            answers: newAnswers,
+            questions: answeredQuestions
+          }
+        });
 
-      setShowResults(true);
+        if (error) {
+          console.error('Error analyzing quiz:', error);
+          toast({
+            title: "Erro",
+            description: "Não foi possível analisar suas respostas. Mostrando resultados padrão.",
+            variant: "destructive",
+          });
+        } else if (data?.success) {
+          console.log('AI analysis received:', data.recommendation);
+          setAiRecommendation(data.recommendation);
+        }
+      } catch (error) {
+        console.error('Error calling analyze-quiz:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível analisar suas respostas. Mostrando resultados padrão.",
+          variant: "destructive",
+        });
+      } finally {
+        // Calculate total score
+        const totalScore = Object.keys(newAnswers).length;
+        
+        // Update session as completed
+        if (sessionId) {
+          await supabase
+            .from('quiz_sessions')
+            .update({
+              completed_at: new Date().toISOString(),
+              total_score: totalScore,
+            })
+            .eq('session_id', sessionId);
+        }
+
+        setIsAnalyzing(false);
+        setShowResults(true);
+      }
     }
   };
 
@@ -118,11 +156,39 @@ const Quiz = ({ onBack }: QuizProps) => {
     }
   };
 
+  if (isAnalyzing) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <Card className="p-12 max-w-md mx-4 text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="relative">
+              <Sparkles className="w-16 h-16 text-primary animate-pulse" />
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-ping" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Analisando suas respostas...</h2>
+            <p className="text-muted-foreground">
+              A AI está processando suas preferências para criar recomendações personalizadas
+            </p>
+          </div>
+          <div className="flex justify-center gap-2">
+            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   if (showResults) {
-    return <Results answers={answers} sessionId={sessionId} onRestart={async () => {
+    return <Results answers={answers} sessionId={sessionId} aiRecommendation={aiRecommendation} onRestart={async () => {
       setAnswers({});
       setCurrentStep(0);
       setShowResults(false);
+      setAiRecommendation("");
+      setIsAnalyzing(false);
       // Create new session for restart
       const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       setSessionId(newSessionId);
