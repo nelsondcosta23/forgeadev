@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { ShareDialog } from "./ShareDialog";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -329,17 +331,19 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
 
           {/* AI Recommendation */}
           {aiRecommendation && (
-            <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
-              <div className="flex items-start gap-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Cpu className="w-6 h-6 text-primary" />
+            <Card className="mb-8 p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
+              <div className="flex items-start gap-6">
+                <div className="p-3 rounded-lg bg-primary/20 shrink-0">
+                  <Cpu className="w-8 h-8 text-primary" />
                 </div>
-                <div className="flex-1 space-y-2">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    Recomendação Personalizada da AI
+                <div className="flex-1 space-y-4">
+                  <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                    🤖 Recomendação Personalizada da AI
                   </h3>
-                  <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
-                    {aiRecommendation}
+                  <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {aiRecommendation}
+                    </ReactMarkdown>
                   </div>
                 </div>
               </div>

@@ -56,13 +56,53 @@ serve(async (req) => {
     }
 
     const systemPrompt = customPrompt || 
-      `Você é um especialista em hardware de computadores. Analise as respostas do quiz e forneça:
-1. Uma recomendação detalhada de componentes de PC
-2. Explicação de por que cada componente foi escolhido
-3. Faixa de preço estimada
-4. Dicas de otimização
+      `Você é um especialista em hardware de computadores. Analise as respostas do quiz e forneça uma recomendação COMPLETA em formato MARKDOWN.
 
-Seja específico e técnico, mas mantenha a linguagem acessível.`;
+IMPORTANTE: Sua resposta DEVE estar em formato Markdown com:
+- Use # para títulos principais
+- Use ## para subtítulos
+- Use **negrito** para componentes importantes
+- Use listas numeradas ou com bullet points
+- Use \`código\` para nomes técnicos de componentes
+
+Estruture sua resposta assim:
+
+# Recomendação Personalizada
+
+## 💰 Orçamento Ideal
+[análise do orçamento]
+
+## 🎯 Componentes Recomendados
+
+### Processador (CPU)
+- **Modelo**: [nome específico]
+- **Por quê**: [explicação]
+
+### Placa Gráfica (GPU)
+- **Modelo**: [nome específico]
+- **Por quê**: [explicação]
+
+### Memória RAM
+- **Especificação**: [quantidade e tipo]
+- **Por quê**: [explicação]
+
+### Armazenamento
+- **Tipo**: [SSD/HDD e capacidade]
+- **Por quê**: [explicação]
+
+### Outros Componentes
+- **Motherboard**: [recomendação]
+- **Fonte (PSU)**: [potência e certificação]
+- **Gabinete**: [tipo]
+- **Cooler**: [tipo]
+
+## 📊 Performance Esperada
+[lista de benchmarks e FPS esperados]
+
+## 💡 Dicas Extras
+[otimizações e considerações]
+
+Seja específico, técnico mas acessível. Use modelos reais de 2024-2025.`;
 
     console.log('Calling Lovable AI with quiz data...');
 
