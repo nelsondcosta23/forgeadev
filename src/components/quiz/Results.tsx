@@ -127,7 +127,12 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
   const builds = generateBuilds(answers);
 
   const handleShare = () => {
-    toast.success("Share link copied!");
+    const shareUrl = `${window.location.origin}/build/${sessionId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast.success("Share link copied to clipboard!");
+    }).catch(() => {
+      toast.error("Failed to copy link");
+    });
   };
 
   const handleExport = () => {
