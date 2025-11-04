@@ -204,35 +204,83 @@ const Admin = () => {
   const downloadQuestionsCSV = () => {
     try {
       // CSV Header
-      let csvContent = "ID,Pergunta,Descrição,Tipo,Condição,Opções/Respostas Possíveis\n";
+      let csvContent = "Caminho (Purpose),Número da Pergunta,ID da Pergunta,Pergunta,Descrição,Tipo,Opções/Respostas Possíveis,Condição\n";
 
-      // Process each question
-      questions.forEach((q) => {
-        const id = q.id;
-        const question = `"${q.question.replace(/"/g, '""')}"`;
-        const description = q.description ? `"${q.description.replace(/"/g, '""')}"` : "";
-        const type = q.type;
+      // Define paths based on purpose
+      const paths = [
+        { purpose: "gaming", label: "GAMING" },
+        { purpose: "professional", label: "PROFESSIONAL/OFFICE USE" },
+        { purpose: "content", label: "CONTENT CREATION" },
+        { purpose: "mixed", label: "MIXED USE" }
+      ];
+
+      // Process each path
+      paths.forEach(path => {
+        let questionNumber = 1;
         
-        // Build condition text
-        let condition = "";
-        if (q.condition) {
-          const condStr = q.condition.toString();
-          condition = `"${condStr.replace(/"/g, '""')}"`;
+        // Add separator row
+        csvContent += `\n"=== ${path.label} ===",,,,,,,\n`;
+        
+        // First question (purpose) - always included
+        const purposeQ = questions.find(q => q.id === "purpose");
+        if (purposeQ) {
+          const selectedOption = purposeQ.options?.find(opt => opt.value === path.purpose);
+          csvContent += `"${path.label}",${questionNumber},"${purposeQ.id}","${purposeQ.question.replace(/"/g, '""')}","${purposeQ.description || ''}","${purposeQ.type}","Selecionado: ${selectedOption?.label || path.purpose}",""\n`;
+          questionNumber++;
         }
 
-        // Build options/answers text
-        let optionsText = "";
-        if (q.type === "single" && q.options) {
-          const opts = q.options.map(opt => {
-            const desc = opt.description ? ` (${opt.description})` : "";
-            return `${opt.label}${desc}`;
-          }).join(" | ");
-          optionsText = `"${opts}"`;
-        } else if (q.type === "number") {
-          optionsText = `"Número: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}"`;
-        }
+        // Filter questions that apply to this path
+        const applicableQuestions = questions.filter(q => {
+          if (q.id === "purpose") return false; // Already added
+          
+          // Check if question has no condition (universal questions)
+          if (!q.condition) return true;
+          
+          // Test condition with mock answers
+          try {
+            const mockAnswers = { purpose: path.purpose };
+            return q.condition(mockAnswers);
+          } catch {
+            return false;
+          }
+        });
 
-        csvContent += `${id},${question},${description},${type},${condition},${optionsText}\n`;
+        // Add each applicable question
+        applicableQuestions.forEach(q => {
+          const question = q.question.replace(/"/g, '""');
+          const description = q.description ? q.description.replace(/"/g, '""') : "";
+          const type = q.type;
+          
+          // Build options/answers text
+          let optionsText = "";
+          if (q.type === "single" && q.options) {
+            const opts = q.options.map(opt => {
+              const desc = opt.description ? ` (${opt.description})` : "";
+              return `${opt.label}${desc}`;
+            }).join(" | ");
+            optionsText = opts;
+          } else if (q.type === "number") {
+            optionsText = `Número: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}`;
+          }
+
+          // Build condition text
+          let conditionText = "";
+          if (q.condition) {
+            const condStr = q.condition.toString();
+            // Extract readable condition
+            const match = condStr.match(/answers\.(\w+)\s*===?\s*["'](\w+)["']/);
+            if (match) {
+              conditionText = `Requer: ${match[1]} = ${match[2]}`;
+            } else {
+              conditionText = "Condição dinâmica";
+            }
+          }
+
+          csvContent += `"${path.label}",${questionNumber},"${q.id}","${question}","${description}","${type}","${optionsText}","${conditionText}"\n`;
+          questionNumber++;
+        });
+
+        csvContent += "\n"; // Empty line between paths
       });
 
       // Create download
@@ -240,13 +288,13 @@ const Admin = () => {
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", "quiz_questions.csv");
+      link.setAttribute("download", "quiz_caminhos_completos.csv");
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      toast.success("CSV gerado com sucesso!");
+      toast.success("CSV com todos os caminhos gerado com sucesso!");
     } catch (error) {
       console.error("Error generating CSV:", error);
       toast.error("Erro ao gerar CSV");
