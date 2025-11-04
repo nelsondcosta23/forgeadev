@@ -16,9 +16,8 @@ const TermsAndConditions = () => {
           <AlertCircle className="h-5 w-5 text-amber-500" />
           <AlertDescription className="text-foreground">
             <strong>Important Notice:</strong> This application uses artificial intelligence to generate 
-            content based on public metrics and data. While we strive for accuracy, the information 
-            provided may not always be 100% correct. Please use this tool as a guide and verify 
-            critical information independently.
+            content based on public metrics and data. While we aim for accuracy, results may not always 
+            be 100% correct. Use this tool as a guide only and verify important information independently.
           </AlertDescription>
         </Alert>
         
@@ -26,82 +25,78 @@ const TermsAndConditions = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Acceptance of Terms</h2>
             <p>
-              By accessing and using this quiz application, you accept and agree to be bound by the 
-              terms and provisions of this agreement. If you do not agree to these terms, please do 
-              not use this service.
+              By accessing or using this application, you agree to these Terms and Conditions. 
+              If you do not agree, please discontinue use immediately.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">AI-Generated Content Disclaimer</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">AI-Generated Content</h2>
             <p>
-              Our quiz content and results are generated using artificial intelligence algorithms 
-              based on publicly available metrics and data sources. While we make every effort to 
-              ensure accuracy and reliability:
+              Our quiz results and content are created using AI algorithms that process publicly 
+              available information. While we strive for accuracy and reliability:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>The content may not always be 100% accurate or complete</li>
-              <li>Results should be considered as informational and educational</li>
-              <li>You should not rely solely on this information for critical decisions</li>
-              <li>We recommend verifying important information through additional sources</li>
+              <li>The content may not be fully accurate or complete</li>
+              <li>Results are for informational and educational purposes only</li>
+              <li>Do not rely solely on this content for important or financial decisions</li>
+              <li>Always verify critical details from independent sources</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Use of Service</h2>
             <p>
-              You agree to use this service only for lawful purposes and in a way that does not 
-              infringe the rights of others or restrict their use and enjoyment of the service.
+              You agree to use this application lawfully and in a way that does not infringe 
+              the rights of others or disrupt the service.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Intellectual Property</h2>
             <p>
-              All content, features, and functionality of this service are owned by us and are 
-              protected by international copyright, trademark, and other intellectual property laws.
+              All content, design elements, and functionality of this service are owned by us 
+              and protected by applicable copyright and trademark laws.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, we shall not be liable for any indirect, 
-              incidental, special, consequential, or punitive damages resulting from your use of 
-              or inability to use the service, including any inaccuracies in AI-generated content.
+              To the fullest extent permitted by law, we are not liable for any indirect, 
+              incidental, or consequential damages arising from the use—or inability to use—this 
+              application, including inaccuracies in AI-generated content.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Accuracy of Information</h2>
             <p>
-              We do not warrant that the information provided through our AI systems is accurate, 
-              complete, or current. The quiz results and content are provided "as is" without any 
-              warranties, express or implied.
+              All information is provided "as is," without warranties of any kind, express or 
+              implied. We do not guarantee that any content is current, accurate, or complete.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Changes to Terms</h2>
             <p>
-              We reserve the right to modify these terms at any time. Continued use of the service 
-              after changes constitutes acceptance of the modified terms.
+              We may update these Terms and Conditions at any time. Continued use of the 
+              application means you accept the revised terms.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Governing Law</h2>
             <p>
-              These terms shall be governed by and construed in accordance with applicable laws, 
-              without regard to conflict of law provisions.
+              These terms are governed by and construed in accordance with applicable laws, 
+              without regard to conflict-of-law principles.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Contact Information</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Contact</h2>
             <p>
-              If you have any questions about these Terms and Conditions, please contact us through 
-              our website.
+              If you have questions about these Terms, please contact us through our website.
             </p>
           </section>
         </div>
