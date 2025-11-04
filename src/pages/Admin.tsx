@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Database, Activity, Trash2, Search, Globe } from "lucide-react";
+import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,6 +22,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface QuizSession {
   id: string;
@@ -46,6 +54,8 @@ const Admin = () => {
   const [completedQuizzes, setCompletedQuizzes] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("all");
+  const [dateFrom, setDateFrom] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -144,7 +154,13 @@ const Admin = () => {
       session.country_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCountry =
       selectedCountry === "all" || session.country_name === selectedCountry;
-    return matchesSearch && matchesCountry;
+    
+    // Date range filter
+    const sessionDate = new Date(session.started_at);
+    const matchesDateFrom = !dateFrom || sessionDate >= dateFrom;
+    const matchesDateTo = !dateTo || sessionDate <= new Date(dateTo.setHours(23, 59, 59, 999));
+    
+    return matchesSearch && matchesCountry && matchesDateFrom && matchesDateTo;
   });
 
   if (!isAuthenticated) {
@@ -289,29 +305,95 @@ const Admin = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Filters */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar por ID ou país..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por ID ou país..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <SelectValue placeholder="Filtrar por país" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os países</SelectItem>
+                      {countryStats.map((stat) => (
+                        <SelectItem key={stat.country_code} value={stat.country_name}>
+                          {stat.country_name} ({stat.count})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Filtrar por país" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os países</SelectItem>
-                    {countryStats.map((stat) => (
-                      <SelectItem key={stat.country_code} value={stat.country_name}>
-                        {stat.country_name} ({stat.count})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+                {/* Date Range Filters */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full sm:w-[240px] justify-start text-left font-normal",
+                          !dateFrom && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "De (data início)"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateFrom}
+                        onSelect={setDateFrom}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full sm:w-[240px] justify-start text-left font-normal",
+                          !dateTo && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateTo ? format(dateTo, "dd/MM/yyyy") : "Até (data fim)"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateTo}
+                        onSelect={setDateTo}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {(dateFrom || dateTo) && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setDateFrom(undefined);
+                        setDateTo(undefined);
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      Limpar Datas
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Table */}
@@ -319,7 +401,7 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Session ID</TableHead>
+                      <TableHead className="w-[180px]">Session ID</TableHead>
                       <TableHead>País</TableHead>
                       <TableHead>Iniciado</TableHead>
                       <TableHead>Completo</TableHead>
@@ -343,7 +425,7 @@ const Admin = () => {
                       filteredSessions.map((session) => (
                         <TableRow key={session.id}>
                           <TableCell className="font-mono text-sm">
-                            {session.session_id.substring(0, 8)}...
+                            {session.session_id.substring(0, 12)}...
                           </TableCell>
                           <TableCell>
                             {session.country_name || "Desconhecido"}
