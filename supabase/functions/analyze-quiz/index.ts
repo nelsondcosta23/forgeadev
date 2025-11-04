@@ -106,21 +106,40 @@ Seja específico, técnico mas acessível. Use modelos reais de 2024-2025.`;
 
     console.log('Calling Lovable AI with quiz data...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: quizContent }
-        ],
-        temperature: 0.7,
-      }),
-    });
+    // Add timeout to the AI API call
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
+    let response;
+    try {
+      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: quizContent }
+          ],
+          temperature: 0.7,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('AI request timed out');
+        return new Response(
+          JSON.stringify({ error: 'AI analysis timed out. Please try again.', success: false }), 
+          { status: 408, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw fetchError;
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -128,22 +147,55 @@ Seja específico, técnico mas acessível. Use modelos reais de 2024-2025.`;
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Rate limit excedido, tente novamente em alguns instantes.' }), 
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.', success: false }), 
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'Créditos insuficientes. Por favor, adicione créditos ao workspace.' }), 
+          JSON.stringify({ error: 'Insufficient credits. Please add credits to the workspace.', success: false }), 
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
-      throw new Error('Erro ao chamar API da AI');
+      return new Response(
+        JSON.stringify({ error: 'The AI service is temporarily unavailable. Please try again.', success: false }), 
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const aiResponse = await response.json();
+    // Get response text and validate before parsing
+    const responseText = await response.text();
+    console.log('AI response received, length:', responseText.length);
+
+    if (!responseText || responseText.length === 0) {
+      console.error('AI returned empty response');
+      return new Response(
+        JSON.stringify({ error: 'AI returned empty response. Please try again.', success: false }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    let aiResponse;
+    try {
+      aiResponse = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', responseText.substring(0, 500));
+      return new Response(
+        JSON.stringify({ error: 'AI returned invalid response format. Please try again.', success: false }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!aiResponse.choices || !aiResponse.choices[0] || !aiResponse.choices[0].message) {
+      console.error('AI response missing expected structure:', aiResponse);
+      return new Response(
+        JSON.stringify({ error: 'AI returned incomplete response. Please try again.', success: false }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const recommendation = aiResponse.choices[0].message.content;
 
     console.log('AI analysis completed successfully');
