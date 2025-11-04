@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check } from "lucide-react";
+import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -38,6 +38,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -70,6 +79,8 @@ const Admin = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [promptDialogOpen, setPromptDialogOpen] = useState(false);
+  const [promptText, setPromptText] = useState("");
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -227,7 +238,36 @@ const Admin = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
           <div>
-            <h2 className="text-3xl font-bold mb-2">Painel Administrativo</h2>
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-3xl font-bold">Painel Administrativo</h2>
+              <Dialog open={promptDialogOpen} onOpenChange={setPromptDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                  >
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl max-h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle>Configurar Prompt</DialogTitle>
+                    <DialogDescription>
+                      Escreva seu prompt com formatação markdown
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex-1 overflow-auto">
+                    <Textarea
+                      value={promptText}
+                      onChange={(e) => setPromptText(e.target.value)}
+                      placeholder="Digite seu prompt aqui... (suporta markdown)"
+                      className="min-h-[400px] resize-none font-mono text-sm"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <p className="text-muted-foreground">
               Gerencie e monitore o sistema Forgea
             </p>
