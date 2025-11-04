@@ -22,10 +22,10 @@ export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     // Simulate a small delay for better UX
     setTimeout(() => {
       if (password === ADMIN_PASSWORD) {
-        toast.success("Acesso concedido!");
+        toast.success("Access granted!");
         onLogin();
       } else {
-        toast.error("Senha incorreta!");
+        toast.error("Incorrect password!");
         setPassword("");
       }
       setIsLoading(false);
@@ -41,9 +41,9 @@ export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
               <Lock className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Área Administrativa</CardTitle>
+          <CardTitle className="text-2xl">Administrative Area</CardTitle>
           <CardDescription>
-            Digite a senha para acessar o painel administrativo
+            Enter password to access the administrative panel
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -51,7 +51,7 @@ export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
             <div className="space-y-2">
               <Input
                 type="password"
-                placeholder="Digite a senha"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -64,7 +64,7 @@ export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
               className="w-full" 
               disabled={isLoading || !password}
             >
-              {isLoading ? "Verificando..." : "Entrar"}
+              {isLoading ? "Verifying..." : "Enter"}
             </Button>
           </form>
         </CardContent>

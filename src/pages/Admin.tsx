@@ -150,7 +150,7 @@ const Admin = () => {
       setCountryStats(Object.values(stats).sort((a, b) => b.count - a.count));
     } catch (error) {
       console.error("Error fetching quiz data:", error);
-      toast.error("Erro ao carregar dados");
+      toast.error("Error loading data");
     } finally {
       setIsLoading(false);
     }
@@ -191,20 +191,20 @@ const Admin = () => {
 
       if (sessionError) throw sessionError;
 
-      toast.success("Quiz deletado com sucesso!");
+      toast.success("Quiz deleted successfully!");
       setDeleteDialogOpen(false);
       setSessionToDelete(null);
       fetchQuizData();
     } catch (error) {
       console.error("Error deleting quiz:", error);
-      toast.error("Erro ao deletar quiz");
+      toast.error("Error deleting quiz");
     }
   };
 
   const downloadQuestionsCSV = () => {
     try {
       // CSV Header
-      let csvContent = "Caminho (Purpose),Número da Pergunta,ID da Pergunta,Pergunta,Descrição,Tipo,Opções/Respostas Possíveis,Condição\n";
+      let csvContent = "Path (Purpose),Question Number,Question ID,Question,Description,Type,Options/Possible Answers,Condition\n";
 
       // Define paths based on purpose
       const paths = [
@@ -225,7 +225,7 @@ const Admin = () => {
         const purposeQ = questions.find(q => q.id === "purpose");
         if (purposeQ) {
           const selectedOption = purposeQ.options?.find(opt => opt.value === path.purpose);
-          csvContent += `"${path.label}",${questionNumber},"${purposeQ.id}","${purposeQ.question.replace(/"/g, '""')}","${purposeQ.description || ''}","${purposeQ.type}","Selecionado: ${selectedOption?.label || path.purpose}",""\n`;
+          csvContent += `"${path.label}",${questionNumber},"${purposeQ.id}","${purposeQ.question.replace(/"/g, '""')}","${purposeQ.description || ''}","${purposeQ.type}","Selected: ${selectedOption?.label || path.purpose}",""\n`;
           questionNumber++;
         }
 
@@ -260,7 +260,7 @@ const Admin = () => {
             }).join(" | ");
             optionsText = opts;
           } else if (q.type === "number") {
-            optionsText = `Número: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}`;
+            optionsText = `Number: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}`;
           }
 
           // Build condition text
@@ -270,9 +270,9 @@ const Admin = () => {
             // Extract readable condition
             const match = condStr.match(/answers\.(\w+)\s*===?\s*["'](\w+)["']/);
             if (match) {
-              conditionText = `Requer: ${match[1]} = ${match[2]}`;
+              conditionText = `Requires: ${match[1]} = ${match[2]}`;
             } else {
-              conditionText = "Condição dinâmica";
+              conditionText = "Dynamic condition";
             }
           }
 
@@ -294,10 +294,10 @@ const Admin = () => {
       link.click();
       document.body.removeChild(link);
 
-      toast.success("CSV com todos os caminhos gerado com sucesso!");
+      toast.success("CSV with all paths generated successfully!");
     } catch (error) {
       console.error("Error generating CSV:", error);
-      toast.error("Erro ao gerar CSV");
+      toast.error("Error generating CSV");
     }
   };
 
@@ -344,11 +344,11 @@ const Admin = () => {
             </div>
             <div className="flex items-center gap-4">
               <Button variant="outline" onClick={() => navigate("/")}>
-                Voltar ao Site
+                Back to Site
               </Button>
               <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Sair
+                Logout
               </Button>
             </div>
           </div>
@@ -360,7 +360,7 @@ const Admin = () => {
         <div className="max-w-6xl mx-auto space-y-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-3xl font-bold">Painel Administrativo</h2>
+              <h2 className="text-3xl font-bold">Administrative Panel</h2>
               <Dialog open={promptDialogOpen} onOpenChange={setPromptDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
@@ -373,16 +373,16 @@ const Admin = () => {
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[80vh]">
                   <DialogHeader>
-                    <DialogTitle>Configurar Prompt</DialogTitle>
+                    <DialogTitle>Configure Prompt</DialogTitle>
                     <DialogDescription>
-                      Escreva seu prompt com formatação markdown
+                      Write your prompt with markdown formatting
                     </DialogDescription>
                   </DialogHeader>
                   <div className="flex-1 overflow-auto">
                     <Textarea
                       value={promptText}
                       onChange={(e) => setPromptText(e.target.value)}
-                      placeholder="Digite seu prompt aqui... (suporta markdown)"
+                      placeholder="Type your prompt here... (supports markdown)"
                       className="min-h-[400px] resize-none font-mono text-sm"
                     />
                   </div>
@@ -396,15 +396,15 @@ const Admin = () => {
 
                           if (error) throw error;
 
-                          toast.success("Prompt salvo com sucesso!");
+                          toast.success("Prompt saved successfully!");
                           setPromptDialogOpen(false);
                         } catch (error) {
                           console.error("Error saving prompt:", error);
-                          toast.error("Erro ao salvar prompt");
+                          toast.error("Error saving prompt");
                         }
                       }}
                     >
-                      Guardar
+                      Save
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -419,7 +419,7 @@ const Admin = () => {
               </Button>
             </div>
             <p className="text-muted-foreground">
-              Gerencie e monitore o sistema Forgea
+              Manage and monitor the Forgea system
             </p>
           </div>
 
@@ -428,14 +428,14 @@ const Admin = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total de Quizzes
+                  Total Quizzes
                 </CardTitle>
                 <Database className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalQuizzes}</div>
                 <p className="text-xs text-muted-foreground">
-                  Todos os quizzes criados
+                  All quizzes created
                 </p>
               </CardContent>
             </Card>
@@ -443,7 +443,7 @@ const Admin = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Quizzes Completos
+                  Completed Quizzes
                 </CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -451,8 +451,8 @@ const Admin = () => {
                 <div className="text-2xl font-bold">{completedQuizzes}</div>
                 <p className="text-xs text-muted-foreground">
                   {totalQuizzes > 0
-                    ? `${Math.round((completedQuizzes / totalQuizzes) * 100)}% taxa de conclusão`
-                    : "Sem dados"}
+                    ? `${Math.round((completedQuizzes / totalQuizzes) * 100)}% completion rate`
+                    : "No data"}
                 </p>
               </CardContent>
             </Card>
@@ -460,14 +460,14 @@ const Admin = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Países Ativos
+                  Active Countries
                 </CardTitle>
                 <Globe className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{countryStats.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  Países com quizzes
+                  Countries with quizzes
                 </p>
               </CardContent>
             </Card>
@@ -476,16 +476,16 @@ const Admin = () => {
           {/* Country Stats */}
           <Card>
             <CardHeader>
-              <CardTitle>Quizzes por País</CardTitle>
+              <CardTitle>Quizzes by Country</CardTitle>
               <CardDescription>
-                Distribuição geográfica dos quizzes
+                Geographic distribution of quizzes
               </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <p className="text-muted-foreground">Carregando...</p>
+                <p className="text-muted-foreground">Loading...</p>
               ) : countryStats.length === 0 ? (
-                <p className="text-muted-foreground">Nenhum dado disponível</p>
+                <p className="text-muted-foreground">No data available</p>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {countryStats.map((stat, i) => (
@@ -515,9 +515,9 @@ const Admin = () => {
           {/* Quiz List with Filters */}
           <Card>
             <CardHeader>
-              <CardTitle>Lista de Quizzes</CardTitle>
+              <CardTitle>Quiz List</CardTitle>
               <CardDescription>
-                Visualize e gerencie todos os quizzes
+                View and manage all quizzes
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -526,7 +526,7 @@ const Admin = () => {
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por ID ou país..."
+                    placeholder="Search by ID or country..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9"
@@ -535,10 +535,10 @@ const Admin = () => {
                 
                 <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                   <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filtrar por país" />
+                    <SelectValue placeholder="Filter by country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os países</SelectItem>
+                    <SelectItem value="all">All countries</SelectItem>
                     {countryStats.map((stat) => (
                       <SelectItem key={stat.country_code} value={stat.country_name}>
                         {stat.country_name} ({stat.count})
@@ -557,7 +557,7 @@ const Admin = () => {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "De"}
+                      {dateFrom ? format(dateFrom, "MM/dd/yyyy") : "From"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -581,7 +581,7 @@ const Admin = () => {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateTo ? format(dateTo, "dd/MM/yyyy") : "Até"}
+                      {dateTo ? format(dateTo, "MM/dd/yyyy") : "To"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -603,7 +603,7 @@ const Admin = () => {
                       setDateTo(undefined);
                     }}
                   >
-                    Limpar Datas
+                    Clear Dates
                   </Button>
                 )}
               </div>
@@ -614,23 +614,23 @@ const Admin = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[200px]">Session ID</TableHead>
-                      <TableHead>País</TableHead>
-                      <TableHead>Iniciado</TableHead>
-                      <TableHead>Completo</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Started</TableHead>
+                      <TableHead>Complete</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center">
-                          Carregando...
+                          Loading...
                         </TableCell>
                       </TableRow>
                     ) : filteredSessions.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center text-muted-foreground">
-                          Nenhum quiz encontrado
+                          No quizzes found
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -640,10 +640,10 @@ const Admin = () => {
                             {session.session_id}
                           </TableCell>
                           <TableCell>
-                            {session.country_name || "Desconhecido"}
+                            {session.country_name || "Unknown"}
                           </TableCell>
                           <TableCell>
-                            {new Date(session.started_at).toLocaleDateString("pt-BR")}
+                            {new Date(session.started_at).toLocaleDateString("en-US")}
                           </TableCell>
                           <TableCell>
                             {session.completed_at ? (
@@ -661,7 +661,7 @@ const Admin = () => {
                                   navigate(`/build/${session.session_id}`)
                                 }
                               >
-                                Ver
+                                View
                               </Button>
                               <Button
                                 variant="outline"
@@ -683,7 +683,7 @@ const Admin = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
-                    Mostrando {startIndex + 1} até {Math.min(endIndex, filteredSessions.length)} de {filteredSessions.length} resultados
+                    Showing {startIndex + 1} to {Math.min(endIndex, filteredSessions.length)} of {filteredSessions.length} results
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -692,7 +692,7 @@ const Admin = () => {
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
                     >
-                      Anterior
+                      Previous
                     </Button>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -713,7 +713,7 @@ const Admin = () => {
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
                     >
-                      Próximo
+                      Next
                     </Button>
                   </div>
                 </div>
@@ -727,19 +727,19 @@ const Admin = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso irá deletar permanentemente o quiz
-              e todas as respostas associadas.
+              This action cannot be undone. This will permanently delete the quiz
+              and all associated responses.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteQuiz}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Deletar
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

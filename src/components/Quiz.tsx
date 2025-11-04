@@ -54,8 +54,8 @@ const Quiz = ({ onBack }: QuizProps) => {
       if (error) {
         console.error('Error creating quiz session:', error);
         toast({
-          title: "Erro",
-          description: "Não foi possível iniciar a sessão do quiz.",
+          title: "Error",
+          description: "Unable to start quiz session.",
           variant: "destructive",
         });
       }
@@ -122,11 +122,11 @@ const Quiz = ({ onBack }: QuizProps) => {
         
         // Check for specific error codes
         if (error.message?.includes('429')) {
-          setAnalysisError('Rate limit excedido. Por favor, aguarde alguns instantes e tente novamente.');
+          setAnalysisError('Rate limit exceeded. Please wait a few moments and try again.');
         } else if (error.message?.includes('402')) {
-          setAnalysisError('Créditos insuficientes. Por favor, contacte o suporte.');
+          setAnalysisError('Insufficient credits. Please contact support.');
         } else {
-          setAnalysisError('Erro ao analisar suas respostas. Por favor, tente novamente.');
+          setAnalysisError('Error analyzing your responses. Please try again.');
         }
         setIsAnalyzing(false);
         return;
@@ -134,13 +134,13 @@ const Quiz = ({ onBack }: QuizProps) => {
         console.log('AI analysis received:', data.recommendation);
         setAiRecommendation(data.recommendation);
       } else {
-        setAnalysisError('Erro inesperado. Por favor, tente novamente.');
+        setAnalysisError('Unexpected error. Please try again.');
         setIsAnalyzing(false);
         return;
       }
     } catch (error) {
       console.error('Error calling analyze-quiz:', error);
-      setAnalysisError('Erro de conexão. Por favor, verifique sua internet e tente novamente.');
+      setAnalysisError('Connection error. Please check your internet and try again.');
       setIsAnalyzing(false);
       return;
     }
@@ -178,7 +178,7 @@ const Quiz = ({ onBack }: QuizProps) => {
         <Card className="p-12 max-w-md mx-4 text-center space-y-6">
           <AlertCircle className="w-16 h-16 text-destructive mx-auto" />
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Erro na Análise</h2>
+            <h2 className="text-2xl font-bold">Analysis Error</h2>
             <p className="text-muted-foreground">{analysisError}</p>
           </div>
           <div className="flex flex-col gap-4">
@@ -187,7 +187,7 @@ const Quiz = ({ onBack }: QuizProps) => {
               className="bg-gradient-to-r from-primary to-secondary"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Tentar Novamente
+              Try Again
             </Button>
             <Button 
               variant="outline" 
@@ -196,7 +196,7 @@ const Quiz = ({ onBack }: QuizProps) => {
                 setShowResults(true);
               }}
             >
-              Ver Resultados Sem AI
+              View Results Without AI
             </Button>
           </div>
         </Card>
@@ -215,9 +215,9 @@ const Quiz = ({ onBack }: QuizProps) => {
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Analisando suas respostas...</h2>
+            <h2 className="text-2xl font-bold">Analyzing your answers...</h2>
             <p className="text-muted-foreground">
-              A AI está processando suas preferências para criar recomendações personalizadas
+              AI is processing your preferences to create personalized recommendations
             </p>
           </div>
           <div className="flex justify-center gap-2">

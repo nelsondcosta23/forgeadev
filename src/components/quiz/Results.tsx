@@ -334,12 +334,12 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
                 {copied ? (
                   <>
                     <Check className="w-4 h-4" />
-                    Link Copiado!
+                    Link Copied!
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    Copiar Link
+                    Copy Link
                   </>
                 )}
               </Button>
