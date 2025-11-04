@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          model_used: string
+          prompt_used: string
+          recommendation_text: string
+          session_id: string
+          tokens_used: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model_used?: string
+          prompt_used: string
+          recommendation_text: string
+          session_id: string
+          tokens_used?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model_used?: string
+          prompt_used?: string
+          recommendation_text?: string
+          session_id?: string
+          tokens_used?: number | null
+        }
+        Relationships: []
+      }
       quiz_responses: {
         Row: {
           answered_at: string

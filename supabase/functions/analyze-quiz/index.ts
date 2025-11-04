@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { answers, questions } = await req.json();
+    const { answers, questions, sessionId } = await req.json();
     
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -147,6 +147,30 @@ Seja específico, técnico mas acessível. Use modelos reais de 2024-2025.`;
     const recommendation = aiResponse.choices[0].message.content;
 
     console.log('AI analysis completed successfully');
+
+    // Save recommendation to database
+    if (sessionId) {
+      try {
+        const { error: insertError } = await supabase
+          .from('ai_recommendations')
+          .insert({
+            session_id: sessionId,
+            recommendation_text: recommendation,
+            prompt_used: customPrompt ? 'custom' : 'default',
+            model_used: 'google/gemini-2.5-flash',
+          });
+
+        if (insertError) {
+          console.error('Error saving AI recommendation to database:', insertError);
+          // Don't fail the entire request if just the database save fails
+        } else {
+          console.log('AI recommendation saved to database successfully');
+        }
+      } catch (dbError) {
+        console.error('Exception saving AI recommendation:', dbError);
+        // Don't fail the entire request
+      }
+    }
 
     return new Response(
       JSON.stringify({ 

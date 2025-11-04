@@ -13,6 +13,8 @@ const SharedResults = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [aiRecommendation, setAiRecommendation] = useState<string>("");
+
   useEffect(() => {
     const fetchResults = async () => {
       if (!sessionId) {
@@ -40,9 +42,6 @@ const SharedResults = () => {
         // Reconstruct the answers object from responses
         const reconstructedAnswers: QuizAnswers = {};
         responses.forEach((response) => {
-          // Extract question ID from question_text or use a pattern
-          // Since we store the full question text, we need to map it back to the ID
-          // We'll use the question_number as a key for now and parse the answer
           const questionId = extractQuestionId(response.question_text);
           if (questionId) {
             // Try to parse as number first, otherwise keep as string
@@ -54,6 +53,20 @@ const SharedResults = () => {
         });
 
         setAnswers(reconstructedAnswers);
+
+        // Fetch AI recommendation for this session
+        const { data: aiData, error: aiError } = await supabase
+          .from("ai_recommendations")
+          .select("recommendation_text")
+          .eq("session_id", sessionId)
+          .maybeSingle();
+
+        if (aiError) {
+          console.error("Error fetching AI recommendation:", aiError);
+        } else if (aiData?.recommendation_text) {
+          setAiRecommendation(aiData.recommendation_text);
+        }
+
       } catch (err) {
         console.error("Error fetching results:", err);
         setError("Failed to load results");
@@ -124,6 +137,7 @@ const SharedResults = () => {
       answers={answers} 
       onRestart={() => navigate("/")} 
       sessionId={sessionId || ""} 
+      aiRecommendation={aiRecommendation}
     />
   );
 };

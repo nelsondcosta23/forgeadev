@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
 import QuestionCard from "./quiz/QuestionCard";
 import Results from "./quiz/Results";
 import { questions, QuizAnswers } from "./quiz/questions";
@@ -20,6 +20,7 @@ const Quiz = ({ onBack }: QuizProps) => {
   const [sessionId, setSessionId] = useState<string>("");
   const [aiRecommendation, setAiRecommendation] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Create a quiz session when component mounts
@@ -95,57 +96,71 @@ const Quiz = ({ onBack }: QuizProps) => {
       setCurrentStep(currentStep + 1);
     } else {
       // Last question - analyze with AI before showing results
-      setIsAnalyzing(true);
-      
-      try {
-        // Get all questions that were answered
-        const answeredQuestions = currentQuestions.filter(q => newAnswers[q.id] !== undefined);
-        
-        console.log('Calling analyze-quiz function...');
-        const { data, error } = await supabase.functions.invoke('analyze-quiz', {
-          body: {
-            answers: newAnswers,
-            questions: answeredQuestions
-          }
-        });
-
-        if (error) {
-          console.error('Error analyzing quiz:', error);
-          toast({
-            title: "Erro",
-            description: "Não foi possível analisar suas respostas. Mostrando resultados padrão.",
-            variant: "destructive",
-          });
-        } else if (data?.success) {
-          console.log('AI analysis received:', data.recommendation);
-          setAiRecommendation(data.recommendation);
-        }
-      } catch (error) {
-        console.error('Error calling analyze-quiz:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível analisar suas respostas. Mostrando resultados padrão.",
-          variant: "destructive",
-        });
-      } finally {
-        // Calculate total score
-        const totalScore = Object.keys(newAnswers).length;
-        
-        // Update session as completed
-        if (sessionId) {
-          await supabase
-            .from('quiz_sessions')
-            .update({
-              completed_at: new Date().toISOString(),
-              total_score: totalScore,
-            })
-            .eq('session_id', sessionId);
-        }
-
-        setIsAnalyzing(false);
-        setShowResults(true);
-      }
+      await analyzeAnswers(newAnswers);
     }
+  };
+
+  const analyzeAnswers = async (finalAnswers: QuizAnswers) => {
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    
+    try {
+      // Get all questions that were answered
+      const answeredQuestions = currentQuestions.filter(q => finalAnswers[q.id] !== undefined);
+      
+      console.log('Calling analyze-quiz function...');
+      const { data, error } = await supabase.functions.invoke('analyze-quiz', {
+        body: {
+          answers: finalAnswers,
+          questions: answeredQuestions,
+          sessionId: sessionId
+        }
+      });
+
+      if (error) {
+        console.error('Error analyzing quiz:', error);
+        
+        // Check for specific error codes
+        if (error.message?.includes('429')) {
+          setAnalysisError('Rate limit excedido. Por favor, aguarde alguns instantes e tente novamente.');
+        } else if (error.message?.includes('402')) {
+          setAnalysisError('Créditos insuficientes. Por favor, contacte o suporte.');
+        } else {
+          setAnalysisError('Erro ao analisar suas respostas. Por favor, tente novamente.');
+        }
+        setIsAnalyzing(false);
+        return;
+      } else if (data?.success) {
+        console.log('AI analysis received:', data.recommendation);
+        setAiRecommendation(data.recommendation);
+      } else {
+        setAnalysisError('Erro inesperado. Por favor, tente novamente.');
+        setIsAnalyzing(false);
+        return;
+      }
+    } catch (error) {
+      console.error('Error calling analyze-quiz:', error);
+      setAnalysisError('Erro de conexão. Por favor, verifique sua internet e tente novamente.');
+      setIsAnalyzing(false);
+      return;
+    }
+
+    // Calculate total score
+    const totalScore = Object.keys(finalAnswers).length;
+    
+    // Update session as completed
+    if (sessionId) {
+      await supabase
+        .from('quiz_sessions')
+        .update({
+          completed_at: new Date().toISOString(),
+          total_score: totalScore,
+        })
+        .eq('session_id', sessionId);
+    }
+
+    setIsAnalyzing(false);
+    setShowResults(true);
   };
 
   const handleBack = () => {
@@ -155,6 +170,39 @@ const Quiz = ({ onBack }: QuizProps) => {
       onBack();
     }
   };
+
+  // Error state with retry option
+  if (analysisError) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <Card className="p-12 max-w-md mx-4 text-center space-y-6">
+          <AlertCircle className="w-16 h-16 text-destructive mx-auto" />
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Erro na Análise</h2>
+            <p className="text-muted-foreground">{analysisError}</p>
+          </div>
+          <div className="flex flex-col gap-4">
+            <Button 
+              onClick={() => analyzeAnswers(answers)}
+              className="bg-gradient-to-r from-primary to-secondary"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Tentar Novamente
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setAnalysisError(null);
+                setShowResults(true);
+              }}
+            >
+              Ver Resultados Sem AI
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   if (isAnalyzing) {
     return (
