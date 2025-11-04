@@ -14,73 +14,72 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Introduction</h2>
             <p>
-              This Privacy Policy describes how we collect, use, and protect your personal information 
-              when you use our quiz application.
+              This Privacy Policy explains how we handle your information when you use our quiz 
+              application. We value your privacy and collect only the data necessary to operate 
+              and improve the service.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Information We Collect</h2>
             <p>
-              We collect information that you provide directly to us, including:
+              We collect minimal information, specifically:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Quiz responses and results</li>
-              <li>Usage data and analytics</li>
-              <li>Device and browser information</li>
+              <li>Country of origin, to generate anonymous usage statistics</li>
             </ul>
+            <p className="mt-4">
+              We do not collect names, emails, or any personally identifying data.
+            </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">How We Use Your Information</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">How We Use This Information</h2>
             <p>
-              We use the collected information to:
+              We use this information solely to:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Provide and improve our services</li>
-              <li>Analyze usage patterns and trends</li>
-              <li>Personalize your experience</li>
-              <li>Communicate with you about our services</li>
+              <li>Understand where our users come from (country-level statistics)</li>
+              <li>Improve and optimize the quiz experience</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Data Security</h2>
             <p>
-              We implement appropriate security measures to protect your personal information from 
-              unauthorized access, alteration, disclosure, or destruction.
+              We use standard security measures to protect data and ensure that no personal 
+              information is exposed or misused.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Third-Party Services</h2>
             <p>
-              We may use third-party services for analytics and other purposes. These services may 
-              collect information sent by your browser as part of a web page request.
+              We may use third-party tools (e.g., analytics providers) that receive anonymized 
+              technical information, such as browser type or device, to help us understand how 
+              users interact with the site.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Your Rights</h2>
             <p>
-              You have the right to access, correct, or delete your personal information. Please 
-              contact us if you wish to exercise these rights.
+              You can contact us if you wish to request information about data handling or deletion. 
+              Since we do not store identifiable personal data, there is usually nothing to delete.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Changes to This Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time. We will notify you of any changes 
-              by posting the new Privacy Policy on this page.
+              We may update this Privacy Policy occasionally. Updates will be published on this page.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Contact Us</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Contact</h2>
             <p>
-              If you have any questions about this Privacy Policy, please contact us through our 
-              website.
+              If you have any questions, please reach out through our website.
             </p>
           </section>
         </div>
