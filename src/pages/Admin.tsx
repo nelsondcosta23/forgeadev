@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings } from "lucide-react";
+import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { questions } from "@/components/quiz/questions";
 import {
   Select,
   SelectContent,
@@ -200,6 +201,58 @@ const Admin = () => {
     }
   };
 
+  const downloadQuestionsCSV = () => {
+    try {
+      // CSV Header
+      let csvContent = "ID,Pergunta,Descrição,Tipo,Condição,Opções/Respostas Possíveis\n";
+
+      // Process each question
+      questions.forEach((q) => {
+        const id = q.id;
+        const question = `"${q.question.replace(/"/g, '""')}"`;
+        const description = q.description ? `"${q.description.replace(/"/g, '""')}"` : "";
+        const type = q.type;
+        
+        // Build condition text
+        let condition = "";
+        if (q.condition) {
+          const condStr = q.condition.toString();
+          condition = `"${condStr.replace(/"/g, '""')}"`;
+        }
+
+        // Build options/answers text
+        let optionsText = "";
+        if (q.type === "single" && q.options) {
+          const opts = q.options.map(opt => {
+            const desc = opt.description ? ` (${opt.description})` : "";
+            return `${opt.label}${desc}`;
+          }).join(" | ");
+          optionsText = `"${opts}"`;
+        } else if (q.type === "number") {
+          optionsText = `"Número: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}"`;
+        }
+
+        csvContent += `${id},${question},${description},${type},${condition},${optionsText}\n`;
+      });
+
+      // Create download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "quiz_questions.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("CSV gerado com sucesso!");
+    } catch (error) {
+      console.error("Error generating CSV:", error);
+      toast.error("Erro ao gerar CSV");
+    }
+  };
+
   const filteredSessions = quizSessions.filter((session) => {
     const matchesSearch =
       session.session_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -308,6 +361,14 @@ const Admin = () => {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={downloadQuestionsCSV}
+                className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+              >
+                <FileText className="h-5 w-5" />
+              </Button>
             </div>
             <p className="text-muted-foreground">
               Gerencie e monitore o sistema Forgea
