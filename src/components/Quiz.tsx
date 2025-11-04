@@ -21,6 +21,7 @@ const Quiz = ({ onBack }: QuizProps) => {
   const [aiRecommendation, setAiRecommendation] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [isSessionReady, setIsSessionReady] = useState(false);
   const { toast } = useToast();
 
   // Create a quiz session when component mounts
@@ -58,6 +59,9 @@ const Quiz = ({ onBack }: QuizProps) => {
           description: "Unable to start quiz session.",
           variant: "destructive",
         });
+      } else {
+        // Session created successfully, ready to accept answers
+        setIsSessionReady(true);
       }
     };
 
@@ -104,6 +108,9 @@ const Quiz = ({ onBack }: QuizProps) => {
     setIsAnalyzing(true);
     setAnalysisError(null);
     
+    // Small backoff to ensure last insert is persisted
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
     try {
       // Get all questions that were answered
       const answeredQuestions = currentQuestions.filter(q => finalAnswers[q.id] !== undefined);
@@ -121,10 +128,14 @@ const Quiz = ({ onBack }: QuizProps) => {
         console.error('Error analyzing quiz:', error);
         
         // Check for specific error codes
-        if (error.message?.includes('429')) {
-          setAnalysisError('Rate limit exceeded. Please wait a few moments and try again.');
-        } else if (error.message?.includes('402')) {
-          setAnalysisError('Insufficient credits. Please contact support.');
+        if (error.message?.includes('402') || error.message?.toLowerCase().includes('credits')) {
+          setAnalysisError('Insufficient credits available. Please contact support to continue.');
+        } else if (error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit')) {
+          setAnalysisError('Too many requests. Please wait a few moments and try again.');
+        } else if (error.message?.toLowerCase().includes('timeout') || error.message?.toLowerCase().includes('abort')) {
+          setAnalysisError('AI service is taking too long to respond. Please try again.');
+        } else if (error.message?.toLowerCase().includes('parse') || error.message?.toLowerCase().includes('invalid')) {
+          setAnalysisError('AI service returned an invalid response. Please try again.');
         } else {
           setAnalysisError('Error analyzing your responses. Please try again.');
         }
@@ -237,6 +248,8 @@ const Quiz = ({ onBack }: QuizProps) => {
       setShowResults(false);
       setAiRecommendation("");
       setIsAnalyzing(false);
+      setIsSessionReady(false);
+      
       // Create new session for restart
       const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       setSessionId(newSessionId);
@@ -265,6 +278,9 @@ const Quiz = ({ onBack }: QuizProps) => {
 
       if (error) {
         console.error('Error creating new quiz session:', error);
+      } else {
+        // Session ready for new answers
+        setIsSessionReady(true);
       }
     }} />;
   }
@@ -299,9 +315,15 @@ const Quiz = ({ onBack }: QuizProps) => {
 
         {/* Question */}
         <div className="max-w-3xl mx-auto">
+          {!isSessionReady && (
+            <div className="text-center text-muted-foreground mb-4">
+              Initializing session...
+            </div>
+          )}
           <QuestionCard
             question={currentQuestion}
             onAnswer={handleAnswer}
+            disabled={!isSessionReady}
           />
         </div>
       </div>

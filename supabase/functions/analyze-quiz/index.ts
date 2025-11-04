@@ -31,7 +31,15 @@ serve(async (req) => {
       console.error('Error fetching prompt:', promptError);
     }
 
-    const customPrompt = promptData?.prompt_text || '';
+    let customPrompt = promptData?.prompt_text;
+    
+    // Sanitize and truncate prompt to prevent issues
+    if (customPrompt) {
+      customPrompt = customPrompt.replace(/[^\x20-\x7E\n\r\t]/g, '').substring(0, 2000);
+      console.log('Using custom prompt (sanitized, length:', customPrompt.length, ')');
+    } else {
+      console.log('Using default prompt');
+    }
 
     // Format questions and answers for AI
     let quizContent = "Análise do Quiz de PC:\n\n";
@@ -68,6 +76,8 @@ Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara
 
     // Helper function to call AI with retry logic
     async function callAIWithRetry(maxRetries = 3) {
+      let lastError: any = null;
+      
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           console.log(`AI call attempt ${attempt}/${maxRetries}`);
@@ -80,6 +90,7 @@ Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara
             headers: {
               'Authorization': `Bearer ${LOVABLE_API_KEY}`,
               'Content-Type': 'application/json',
+              'Accept': 'application/json',
             },
             body: JSON.stringify({
               model: 'google/gemini-2.5-flash',
@@ -87,7 +98,7 @@ Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: quizContent }
               ],
-              // No temperature parameter for Gemini 2.5
+              stream: false,
             }),
             signal: controller.signal,
           });
@@ -96,92 +107,164 @@ Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error(`Attempt ${attempt} - AI API error:`, response.status, errorText);
+            console.error(`API error ${response.status}:`, errorText);
             
             // Don't retry on 402 (no credits) or 401 (auth error)
             if (response.status === 402) {
-              return new Response(
-                JSON.stringify({ error: 'Insufficient credits. Please add credits to the workspace.', success: false }), 
-                { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-              );
+              throw new Error('CREDITS_EXHAUSTED');
             }
-            
             if (response.status === 401) {
-              throw new Error('Authentication error');
+              throw new Error('AUTH_ERROR');
             }
             
             // Retry on 429 (rate limit) or 5xx errors
             if (attempt < maxRetries && (response.status === 429 || response.status >= 500)) {
-              const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-              console.log(`Retrying in ${delay}ms...`);
+              const delay = Math.pow(2, attempt) * 1000;
+              console.log(`Rate limit or server error. Retrying in ${delay}ms...`);
               await new Promise(resolve => setTimeout(resolve, delay));
               continue;
             }
             
-            return new Response(
-              JSON.stringify({ error: 'The AI service is temporarily unavailable. Please try again.', success: false }), 
-              { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
+            throw new Error(`API_ERROR_${response.status}`);
           }
 
-          const responseText = await response.text();
-          console.log('AI response received, length:', responseText.length);
-
-          if (!responseText || responseText.trim().length === 0) {
-            throw new Error('Empty response');
-          }
-
-          // Try to parse JSON
-          let aiResponse;
+          const contentType = response.headers.get('content-type') || '';
+          console.log('Response content-type:', contentType);
+          
+          let aiContent: string;
+          
+          // Try parsing as JSON first
           try {
-            aiResponse = JSON.parse(responseText);
-          } catch (parseError) {
-            console.error('Failed to parse AI response.');
-            console.error('Response length:', responseText.length);
-            console.error('First 500 chars:', responseText.substring(0, 500));
-            console.error('Last 500 chars:', responseText.substring(responseText.length - 500));
-            console.error('Parse error:', parseError);
-            throw new Error('Invalid JSON response');
+            const aiResponse = await response.json();
+            console.log('Parsed as JSON successfully');
+            
+            if (!aiResponse.choices?.[0]?.message?.content) {
+              console.error('Invalid JSON structure:', JSON.stringify(aiResponse).substring(0, 300));
+              throw new Error('Invalid response structure');
+            }
+            
+            aiContent = aiResponse.choices[0].message.content;
+          } catch (jsonError) {
+            console.log('JSON parse failed, trying SSE format...');
+            
+            // Fallback: Handle SSE format (text/event-stream)
+            const responseText = await response.text();
+            
+            if (contentType.includes('text/event-stream')) {
+              console.log('Detected SSE format, parsing manually...');
+              const lines = responseText.split('\n');
+              let reconstructedContent = '';
+              
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.substring(6).trim();
+                  if (jsonStr === '[DONE]') break;
+                  
+                  try {
+                    const chunk = JSON.parse(jsonStr);
+                    const delta = chunk.choices?.[0]?.delta?.content || chunk.choices?.[0]?.message?.content;
+                    if (delta) {
+                      reconstructedContent += delta;
+                    }
+                  } catch (chunkError) {
+                    // Skip malformed chunks
+                    continue;
+                  }
+                }
+              }
+              
+              if (reconstructedContent.length > 100) {
+                console.log('SSE parsing successful, content length:', reconstructedContent.length);
+                aiContent = reconstructedContent;
+              } else {
+                console.error('SSE parsing failed, content too short:', reconstructedContent.length);
+                throw new Error('SSE_PARSE_FAILED');
+              }
+            } else {
+              console.error('Unexpected content type and JSON parse failed');
+              console.error('Response preview:', responseText.substring(0, 500));
+              throw new Error('PARSE_FAILED');
+            }
           }
           
-          // Validate structure
-          if (!aiResponse.choices?.[0]?.message?.content) {
-            console.error('AI response missing expected structure:', aiResponse);
-            throw new Error('Invalid response structure');
+          // Validate content
+          if (!aiContent || aiContent.trim().length < 100) {
+            console.error('AI content too short:', aiContent?.length || 0);
+            throw new Error('CONTENT_TOO_SHORT');
           }
-
-          return aiResponse.choices[0].message.content;
+          
+          // Truncate if too long (safety)
+          if (aiContent.length > 50000) {
+            console.log('Truncating content from', aiContent.length, 'to 50000 chars');
+            aiContent = aiContent.substring(0, 50000);
+          }
+          
+          console.log('Final content length:', aiContent.length);
+          return aiContent;
 
         } catch (error: any) {
+          lastError = error;
           console.error(`Attempt ${attempt} failed:`, error.message);
           
-          // Handle timeout
-          if (error.name === 'AbortError') {
-            if (attempt === maxRetries) {
-              return new Response(
-                JSON.stringify({ error: 'AI analysis timed out. Please try again.', success: false }), 
-                { status: 408, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-              );
-            }
-            const delay = Math.pow(2, attempt) * 1000;
-            console.log(`Timeout - retrying in ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue;
-          }
-          
-          // Last attempt, throw error
-          if (attempt === maxRetries) {
+          // Don't retry on specific errors
+          if (error.message === 'CREDITS_EXHAUSTED' || error.message === 'AUTH_ERROR') {
             throw error;
           }
           
-          // Wait before retry (exponential backoff)
+          // Last attempt with main model failed
+          if (attempt === maxRetries) {
+            break; // Will try fallback model
+          }
+          
+          // Wait before retry
           const delay = Math.pow(2, attempt) * 1000;
           console.log(`Retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
       
-      throw new Error('All retry attempts failed');
+      // Fallback: Try with flash-lite model (1 attempt)
+      console.log('All attempts with gemini-2.5-flash failed. Trying fallback model: gemini-2.5-flash-lite');
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash-lite',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: quizContent }
+            ],
+            stream: false,
+          }),
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const aiResponse = await response.json();
+          const content = aiResponse.choices?.[0]?.message?.content;
+          
+          if (content && content.length > 100) {
+            console.log('Fallback model succeeded! Content length:', content.length);
+            return content;
+          }
+        }
+      } catch (fallbackError) {
+        console.error('Fallback model also failed:', fallbackError);
+      }
+      
+      // All attempts failed
+      throw lastError || new Error('All retry attempts failed');
     }
 
     console.log('Calling Lovable AI with quiz data...');
@@ -227,15 +310,36 @@ Seja específico com modelos reais de 2024-2025. Use formatação Markdown clara
 
   } catch (error) {
     console.error('Error in analyze-quiz function:', error);
+    
+    // Return specific error codes
+    let status = 500;
+    let errorMessage = 'Unknown error occurred';
+    
+    if (error instanceof Error) {
+      if (error.message === 'CREDITS_EXHAUSTED') {
+        status = 402;
+        errorMessage = 'Insufficient credits. Please add more credits to continue.';
+      } else if (error.message === 'AUTH_ERROR') {
+        status = 401;
+        errorMessage = 'Authentication error. Please contact support.';
+      } else if (error.message.includes('429')) {
+        status = 429;
+        errorMessage = 'Rate limit exceeded. Please wait a few moments and try again.';
+      } else if (error.message === 'PARSE_FAILED' || error.message === 'SSE_PARSE_FAILED') {
+        errorMessage = 'AI service returned an invalid response. Please try again.';
+      } else if (error.message === 'CONTENT_TOO_SHORT') {
+        errorMessage = 'AI generated incomplete response. Please try again.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
+        error: errorMessage, 
         success: false 
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

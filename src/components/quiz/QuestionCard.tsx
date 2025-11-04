@@ -9,9 +9,10 @@ import { Check } from "lucide-react";
 interface QuestionCardProps {
   question: Question;
   onAnswer: (answer: string | number) => void;
+  disabled?: boolean;
 }
 
-const QuestionCard = ({ question, onAnswer }: QuestionCardProps) => {
+const QuestionCard = ({ question, onAnswer, disabled = false }: QuestionCardProps) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [numberValue, setNumberValue] = useState<number>(question.min || 0);
 
@@ -45,7 +46,10 @@ const QuestionCard = ({ question, onAnswer }: QuestionCardProps) => {
               <button
                 key={option.value}
                 onClick={() => handleOptionSelect(option.value)}
+                disabled={disabled}
                 className={`group relative p-6 rounded-lg border-2 text-left transition-all duration-300 ${
+                  disabled ? "opacity-50 cursor-not-allowed" : ""
+                } ${
                   selectedOption === option.value
                     ? "border-primary bg-primary/10 scale-[0.98]"
                     : "border-border hover:border-primary/50 hover:bg-card/80"
@@ -104,6 +108,7 @@ const QuestionCard = ({ question, onAnswer }: QuestionCardProps) => {
 
             <Button
               onClick={handleNumberSubmit}
+              disabled={disabled}
               className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
               size="lg"
             >
