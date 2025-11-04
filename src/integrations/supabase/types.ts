@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          prompt_text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prompt_text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prompt_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quiz_responses: {
         Row: {
           answered_at: string
