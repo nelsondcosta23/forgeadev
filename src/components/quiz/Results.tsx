@@ -361,14 +361,14 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
               
               <div className="relative space-y-6">
                 {/* Build Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-border">
-                  <div>
-                    <h2 className="text-2xl font-bold mb-2">{build.name}</h2>
-                    <p className="text-muted-foreground">{build.description}</p>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 pb-6 border-b border-border">
+                  <div className="flex-1">
+                    <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">{build.name}</h2>
+                    <p className="text-sm md:text-base text-muted-foreground">{build.description}</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-primary">${build.price}</div>
-                    <div className="text-sm text-muted-foreground">Estimate</div>
+                  <div className="md:text-right">
+                    <div className="text-2xl md:text-3xl font-bold text-primary">${build.price}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Estimate</div>
                   </div>
                 </div>
 
