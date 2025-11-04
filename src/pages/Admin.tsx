@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon } from "lucide-react";
+import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,6 +28,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +67,10 @@ const Admin = () => {
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -120,15 +134,20 @@ const Admin = () => {
     setIsAuthenticated(false);
   };
 
-  const handleDeleteQuiz = async (sessionId: string) => {
-    if (!confirm("Tem certeza que deseja deletar este quiz?")) return;
+  const openDeleteDialog = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteQuiz = async () => {
+    if (!sessionToDelete) return;
 
     try {
       // Delete responses first (foreign key constraint)
       const { error: responsesError } = await supabase
         .from("quiz_responses")
         .delete()
-        .eq("session_id", sessionId);
+        .eq("session_id", sessionToDelete);
 
       if (responsesError) throw responsesError;
 
@@ -136,11 +155,13 @@ const Admin = () => {
       const { error: sessionError } = await supabase
         .from("quiz_sessions")
         .delete()
-        .eq("session_id", sessionId);
+        .eq("session_id", sessionToDelete);
 
       if (sessionError) throw sessionError;
 
       toast.success("Quiz deletado com sucesso!");
+      setDeleteDialogOpen(false);
+      setSessionToDelete(null);
       fetchQuizData();
     } catch (error) {
       console.error("Error deleting quiz:", error);
@@ -162,6 +183,17 @@ const Admin = () => {
     
     return matchesSearch && matchesCountry && matchesDateFrom && matchesDateTo;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredSessions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSessions = filteredSessions.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCountry, dateFrom, dateTo]);
 
   if (!isAuthenticated) {
     return <AdminLogin onLogin={handleLogin} />;
@@ -401,7 +433,7 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[180px]">Session ID</TableHead>
+                      <TableHead className="w-[500px]">Session ID</TableHead>
                       <TableHead>País</TableHead>
                       <TableHead>Iniciado</TableHead>
                       <TableHead>Completo</TableHead>
@@ -422,10 +454,10 @@ const Admin = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredSessions.map((session) => (
+                      paginatedSessions.map((session) => (
                         <TableRow key={session.id}>
                           <TableCell className="font-mono text-sm">
-                            {session.session_id.substring(0, 12)}...
+                            {session.session_id}
                           </TableCell>
                           <TableCell>
                             {session.country_name || "Desconhecido"}
@@ -435,9 +467,9 @@ const Admin = () => {
                           </TableCell>
                           <TableCell>
                             {session.completed_at ? (
-                              <span className="text-green-600">✓</span>
+                              <Check className="w-5 h-5 text-green-600" />
                             ) : (
-                              <span className="text-muted-foreground">-</span>
+                              <X className="w-5 h-5 text-red-600" />
                             )}
                           </TableCell>
                           <TableCell className="text-right">
@@ -454,7 +486,7 @@ const Admin = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleDeleteQuiz(session.session_id)}
+                                onClick={() => openDeleteDialog(session.session_id)}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -466,10 +498,72 @@ const Admin = () => {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Mostrando {startIndex + 1} até {Math.min(endIndex, filteredSessions.length)} de {filteredSessions.length} resultados
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="w-10"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Próximo
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso irá deletar permanentemente o quiz
+              e todas as respostas associadas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteQuiz}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
