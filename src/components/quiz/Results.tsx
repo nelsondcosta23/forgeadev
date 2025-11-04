@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QuizAnswers } from "./questions";
-import { ArrowLeft, Share2, Download, Cpu, MemoryStick, HardDrive, Zap, Box, Fan } from "lucide-react";
+import { ArrowLeft, Share2, Download, Cpu, MemoryStick, HardDrive, Zap, Box, Fan, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { ShareDialog } from "./ShareDialog";
@@ -129,9 +129,21 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
   const builds = generateBuilds(answers);
   const shareUrl = `${window.location.origin}/build/${sessionId}`;
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleShare = () => {
     setShareDialogOpen(true);
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      toast.success("Link copiado para a área de transferência!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Erro ao copiar link");
+    }
   };
 
   const handleExport = () => {
@@ -316,6 +328,19 @@ const Results = ({ answers, onRestart, sessionId }: ResultsProps) => {
 
           {/* Action Buttons */}
           <div className="flex justify-center gap-4">
+            <Button variant="outline" onClick={handleCopyLink} className="gap-2">
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Link Copiado!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  Copiar Link
+                </>
+              )}
+            </Button>
             <Button variant="outline" onClick={handleShare} className="gap-2">
               <Share2 className="w-4 h-4" />
               Share
