@@ -117,7 +117,7 @@ Be specific with model numbers when possible and explain why each component fits
         try {
           console.log(`Attempt ${attempt}/${maxRetries} with model: ${model}`);
           
-          const response = await fetch('https://api.lovable.app/v1/chat/completions', {
+          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${lovableApiKey}`,
