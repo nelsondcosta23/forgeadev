@@ -78,7 +78,7 @@ serve(async (req) => {
     const sanitizedPrompt = customPrompt
       .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
       .trim()
-      .substring(0, 2000); // Max 2000 chars
+      .substring(0, 4000); // Max 4000 chars
     
     console.log('Custom prompt length:', sanitizedPrompt.length);
 
@@ -89,7 +89,28 @@ serve(async (req) => {
       options: q.options
     }));
 
-    const systemPrompt = sanitizedPrompt || 
+    // Interpolate placeholders in prompt
+    const fillPromptPlaceholders = (prompt: string, answers: any): string => {
+      const placeholderMap: { [key: string]: string } = {
+        use: String(answers.purpose || 'N/A'),
+        genres_or_workloads: answers.purpose === 'gaming' ? String(answers.games || 'N/A') : String(answers.purpose || 'N/A'),
+        resolution: String(answers.resolution || 'N/A'),
+        fps_or_metric_target: String(answers.fps || 'N/A'),
+        streaming: String(answers.streaming || 'no'),
+        budget_usd: String(answers.budget || 'N/A'),
+        form_factor: String(answers.casePreference || 'N/A'),
+        peripherals: String(answers.peripherals || 'none'),
+        upgrades: String(answers.upgradability || 'no'),
+        upgrade_horizon: '12–24 meses', // Default, não existe no quiz
+      };
+      
+      return prompt.replace(/\{\{(\w+)\}\}/g, (_, key) => placeholderMap[key] || `{{${key}}}`);
+    };
+
+    const filledPrompt = sanitizedPrompt ? fillPromptPlaceholders(sanitizedPrompt, answers) : '';
+    console.log('Prompt filled with answers');
+
+    const systemPrompt = filledPrompt ||
       `You are an expert PC building advisor. Analyze the user's quiz responses and provide detailed, personalized PC component recommendations. Consider their budget, intended use (gaming, work, content creation), and preferences.
 
 Provide recommendations in a clear, structured format with:
@@ -117,7 +138,12 @@ Be specific with model numbers when possible and explain why each component fits
         try {
           console.log(`Attempt ${attempt}/${maxRetries} with model: ${model}`);
           
+          // Add 45-second timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 45000);
+          
           const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            signal: controller.signal,
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${lovableApiKey}`,
@@ -133,6 +159,8 @@ Be specific with model numbers when possible and explain why each component fits
               stream: false,
             }),
           });
+          
+          clearTimeout(timeoutId);
 
           const contentType = response.headers.get('content-type') || '';
           console.log('Response content-type:', contentType, 'status:', response.status);
@@ -226,6 +254,11 @@ Be specific with model numbers when possible and explain why each component fits
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           console.error(`Attempt ${attempt} failed:`, errorMessage);
           
+          // Handle timeout
+          if (errorMessage.includes('abort')) {
+            throw new Error('TIMEOUT');
+          }
+          
           // Don't retry on specific errors
           if (errorMessage === 'CREDITS_EXHAUSTED' || 
               errorMessage === 'AUTH_ERROR' ||
@@ -256,17 +289,23 @@ Be specific with model numbers when possible and explain why each component fits
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Primary model failed:', errorMessage);
       
-      // Fallback to lite model on certain errors
-      if (errorMessage === 'SSE_PARSE_FAILED' || 
+      // Fallback strategy: try flash first, then flash-lite
+      if (errorMessage === 'TIMEOUT' ||
+          errorMessage === 'SSE_PARSE_FAILED' || 
           errorMessage === 'PARSE_FAILED' ||
           errorMessage === 'CONTENT_TOO_SHORT') {
-        console.log('Attempting fallback to gemini-2.5-flash-lite...');
+        console.log('Attempting fallback to gemini-2.5-flash...');
         try {
-          recommendation = await callAIWithRetry('google/gemini-2.5-flash-lite', 1);
-        } catch (fallbackError) {
-          const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
-          console.error('Fallback model also failed:', fallbackMessage);
-          throw error; // Throw original error
+          recommendation = await callAIWithRetry('google/gemini-2.5-flash', 2);
+        } catch (flashError) {
+          console.log('Flash model failed, trying flash-lite...');
+          try {
+            recommendation = await callAIWithRetry('google/gemini-2.5-flash-lite', 1);
+          } catch (liteError) {
+            const liteMessage = liteError instanceof Error ? liteError.message : 'Unknown error';
+            console.error('All fallback models failed:', liteMessage);
+            throw error; // Throw original error
+          }
         }
       } else {
         throw error;
@@ -289,6 +328,20 @@ Be specific with model numbers when possible and explain why each component fits
         JSON.stringify({ error: 'Failed to save recommendation' }),
         { status: 500, headers: corsHeaders }
       );
+    }
+
+    // Mark session as completed
+    console.log('Marking session as completed:', sessionId);
+    const { error: updateError } = await supabase
+      .from('quiz_sessions')
+      .update({
+        completed_at: new Date().toISOString(),
+      })
+      .eq('session_id', sessionId);
+
+    if (updateError) {
+      console.error('Error marking session as completed:', updateError);
+      // Don't fail the request, recommendation was saved successfully
     }
 
     return new Response(

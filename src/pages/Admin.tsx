@@ -411,7 +411,19 @@ const Admin = () => {
                       Write your prompt with markdown formatting
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="flex-1 overflow-auto">
+                  <div className="space-y-2 flex-1 overflow-auto">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        Use placeholders like {'{{'} budget_usd {'}'} to insert quiz answers
+                      </p>
+                      <p className={cn(
+                        "text-xs font-mono",
+                        promptText.length > 4000 ? "text-destructive font-semibold" : "text-muted-foreground"
+                      )}>
+                        {promptText.length} / 4000
+                        {promptText.length > 4000 && " (will be truncated)"}
+                      </p>
+                    </div>
                     <Textarea
                       value={promptText}
                       onChange={(e) => setPromptText(e.target.value)}

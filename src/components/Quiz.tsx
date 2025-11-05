@@ -163,16 +163,43 @@ const Quiz = ({ onBack }: QuizProps) => {
 
       if (error) {
         console.error('Error analyzing quiz:', error);
+        console.error('Error details:', { message: error.message, status: (error as any)?.status });
+        
+        // Handle 409: Session already analyzed
+        if ((error as any)?.status === 409 || error.message?.includes('409') || error.message?.toLowerCase().includes('already analyzed')) {
+          console.log('Session already analyzed, fetching existing recommendation...');
+          try {
+            const { data: rec, error: recError } = await supabase
+              .from('ai_recommendations')
+              .select('recommendation_text')
+              .eq('session_id', sessionId)
+              .maybeSingle();
+            
+            if (recError) {
+              console.error('Error fetching existing recommendation:', recError);
+            } else if (rec?.recommendation_text) {
+              console.log('Found existing recommendation, displaying results');
+              setAiRecommendation(rec.recommendation_text);
+              setShowResults(true);
+              setIsAnalyzing(false);
+              return;
+            }
+          } catch (fetchError) {
+            console.error('Failed to fetch existing recommendation:', fetchError);
+          }
+        }
         
         // Check for specific error codes
-        if (error.message?.includes('402') || error.message?.toLowerCase().includes('credits')) {
-          setAnalysisError('Insufficient credits available. Please contact support to continue.');
-        } else if (error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit')) {
+        if ((error as any)?.status === 402 || error.message?.includes('402') || error.message?.toLowerCase().includes('credits')) {
+          setAnalysisError('Insufficient AI credits. Please contact support to continue.');
+        } else if ((error as any)?.status === 429 || error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit')) {
           setAnalysisError('Too many requests. Please wait a few moments and try again.');
         } else if (error.message?.toLowerCase().includes('timeout') || error.message?.toLowerCase().includes('abort')) {
-          setAnalysisError('AI service is taking too long to respond. Please try again.');
+          setAnalysisError('AI service timeout. Please try again.');
         } else if (error.message?.toLowerCase().includes('parse') || error.message?.toLowerCase().includes('invalid')) {
-          setAnalysisError('AI service returned an invalid response. Please try again.');
+          setAnalysisError('Failed to parse AI response. Please try again.');
+        } else if (error.message?.toLowerCase().includes('network') || error.message?.toLowerCase().includes('connection')) {
+          setAnalysisError('Network connection lost. Please check your internet and try again.');
         } else {
           setAnalysisError('Error analyzing your responses. Please try again.');
         }
@@ -193,20 +220,9 @@ const Quiz = ({ onBack }: QuizProps) => {
       return;
     }
 
-    // Calculate total score
-    const totalScore = Object.keys(finalAnswers).length;
-    
-    // Update session as completed
-    if (sessionId) {
-      await supabase
-        .from('quiz_sessions')
-        .update({
-          completed_at: new Date().toISOString(),
-          total_score: totalScore,
-        })
-        .eq('session_id', sessionId);
-    }
-
+    // Edge function will mark session as completed
+    // Just show results
+    console.log('Analysis successful, showing results');
     setIsAnalyzing(false);
     setShowResults(true);
   };
