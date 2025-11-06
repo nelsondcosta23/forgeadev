@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { format } from "date-fns";
 
 interface RoadmapItem {
   id: string;
@@ -225,6 +226,9 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold px-2 py-1 rounded border">
                           {item.priority}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Created: {format(new Date(item.created_at), "MMM dd, yyyy HH:mm")}
                         </span>
                       </div>
                       <p className="text-sm">{item.title}</p>
