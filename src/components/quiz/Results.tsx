@@ -142,10 +142,10 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Link copiado para a área de transferência!");
+      toast.success("Link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error("Erro ao copiar link");
+      toast.error("Error copying link");
     }
   };
 
@@ -192,7 +192,7 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      doc.text("🤖 Recomendação Personalizada da AI", 20, yPos + 7);
+      doc.text("🤖 AI Personalized Recommendation", 20, yPos + 7);
       
       yPos += 20;
     }
@@ -376,7 +376,7 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
                 </div>
                 <div className="flex-1 space-y-4">
                   <h3 className="text-xl font-bold flex items-center gap-2 text-white">
-                    🤖 Recomendação Personalizada da AI
+                    🤖 AI Personalized Recommendation
                   </h3>
                   <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
