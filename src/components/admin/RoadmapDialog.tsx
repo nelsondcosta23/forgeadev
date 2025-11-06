@@ -9,6 +9,16 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface RoadmapItem {
   id: string;
@@ -27,6 +37,8 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     priority: "Medium" as "High" | "Medium" | "Low",
     title: "",
@@ -93,13 +105,18 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
     fetchRoadmap();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
+  const openDeleteDialog = (id: string) => {
+    setItemToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
 
     const { error } = await supabase
       .from("admin_roadmap")
       .delete()
-      .eq("id", id);
+      .eq("id", itemToDelete);
 
     if (error) {
       toast.error("Error deleting item");
@@ -108,6 +125,8 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
     }
 
     toast.success("Item deleted successfully");
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
     fetchRoadmap();
   };
 
@@ -245,7 +264,7 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => openDeleteDialog(item.id)}
                         className="h-8 w-8 text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -258,6 +277,27 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
           </div>
         </div>
       </DialogContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem a certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isto irá apagar permanentemente este item do roadmap.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
