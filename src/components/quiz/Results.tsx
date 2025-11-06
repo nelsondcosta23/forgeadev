@@ -186,41 +186,50 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
 
     // AI Recommendation section (if available)
     if (aiRecommendation) {
-      doc.setFillColor(255, 120, 50);
+      doc.setFillColor(240, 240, 240);
       doc.rect(15, yPos, pageWidth - 30, 10, "F");
       
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(11);
+      doc.setTextColor(50, 50, 50);
+      doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text("🤖 AI Personalized Recommendation", 20, yPos + 7);
+      doc.text("AI Personalized Recommendation", 20, yPos + 7);
       
       yPos += 16;
 
-      // Render AI recommendation content (plain text from markdown)
-      const mdToPlain = (md: string) =>
-        md
-          .replace(/\r\n/g, "\n")
-          .replace(/\n{3,}/g, "\n\n")
-          .replace(/!\[.*?\]\(.*?\)/g, "") // remove images
-          .replace(/\[(.*?)\]\(.*?\)/g, "$1") // links -> text
-          .replace(/[#>*`]+/g, "") // markdown control chars
-          .replace(/\*\*(.*?)\*\*/g, "$1")
-          .replace(/\*(.*?)\*/g, "$1")
-          .trim();
+      // Simple AI recommendation text (clean formatting for PDF)
+      const lines = aiRecommendation
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .map(line => {
+          // Remove markdown symbols
+          return line
+            .replace(/^#+\s+/, "") // Remove headers
+            .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold
+            .replace(/\*(.*?)\*/g, "$1") // Remove italic
+            .replace(/`(.*?)`/g, "$1") // Remove code
+            .replace(/^\s*[-*+]\s+/, "• ") // Convert list markers to bullets
+            .replace(/^\s*\d+\.\s+/, "• ") // Convert numbered lists to bullets
+            .replace(/^>\s+/, "") // Remove blockquote markers
+            .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Links to text
+            .trim();
+        })
+        .filter(line => line.length > 0); // Remove empty lines
 
-      const recommendationText = mdToPlain(aiRecommendation);
       doc.setTextColor(60, 60, 60);
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      const recLines = doc.splitTextToSize(recommendationText, pageWidth - 40);
 
-      recLines.forEach((line: string) => {
-        if (yPos > pageHeight - 20) {
-          doc.addPage();
-          yPos = 20;
-        }
-        doc.text(line, 20, yPos);
-        yPos += 5;
+      lines.forEach(line => {
+        const wrappedLines = doc.splitTextToSize(line, pageWidth - 40);
+        wrappedLines.forEach((wrappedLine: string) => {
+          if (yPos > pageHeight - 20) {
+            doc.addPage();
+            yPos = 20;
+          }
+          doc.text(wrappedLine, 20, yPos);
+          yPos += 5;
+        });
+        yPos += 3; // Space between paragraphs
       });
 
       yPos += 10;
@@ -335,156 +344,6 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
       doc.text("www.forgea.com", pageWidth / 2, pageHeight - 5, { align: "center" });
     });
 
-    // AI Recommendation - formatted page at the end
-    if (aiRecommendation) {
-      doc.addPage();
-      yPos = 20;
-
-      // Section header bar
-      doc.setFillColor(255, 120, 50);
-      doc.rect(15, yPos, pageWidth - 30, 12, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text("🤖 AI Personalized Recommendation", 20, yPos + 8);
-
-      yPos += 18;
-
-      const marginX = 20;
-      const maxWidth = pageWidth - marginX * 2;
-      let inCodeBlock = false;
-
-      const lines = aiRecommendation.replace(/\r\n/g, "\n").split("\n");
-
-      const ensureSpace = (needed = 10) => {
-        if (yPos > pageHeight - 20) {
-          doc.addPage();
-          yPos = 20;
-        }
-      };
-
-      lines.forEach((raw) => {
-        let line = raw;
-
-        // Toggle code block
-        if (line.trim().startsWith("```") ) {
-          inCodeBlock = !inCodeBlock;
-          return;
-        }
-
-        if (inCodeBlock) {
-          const codeText = line.replace(/\t/g, "  ");
-          const wrapped = doc.splitTextToSize(codeText, maxWidth);
-          wrapped.forEach((w) => {
-            ensureSpace(9);
-            doc.setFillColor(245, 245, 245);
-            doc.rect(marginX - 2, yPos - 5, maxWidth + 4, 8, "F");
-            doc.setTextColor(60, 60, 60);
-            doc.setFont("courier", "normal");
-            doc.setFontSize(9);
-            doc.text(w, marginX, yPos);
-            yPos += 9;
-          });
-          yPos += 2;
-          return;
-        }
-
-        // Empty line spacing
-        if (line.trim() === "") {
-          yPos += 4;
-          return;
-        }
-
-        // Headings: #, ##, ###
-        const h = line.match(/^(#{1,3})\s+(.*)$/);
-        if (h) {
-          ensureSpace(12);
-          const level = h[1].length;
-          const text = h[2].trim();
-          const size = level === 1 ? 16 : level === 2 ? 14 : 12;
-          doc.setTextColor(50, 50, 50);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(size);
-          doc.text(text, marginX, yPos);
-          yPos += 10 + (3 - level);
-          return;
-        }
-
-        // Blockquote: > text
-        if (line.trim().startsWith(">")) {
-          ensureSpace(10);
-          const quote = line.replace(/^>\s?/, "").trim();
-          const qLines = doc.splitTextToSize(quote, maxWidth - 4);
-          doc.setDrawColor(200, 200, 200);
-          doc.setFillColor(240, 240, 240);
-          doc.rect(marginX - 3, yPos - 4, 2, qLines.length * 6 + 6, "F");
-          doc.setTextColor(80, 80, 80);
-          doc.setFont("helvetica", "italic");
-          doc.setFontSize(10);
-          qLines.forEach((ql) => {
-            ensureSpace(6);
-            doc.text(ql, marginX, yPos);
-            yPos += 6;
-          });
-          yPos += 4;
-          return;
-        }
-
-        // Unordered list: -, *, +
-        if (/^\s*([-*+])\s+/.test(line)) {
-          const item = line.replace(/^\s*([-*+])\s+/, "");
-          const wrapped = doc.splitTextToSize(item, maxWidth - 6);
-          wrapped.forEach((w, i) => {
-            ensureSpace(6);
-            doc.setTextColor(60, 60, 60);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            if (i === 0) {
-              doc.text("•", marginX, yPos);
-              doc.text(w, marginX + 6, yPos);
-            } else {
-              doc.text(w, marginX + 6, yPos);
-            }
-            yPos += 6;
-          });
-          return;
-        }
-
-        // Ordered list: 1. text
-        const ol = line.match(/^\s*(\d+)\.\s+(.*)$/);
-        if (ol) {
-          const num = ol[1];
-          const text = ol[2];
-          const wrapped = doc.splitTextToSize(text, maxWidth - 10 - num.length * 3);
-          wrapped.forEach((w, i) => {
-            ensureSpace(6);
-            doc.setTextColor(60, 60, 60);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            if (i === 0) {
-              doc.text(num + ".", marginX, yPos);
-              doc.text(w, marginX + 10, yPos);
-            } else {
-              doc.text(w, marginX + 10, yPos);
-            }
-            yPos += 6;
-          });
-          return;
-        }
-
-        // Paragraph
-        const pLines = doc.splitTextToSize(line.trim(), maxWidth);
-        doc.setTextColor(60, 60, 60);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        pLines.forEach((pl) => {
-          ensureSpace(6);
-          doc.text(pl, marginX, yPos);
-          yPos += 6;
-        });
-        yPos += 2;
-      });
-    }
 
     // Save the PDF
     doc.save(`Forgea-PC-Builds-${new Date().toISOString().split('T')[0]}.pdf`);
