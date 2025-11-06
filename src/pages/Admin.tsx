@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText, Map, Download } from "lucide-react";
+import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText, Map } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RoadmapDialog } from "@/components/admin/RoadmapDialog";
-import * as XLSX from "xlsx";
+
 import { Input } from "@/components/ui/input";
 import { questions } from "@/components/quiz/questions";
 import {
@@ -474,49 +474,6 @@ const Admin = () => {
                 title="Roadmap"
               >
                 <Map className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={async () => {
-                  try {
-                    const { data, error } = await supabase
-                      .from("quiz_sessions")
-                      .select(`
-                        *,
-                        quiz_responses(*)
-                      `)
-                      .order("started_at", { ascending: false });
-
-                    if (error) throw error;
-
-                    // Format data for Excel
-                    const excelData = data?.map((session: any) => ({
-                      "Session ID": session.session_id,
-                      "Started At": new Date(session.started_at).toLocaleString(),
-                      "Completed At": session.completed_at ? new Date(session.completed_at).toLocaleString() : "Not completed",
-                      "Country": session.country_name || "Unknown",
-                      "Country Code": session.country_code || "N/A",
-                      "Total Responses": session.quiz_responses?.length || 0,
-                    })) || [];
-
-                    // Create workbook
-                    const ws = XLSX.utils.json_to_sheet(excelData);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Quiz Sessions");
-
-                    // Download
-                    XLSX.writeFile(wb, `forgea-quiz-sessions-${new Date().toISOString().split("T")[0]}.xlsx`);
-                    toast.success("Excel exported successfully!");
-                  } catch (error) {
-                    console.error("Error exporting Excel:", error);
-                    toast.error("Error exporting Excel");
-                  }
-                }}
-                className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
-                title="Export Excel"
-              >
-                <Download className="h-5 w-5" />
               </Button>
             </div>
             <p className="text-muted-foreground">
