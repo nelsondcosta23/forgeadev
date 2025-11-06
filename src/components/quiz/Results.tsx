@@ -194,7 +194,36 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
       doc.setFont("helvetica", "bold");
       doc.text("🤖 AI Personalized Recommendation", 20, yPos + 7);
       
-      yPos += 20;
+      yPos += 16;
+
+      // Render AI recommendation content (plain text from markdown)
+      const mdToPlain = (md: string) =>
+        md
+          .replace(/\r\n/g, "\n")
+          .replace(/\n{3,}/g, "\n\n")
+          .replace(/!\[.*?\]\(.*?\)/g, "") // remove images
+          .replace(/\[(.*?)\]\(.*?\)/g, "$1") // links -> text
+          .replace(/[#>*`]+/g, "") // markdown control chars
+          .replace(/\*\*(.*?)\*\*/g, "$1")
+          .replace(/\*(.*?)\*/g, "$1")
+          .trim();
+
+      const recommendationText = mdToPlain(aiRecommendation);
+      doc.setTextColor(60, 60, 60);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const recLines = doc.splitTextToSize(recommendationText, pageWidth - 40);
+
+      recLines.forEach((line: string) => {
+        if (yPos > pageHeight - 20) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.text(line, 20, yPos);
+        yPos += 5;
+      });
+
+      yPos += 10;
     }
 
     // Build details
