@@ -196,40 +196,136 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
       
       yPos += 16;
 
-      // Simple AI recommendation text (clean formatting for PDF)
-      const lines = aiRecommendation
-        .replace(/\r\n/g, "\n")
-        .split("\n")
-        .map(line => {
-          // Remove markdown symbols
-          return line
-            .replace(/^#+\s+/, "") // Remove headers
-            .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold
-            .replace(/\*(.*?)\*/g, "$1") // Remove italic
-            .replace(/`(.*?)`/g, "$1") // Remove code
-            .replace(/^\s*[-*+]\s+/, "• ") // Convert list markers to bullets
-            .replace(/^\s*\d+\.\s+/, "• ") // Convert numbered lists to bullets
-            .replace(/^>\s+/, "") // Remove blockquote markers
-            .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Links to text
-            .trim();
-        })
-        .filter(line => line.length > 0); // Remove empty lines
+      // Process AI recommendation - handle tables specially
+      const recLines = aiRecommendation.replace(/\r\n/g, "\n").split("\n");
+      let inTable = false;
+      let tableHeaders: string[] = [];
+      let isHeaderSeparator = false;
 
-      doc.setTextColor(60, 60, 60);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
+      recLines.forEach((line) => {
+        const trimmed = line.trim();
+        
+        // Skip empty lines
+        if (!trimmed) {
+          if (!inTable) yPos += 3;
+          return;
+        }
 
-      lines.forEach(line => {
-        const wrappedLines = doc.splitTextToSize(line, pageWidth - 40);
-        wrappedLines.forEach((wrappedLine: string) => {
-          if (yPos > pageHeight - 20) {
-            doc.addPage();
-            yPos = 20;
+        // Detect table lines (contain |)
+        if (trimmed.includes("|")) {
+          const cells = trimmed
+            .split("|")
+            .map(c => c.trim())
+            .filter(c => c.length > 0);
+
+          // Check if it's a separator line (---)
+          if (cells.every(c => /^[-:]+$/.test(c))) {
+            isHeaderSeparator = true;
+            return;
           }
-          doc.text(wrappedLine, 20, yPos);
-          yPos += 5;
-        });
-        yPos += 3; // Space between paragraphs
+
+          // First row is header
+          if (!inTable) {
+            inTable = true;
+            tableHeaders = cells;
+            // Draw header
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(50, 50, 50);
+            yPos += 5;
+            doc.text("Table:", 20, yPos);
+            yPos += 6;
+            return;
+          }
+
+          // Table data rows - format as "Label: Value" on separate lines
+          if (isHeaderSeparator && cells.length > 0) {
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(60, 60, 60);
+            
+            cells.forEach((cell, idx) => {
+              if (idx < tableHeaders.length && cell) {
+                const label = tableHeaders[idx];
+                const text = `${label}: ${cell}`;
+                const wrapped = doc.splitTextToSize(text, pageWidth - 45);
+                
+                wrapped.forEach((wLine: string) => {
+                  if (yPos > pageHeight - 20) {
+                    doc.addPage();
+                    yPos = 20;
+                  }
+                  doc.text(wLine, 25, yPos);
+                  yPos += 5;
+                });
+              }
+            });
+            yPos += 4; // Space between table rows
+          }
+          return;
+        } else {
+          // Not a table line anymore
+          if (inTable) {
+            inTable = false;
+            tableHeaders = [];
+            isHeaderSeparator = false;
+            yPos += 5;
+          }
+        }
+
+        // Regular text processing
+        let cleanLine = trimmed
+          .replace(/^#+\s+/, "") // Remove headers
+          .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold
+          .replace(/\*(.*?)\*/g, "$1") // Remove italic
+          .replace(/`(.*?)`/g, "$1") // Remove code
+          .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Links to text
+          .replace(/^>\s+/, ""); // Remove blockquote
+
+        // Detect list items
+        const isBullet = /^\s*[-*+]\s+/.test(line);
+        const isNumbered = /^\s*\d+\.\s+/.test(line);
+        
+        if (isBullet || isNumbered) {
+          cleanLine = cleanLine.replace(/^\s*[-*+]\s+/, "").replace(/^\s*\d+\.\s+/, "");
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(60, 60, 60);
+          
+          const wrapped = doc.splitTextToSize(cleanLine, pageWidth - 48);
+          wrapped.forEach((wLine: string, idx: number) => {
+            if (yPos > pageHeight - 20) {
+              doc.addPage();
+              yPos = 20;
+            }
+            if (idx === 0) {
+              doc.text("•", 22, yPos);
+              doc.text(wLine, 28, yPos);
+            } else {
+              doc.text(wLine, 28, yPos);
+            }
+            yPos += 5;
+          });
+          return;
+        }
+
+        // Regular paragraph
+        if (cleanLine) {
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(60, 60, 60);
+          
+          const wrapped = doc.splitTextToSize(cleanLine, pageWidth - 40);
+          wrapped.forEach((wLine: string) => {
+            if (yPos > pageHeight - 20) {
+              doc.addPage();
+              yPos = 20;
+            }
+            doc.text(wLine, 20, yPos);
+            yPos += 5;
+          });
+          yPos += 3;
+        }
       });
 
       yPos += 10;
