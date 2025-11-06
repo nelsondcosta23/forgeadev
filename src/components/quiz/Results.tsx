@@ -184,6 +184,19 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
     
     yPos += 15;
 
+    // AI Recommendation section (if available)
+    if (aiRecommendation) {
+      doc.setFillColor(255, 120, 50);
+      doc.rect(15, yPos, pageWidth - 30, 10, "F");
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("🤖 Recomendação Personalizada da AI", 20, yPos + 7);
+      
+      yPos += 20;
+    }
+
     // Build details
     builds.forEach((build, index) => {
       if (index > 0) {
