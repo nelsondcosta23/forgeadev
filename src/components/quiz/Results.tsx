@@ -502,6 +502,38 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
             </div>
           </div>
 
+          {/* Unique URL Section */}
+          <Card className="mb-8 p-6 bg-card/50 border-primary/20">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Share2 className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold">Your Unique Build URL</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 p-3 bg-background/50 rounded-lg border border-border">
+                  <code className="text-sm text-primary break-all">{shareUrl}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCopyLink}
+                  className="shrink-0"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Save or share this unique link to access your custom PC build recommendations anytime.
+              </p>
+            </div>
+          </Card>
+
           {/* AI Recommendation */}
           {aiRecommendation && (
             <Card className="mb-8 p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
