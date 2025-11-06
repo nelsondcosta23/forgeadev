@@ -533,7 +533,14 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
                     🤖 AI Personalized Recommendation
                   </h3>
                   <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({ node, ...props }) => (
+                          <a {...props} target="_blank" rel="noopener noreferrer" />
+                        ),
+                      }}
+                    >
                       {aiRecommendation}
                     </ReactMarkdown>
                   </div>
