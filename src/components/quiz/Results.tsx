@@ -478,19 +478,6 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
             
             {/* Action Buttons - Moved to top */}
             <div className="flex justify-center gap-4 pt-4">
-              <Button variant="outline" onClick={handleCopyLink} className="hidden md:flex gap-2">
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Link Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy Link
-                  </>
-                )}
-              </Button>
               <Button variant="outline" onClick={handleShare} className="gap-2">
                 <Share2 className="w-4 h-4" />
                 Share
