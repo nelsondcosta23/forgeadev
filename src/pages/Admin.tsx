@@ -6,7 +6,7 @@ import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as Calendar
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { RoadmapDialog } from "@/components/admin/RoadmapDialog";
+import { RoadmapContent } from "@/components/admin/RoadmapContent";
 
 import { Input } from "@/components/ui/input";
 import { questions } from "@/components/quiz/questions";
@@ -75,6 +75,17 @@ interface CountryStats {
   count: number;
 }
 
+interface StoreLink {
+  id: string;
+  country_code: string;
+  country_name: string;
+  store_name: string;
+  store_url: string;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -90,9 +101,11 @@ const Admin = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [promptDialogOpen, setPromptDialogOpen] = useState(false);
   const [promptText, setPromptText] = useState("");
-  const [roadmapDialogOpen, setRoadmapDialogOpen] = useState(false);
+  const [storeLinks, setStoreLinks] = useState<StoreLink[]>([]);
+  const [storeLinkSearch, setStoreLinkSearch] = useState("");
+  const [storeLinkCountry, setStoreLinkCountry] = useState("all");
+  const [storeLinkStatus, setStoreLinkStatus] = useState<boolean | "all">("all");
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -128,6 +141,7 @@ const Admin = () => {
     if (isAuthenticated) {
       fetchQuizData();
       fetchPrompt();
+      fetchStoreLinks();
     }
   }, [isAuthenticated]);
 
@@ -146,6 +160,21 @@ const Admin = () => {
       }
     } catch (error) {
       console.error("Error fetching prompt:", error);
+    }
+  };
+
+  const fetchStoreLinks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("country_store_links")
+        .select("*")
+        .order("country_name", { ascending: true });
+
+      if (error) throw error;
+      setStoreLinks(data || []);
+    } catch (error) {
+      console.error("Error fetching store links:", error);
+      toast.error("Error loading store links");
     }
   };
 
@@ -229,6 +258,57 @@ const Admin = () => {
     } catch (error) {
       console.error("Error deleting quiz:", error);
       toast.error("Error deleting quiz");
+    }
+  };
+
+  const downloadQuizzesExcel = async () => {
+    try {
+      const XLSX = await import('xlsx');
+      
+      // Fetch all quiz sessions with their responses
+      const { data: sessions, error: sessionsError } = await supabase
+        .from("quiz_sessions")
+        .select("*")
+        .order("started_at", { ascending: false });
+
+      if (sessionsError) throw sessionsError;
+
+      // Fetch all responses
+      const { data: responses, error: responsesError } = await supabase
+        .from("quiz_responses")
+        .select("*");
+
+      if (responsesError) throw responsesError;
+
+      // Create worksheet data
+      const worksheetData = sessions?.map((session) => {
+        const sessionResponses = responses?.filter(r => r.session_id === session.session_id);
+        
+        return {
+          'Session ID': session.session_id,
+          'Country': session.country_name || 'Unknown',
+          'Country Code': session.country_code || 'XX',
+          'Started At': new Date(session.started_at).toLocaleString(),
+          'Completed At': session.completed_at ? new Date(session.completed_at).toLocaleString() : 'Not completed',
+          'Total Score': session.total_score || 'N/A',
+          'Number of Responses': sessionResponses?.length || 0,
+        };
+      }) || [];
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(worksheetData);
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Quiz Sessions");
+
+      // Generate file and download
+      XLSX.writeFile(wb, `quiz_sessions_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+      toast.success("Excel file downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating Excel:", error);
+      toast.error("Error generating Excel file");
     }
   };
 
@@ -358,6 +438,42 @@ const Admin = () => {
     setCurrentPage(1);
   }, [searchTerm, selectedCountry, dateFrom, dateTo]);
 
+  // Filter store links
+  const filteredStoreLinks = storeLinks.filter((link) => {
+    const matchesSearch = 
+      link.store_name.toLowerCase().includes(storeLinkSearch.toLowerCase()) ||
+      link.country_name.toLowerCase().includes(storeLinkSearch.toLowerCase());
+    const matchesCountry = storeLinkCountry === "all" || link.country_code === storeLinkCountry;
+    const matchesStatus = storeLinkStatus === "all" || link.status === storeLinkStatus;
+    
+    return matchesSearch && matchesCountry && matchesStatus;
+  });
+
+  // Get unique countries from store links
+  const storeCountries = Array.from(new Set(storeLinks.map(link => link.country_code)))
+    .map(code => {
+      const link = storeLinks.find(l => l.country_code === code);
+      return { code, name: link?.country_name || code };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const handleToggleStoreStatus = async (linkId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("country_store_links")
+        .update({ status: !currentStatus })
+        .eq("id", linkId);
+
+      if (error) throw error;
+
+      toast.success("Store status updated!");
+      fetchStoreLinks();
+    } catch (error) {
+      console.error("Error updating store status:", error);
+      toast.error("Error updating store status");
+    }
+  };
+
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -403,84 +519,6 @@ const Admin = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-bold">Administrative Panel</h2>
-              <Dialog open={promptDialogOpen} onOpenChange={setPromptDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
-                  >
-                    <Settings className="h-5 w-5" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[80vh]">
-                  <DialogHeader>
-                    <DialogTitle>Configure Prompt</DialogTitle>
-                    <DialogDescription>
-                      Write your prompt with markdown formatting
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-2 flex-1 overflow-auto">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">
-                        Use placeholders like {'{{'} budget_usd {'}'} to insert quiz answers
-                      </p>
-                      <p className={cn(
-                        "text-xs font-mono",
-                        promptText.length > 4000 ? "text-destructive font-semibold" : "text-muted-foreground"
-                      )}>
-                        {promptText.length} / 4000
-                        {promptText.length > 4000 && " (will be truncated)"}
-                      </p>
-                    </div>
-                    <Textarea
-                      value={promptText}
-                      onChange={(e) => setPromptText(e.target.value)}
-                      placeholder="Type your prompt here... (supports markdown)"
-                      className="min-h-[400px] resize-none font-mono text-sm"
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      onClick={async () => {
-                        try {
-                          const { error } = await supabase
-                            .from("admin_prompts")
-                            .insert({ prompt_text: promptText });
-
-                          if (error) throw error;
-
-                          toast.success("Prompt saved successfully!");
-                          setPromptDialogOpen(false);
-                        } catch (error) {
-                          console.error("Error saving prompt:", error);
-                          toast.error("Error saving prompt");
-                        }
-                      }}
-                    >
-                      Save
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={downloadQuestionsCSV}
-                className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
-                title="Export Questions CSV"
-              >
-                <FileText className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setRoadmapDialogOpen(true)}
-                className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
-                title="Roadmap"
-              >
-                <Map className="h-5 w-5" />
-              </Button>
             </div>
             <p className="text-muted-foreground">
               Manage and monitor the Forgea system
@@ -489,9 +527,11 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="reports" className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsList className="grid w-full max-w-2xl grid-cols-4">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
+              <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="reports" className="space-y-8 mt-6">
@@ -797,24 +837,215 @@ const Admin = () => {
             <TabsContent value="selling" className="space-y-8 mt-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Selling</CardTitle>
+                  <CardTitle>Country Store Links</CardTitle>
                   <CardDescription>
-                    Sales and business metrics
+                    Manage store associations by country
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Filters */}
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="relative flex-1 min-w-[200px]">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by store or country..."
+                        value={storeLinkSearch}
+                        onChange={(e) => setStoreLinkSearch(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    
+                    <Select value={storeLinkCountry} onValueChange={setStoreLinkCountry}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All countries</SelectItem>
+                        {storeCountries.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select 
+                      value={storeLinkStatus === "all" ? "all" : storeLinkStatus.toString()} 
+                      onValueChange={(value) => setStoreLinkStatus(value === "all" ? "all" : value === "true")}
+                    >
+                      <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All status</SelectItem>
+                        <SelectItem value="true">Active</SelectItem>
+                        <SelectItem value="false">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Store Links Table */}
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Store Name</TableHead>
+                          <TableHead>Store URL</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredStoreLinks.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted-foreground">
+                              No store links found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          filteredStoreLinks.map((link) => (
+                            <TableRow key={link.id}>
+                              <TableCell className="font-medium">
+                                {link.country_name}
+                              </TableCell>
+                              <TableCell>{link.store_name}</TableCell>
+                              <TableCell>
+                                <a 
+                                  href={link.store_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  {link.store_url}
+                                </a>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant={link.status ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => handleToggleStoreStatus(link.id, link.status)}
+                                >
+                                  {link.status ? "Active" : "Inactive"}
+                                </Button>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open(link.store_url, '_blank')}
+                                >
+                                  Visit Store
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="roadmap" className="space-y-8 mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Roadmap</CardTitle>
+                  <CardDescription>
+                    View and manage the project roadmap
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                  </p>
+                  <RoadmapContent />
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="settings" className="space-y-8 mt-6">
+              <div className="grid gap-6">
+                {/* AI Prompt Configuration */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>AI Prompt Configuration</CardTitle>
+                    <CardDescription>
+                      Configure the AI prompt used for quiz recommendations
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-muted-foreground">
+                        Use placeholders like {'{{'} budget_usd {'}'} to insert quiz answers
+                      </p>
+                      <p className={cn(
+                        "text-xs font-mono",
+                        promptText.length > 4000 ? "text-destructive font-semibold" : "text-muted-foreground"
+                      )}>
+                        {promptText.length} / 4000
+                        {promptText.length > 4000 && " (will be truncated)"}
+                      </p>
+                    </div>
+                    <Textarea
+                      value={promptText}
+                      onChange={(e) => setPromptText(e.target.value)}
+                      placeholder="Type your prompt here... (supports markdown)"
+                      className="min-h-[300px] resize-none font-mono text-sm"
+                    />
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from("admin_prompts")
+                            .insert({ prompt_text: promptText });
+
+                          if (error) throw error;
+
+                          toast.success("Prompt saved successfully!");
+                        } catch (error) {
+                          console.error("Error saving prompt:", error);
+                          toast.error("Error saving prompt");
+                        }
+                      }}
+                    >
+                      Save Prompt
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Export Options */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Export Data</CardTitle>
+                    <CardDescription>
+                      Download quiz data and questions
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex flex-col gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={downloadQuizzesExcel}
+                        className="justify-start"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Export All Quizzes to Excel
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={downloadQuestionsCSV}
+                        className="justify-start"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Export Questions to CSV
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
-
-      {/* Roadmap Dialog */}
-      <RoadmapDialog open={roadmapDialogOpen} onOpenChange={setRoadmapDialogOpen} />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

@@ -89,6 +89,39 @@ export type Database = {
         }
         Relationships: []
       }
+      country_store_links: {
+        Row: {
+          country_code: string
+          country_name: string
+          created_at: string
+          id: string
+          status: boolean
+          store_name: string
+          store_url: string
+          updated_at: string
+        }
+        Insert: {
+          country_code: string
+          country_name: string
+          created_at?: string
+          id?: string
+          status?: boolean
+          store_name: string
+          store_url: string
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string
+          country_name?: string
+          created_at?: string
+          id?: string
+          status?: boolean
+          store_name?: string
+          store_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quiz_responses: {
         Row: {
           answered_at: string
