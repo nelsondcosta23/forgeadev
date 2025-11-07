@@ -187,6 +187,50 @@ export type Database = {
         }
         Relationships: []
       }
+      store_billing: {
+        Row: {
+          billing_email: string | null
+          created_at: string
+          credits: number
+          credits_used: number
+          id: string
+          last_credit_update: string
+          notes: string | null
+          store_link_id: string
+          updated_at: string
+        }
+        Insert: {
+          billing_email?: string | null
+          created_at?: string
+          credits?: number
+          credits_used?: number
+          id?: string
+          last_credit_update?: string
+          notes?: string | null
+          store_link_id: string
+          updated_at?: string
+        }
+        Update: {
+          billing_email?: string | null
+          created_at?: string
+          credits?: number
+          credits_used?: number
+          id?: string
+          last_credit_update?: string
+          notes?: string | null
+          store_link_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_billing_store_link_id_fkey"
+            columns: ["store_link_id"]
+            isOneToOne: false
+            referencedRelation: "country_store_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

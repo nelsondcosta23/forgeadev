@@ -88,6 +88,19 @@ interface StoreLink {
   updated_at: string;
 }
 
+interface StoreBilling {
+  id: string;
+  store_link_id: string;
+  credits: number;
+  credits_used: number;
+  last_credit_update: string;
+  billing_email: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  store_link?: StoreLink;
+}
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -119,6 +132,20 @@ const Admin = () => {
     store_name: "",
     store_url: "",
     status: true,
+  });
+  const [billingData, setBillingData] = useState<StoreBilling[]>([]);
+  const [billingSearch, setBillingSearch] = useState("");
+  const [currentBillingPage, setCurrentBillingPage] = useState(1);
+  const [billingDialogOpen, setBillingDialogOpen] = useState(false);
+  const [billingDeleteDialogOpen, setBillingDeleteDialogOpen] = useState(false);
+  const [billingToDelete, setBillingToDelete] = useState<string | null>(null);
+  const [editingBilling, setEditingBilling] = useState<StoreBilling | null>(null);
+  const [billingFormData, setBillingFormData] = useState({
+    store_link_id: "",
+    credits: 0,
+    credits_used: 0,
+    billing_email: "",
+    notes: "",
   });
   const itemsPerPage = 10;
   const navigate = useNavigate();
@@ -156,6 +183,7 @@ const Admin = () => {
       fetchQuizData();
       fetchPrompt();
       fetchStoreLinks();
+      fetchBillingData();
     }
   }, [isAuthenticated]);
 
@@ -189,6 +217,24 @@ const Admin = () => {
     } catch (error) {
       console.error("Error fetching store links:", error);
       toast.error("Error loading store links");
+    }
+  };
+
+  const fetchBillingData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("store_billing")
+        .select(`
+          *,
+          store_link:country_store_links(*)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setBillingData((data || []) as StoreBilling[]);
+    } catch (error) {
+      console.error("Error fetching billing data:", error);
+      toast.error("Error loading billing data");
     }
   };
 
@@ -457,6 +503,11 @@ const Admin = () => {
     setCurrentStoreLinkPage(1);
   }, [storeLinkSearch, storeLinkCountry, storeLinkStatus]);
 
+  // Reset billing page when filters change
+  useEffect(() => {
+    setCurrentBillingPage(1);
+  }, [billingSearch]);
+
   // Filter store links
   const filteredStoreLinks = storeLinks.filter((link) => {
     const matchesSearch = 
@@ -481,6 +532,24 @@ const Admin = () => {
       return { code, name: link?.country_name || code };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Filter billing data
+  const filteredBilling = billingData.filter((billing) => {
+    const storeName = billing.store_link?.store_name || "";
+    const countryName = billing.store_link?.country_name || "";
+    const matchesSearch = 
+      storeName.toLowerCase().includes(billingSearch.toLowerCase()) ||
+      countryName.toLowerCase().includes(billingSearch.toLowerCase()) ||
+      (billing.billing_email?.toLowerCase().includes(billingSearch.toLowerCase()) || false);
+    
+    return matchesSearch;
+  });
+
+  // Paginate billing
+  const totalBillingPages = Math.ceil(filteredBilling.length / itemsPerPage);
+  const billingStartIndex = (currentBillingPage - 1) * itemsPerPage;
+  const billingEndIndex = billingStartIndex + itemsPerPage;
+  const paginatedBilling = filteredBilling.slice(billingStartIndex, billingEndIndex);
 
   const handleToggleStoreStatus = async (linkId: string, currentStatus: boolean) => {
     try {
@@ -582,6 +651,91 @@ const Admin = () => {
     }
   };
 
+  const openBillingDialog = (billing?: StoreBilling) => {
+    if (billing) {
+      setEditingBilling(billing);
+      setBillingFormData({
+        store_link_id: billing.store_link_id,
+        credits: billing.credits,
+        credits_used: billing.credits_used,
+        billing_email: billing.billing_email || "",
+        notes: billing.notes || "",
+      });
+    } else {
+      setEditingBilling(null);
+      setBillingFormData({
+        store_link_id: "",
+        credits: 0,
+        credits_used: 0,
+        billing_email: "",
+        notes: "",
+      });
+    }
+    setBillingDialogOpen(true);
+  };
+
+  const handleBillingSubmit = async () => {
+    if (!billingFormData.store_link_id) {
+      toast.error("Please select a store");
+      return;
+    }
+
+    try {
+      if (editingBilling) {
+        const { error } = await supabase
+          .from("store_billing")
+          .update({
+            ...billingFormData,
+            last_credit_update: new Date().toISOString(),
+          })
+          .eq("id", editingBilling.id);
+
+        if (error) throw error;
+        toast.success("Billing updated successfully!");
+      } else {
+        const { error } = await supabase
+          .from("store_billing")
+          .insert([billingFormData]);
+
+        if (error) throw error;
+        toast.success("Billing created successfully!");
+      }
+
+      setBillingDialogOpen(false);
+      setEditingBilling(null);
+      fetchBillingData();
+    } catch (error) {
+      console.error("Error saving billing:", error);
+      toast.error("Error saving billing");
+    }
+  };
+
+  const openBillingDeleteDialog = (billingId: string) => {
+    setBillingToDelete(billingId);
+    setBillingDeleteDialogOpen(true);
+  };
+
+  const handleBillingDelete = async () => {
+    if (!billingToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("store_billing")
+        .delete()
+        .eq("id", billingToDelete);
+
+      if (error) throw error;
+
+      toast.success("Billing deleted successfully!");
+      setBillingDeleteDialogOpen(false);
+      setBillingToDelete(null);
+      fetchBillingData();
+    } catch (error) {
+      console.error("Error deleting billing:", error);
+      toast.error("Error deleting billing");
+    }
+  };
+
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -635,9 +789,10 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="reports" className="w-full">
-            <TabsList className="grid w-full max-w-2xl grid-cols-4">
+            <TabsList className="grid w-full max-w-3xl grid-cols-5">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
               <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
@@ -1112,6 +1267,150 @@ const Admin = () => {
               </Card>
             </TabsContent>
 
+            <TabsContent value="billing" className="space-y-8 mt-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Store Billing & Credits</CardTitle>
+                      <CardDescription>
+                        Manage store credits and billing information
+                      </CardDescription>
+                    </div>
+                    <Button onClick={() => openBillingDialog()} className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add Billing
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Search */}
+                  <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by store, country or email..."
+                      value={billingSearch}
+                      onChange={(e) => setBillingSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+
+                  {/* Billing Table */}
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Store</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Credits</TableHead>
+                          <TableHead>Used</TableHead>
+                          <TableHead>Available</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedBilling.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center text-muted-foreground">
+                              No billing records found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          paginatedBilling.map((billing) => {
+                            const available = billing.credits - billing.credits_used;
+                            return (
+                              <TableRow key={billing.id}>
+                                <TableCell className="font-medium">
+                                  {billing.store_link?.store_name || "Unknown"}
+                                </TableCell>
+                                <TableCell>
+                                  {billing.store_link?.country_name || "Unknown"}
+                                </TableCell>
+                                <TableCell>{billing.credits}</TableCell>
+                                <TableCell>{billing.credits_used}</TableCell>
+                                <TableCell>
+                                  <span className={cn(
+                                    "font-semibold",
+                                    available < 10 ? "text-destructive" : 
+                                    available < 50 ? "text-yellow-600" : 
+                                    "text-green-600"
+                                  )}>
+                                    {available}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="truncate max-w-[200px]">
+                                  {billing.billing_email || "-"}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openBillingDialog(billing)}
+                                    >
+                                      <Pencil className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openBillingDeleteDialog(billing.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Pagination */}
+                  {totalBillingPages > 1 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {billingStartIndex + 1} to {Math.min(billingEndIndex, filteredBilling.length)} of {filteredBilling.length} results
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentBillingPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentBillingPage === 1}
+                        >
+                          Previous
+                        </Button>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: totalBillingPages }, (_, i) => i + 1).map((page) => (
+                            <Button
+                              key={page}
+                              variant={currentBillingPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentBillingPage(page)}
+                              className="w-10"
+                            >
+                              {page}
+                            </Button>
+                          ))}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentBillingPage(prev => Math.min(totalBillingPages, prev + 1))}
+                          disabled={currentBillingPage === totalBillingPages}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="roadmap" className="space-y-8 mt-6">
               <Card>
                 <CardHeader>
@@ -1309,6 +1608,112 @@ const Admin = () => {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleStoreLinkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Billing Dialog */}
+      <Dialog open={billingDialogOpen} onOpenChange={setBillingDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingBilling ? "Edit Billing" : "Add Billing"}</DialogTitle>
+            <DialogDescription>
+              {editingBilling ? "Update billing information and credits" : "Create billing record for a store"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Store *</Label>
+              <Select
+                value={billingFormData.store_link_id}
+                onValueChange={(value) => setBillingFormData({ ...billingFormData, store_link_id: value })}
+                disabled={!!editingBilling}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a store" />
+                </SelectTrigger>
+                <SelectContent>
+                  {storeLinks.map((link) => (
+                    <SelectItem key={link.id} value={link.id}>
+                      {link.store_name} ({link.country_name})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Total Credits</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={billingFormData.credits}
+                  onChange={(e) => setBillingFormData({ ...billingFormData, credits: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Credits Used</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={billingFormData.credits_used}
+                  onChange={(e) => setBillingFormData({ ...billingFormData, credits_used: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Available Credits</Label>
+              <div className="text-2xl font-bold text-primary">
+                {billingFormData.credits - billingFormData.credits_used}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Billing Email</Label>
+              <Input
+                type="email"
+                value={billingFormData.billing_email}
+                onChange={(e) => setBillingFormData({ ...billingFormData, billing_email: e.target.value })}
+                placeholder="billing@store.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={billingFormData.notes}
+                onChange={(e) => setBillingFormData({ ...billingFormData, notes: e.target.value })}
+                placeholder="Additional notes..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBillingDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleBillingSubmit}>
+              {editingBilling ? "Update" : "Create"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Billing Delete Dialog */}
+      <AlertDialog open={billingDeleteDialogOpen} onOpenChange={setBillingDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem a certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isto irá apagar permanentemente este registo de billing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBillingDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Apagar
