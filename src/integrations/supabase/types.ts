@@ -89,6 +89,129 @@ export type Database = {
         }
         Relationships: []
       }
+      clicks: {
+        Row: {
+          clicked_at: string
+          company_id: string
+          cost: number | null
+          country_code: string | null
+          country_name: string | null
+          created_at: string
+          fingerprint: string | null
+          id: string
+          invalid_reason: string | null
+          ip_address: string | null
+          is_valid: boolean
+          link_id: string
+          referer: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          company_id: string
+          cost?: number | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          fingerprint?: string | null
+          id?: string
+          invalid_reason?: string | null
+          ip_address?: string | null
+          is_valid?: boolean
+          link_id: string
+          referer?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          company_id?: string
+          cost?: number | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          fingerprint?: string | null
+          id?: string
+          invalid_reason?: string | null
+          ip_address?: string | null
+          is_valid?: boolean
+          link_id?: string
+          referer?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clicks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clicks_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "tracked_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          billing_address: string | null
+          billing_email: string
+          country_code: string
+          country_name: string
+          cpc_default: number
+          created_at: string
+          credits: number
+          credits_used: number
+          daily_limit: number | null
+          id: string
+          low_balance_threshold: number | null
+          name: string
+          status: boolean
+          tax_id: string | null
+          updated_at: string
+          website: string
+        }
+        Insert: {
+          billing_address?: string | null
+          billing_email: string
+          country_code: string
+          country_name: string
+          cpc_default?: number
+          created_at?: string
+          credits?: number
+          credits_used?: number
+          daily_limit?: number | null
+          id?: string
+          low_balance_threshold?: number | null
+          name: string
+          status?: boolean
+          tax_id?: string | null
+          updated_at?: string
+          website: string
+        }
+        Update: {
+          billing_address?: string | null
+          billing_email?: string
+          country_code?: string
+          country_name?: string
+          cpc_default?: number
+          created_at?: string
+          credits?: number
+          credits_used?: number
+          daily_limit?: number | null
+          id?: string
+          low_balance_threshold?: number | null
+          name?: string
+          status?: boolean
+          tax_id?: string | null
+          updated_at?: string
+          website?: string
+        }
+        Relationships: []
+      }
       country_store_links: {
         Row: {
           country_code: string
@@ -121,6 +244,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      credit_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          type: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz_responses: {
         Row: {
@@ -227,6 +391,65 @@ export type Database = {
             columns: ["store_link_id"]
             isOneToOne: false
             referencedRelation: "country_store_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracked_links: {
+        Row: {
+          company_id: string
+          cpc_override: number | null
+          created_at: string
+          daily_limit: number | null
+          destination_url: string
+          id: string
+          invalid_clicks: number
+          label: string | null
+          short_code: string
+          status: boolean
+          total_clicks: number
+          total_cost: number
+          updated_at: string
+          valid_clicks: number
+        }
+        Insert: {
+          company_id: string
+          cpc_override?: number | null
+          created_at?: string
+          daily_limit?: number | null
+          destination_url: string
+          id?: string
+          invalid_clicks?: number
+          label?: string | null
+          short_code: string
+          status?: boolean
+          total_clicks?: number
+          total_cost?: number
+          updated_at?: string
+          valid_clicks?: number
+        }
+        Update: {
+          company_id?: string
+          cpc_override?: number | null
+          created_at?: string
+          daily_limit?: number | null
+          destination_url?: string
+          id?: string
+          invalid_clicks?: number
+          label?: string | null
+          short_code?: string
+          status?: boolean
+          total_clicks?: number
+          total_cost?: number
+          updated_at?: string
+          valid_clicks?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracked_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]

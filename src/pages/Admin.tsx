@@ -7,6 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
+import { CompanyManagement } from "@/components/admin/billing/CompanyManagement";
+import { LinkManagement } from "@/components/admin/billing/LinkManagement";
+import { AnalyticsDashboard } from "@/components/admin/billing/AnalyticsDashboard";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -784,10 +787,11 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="reports" className="w-full">
-            <TabsList className="grid w-full max-w-3xl grid-cols-5">
+            <TabsList className="grid w-full max-w-4xl grid-cols-6">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
-              <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="billing">Billing Old</TabsTrigger>
+              <TabsTrigger value="billingcpc">Billing CPC</TabsTrigger>
               <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
@@ -1404,6 +1408,25 @@ const Admin = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="billingcpc" className="space-y-8 mt-6">
+              <Tabs defaultValue="companies">
+                <TabsList>
+                  <TabsTrigger value="companies">Empresas</TabsTrigger>
+                  <TabsTrigger value="links">Links</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                </TabsList>
+                <TabsContent value="companies">
+                  <CompanyManagement />
+                </TabsContent>
+                <TabsContent value="links">
+                  <LinkManagement />
+                </TabsContent>
+                <TabsContent value="analytics">
+                  <AnalyticsDashboard />
+                </TabsContent>
+              </Tabs>
             </TabsContent>
 
             <TabsContent value="roadmap" className="space-y-8 mt-6">
