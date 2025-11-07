@@ -50,6 +50,12 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -481,8 +487,16 @@ const Admin = () => {
             </p>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid md:grid-cols-3 gap-6">
+          {/* Tabs */}
+          <Tabs defaultValue="reports" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="reports">Reports</TabsTrigger>
+              <TabsTrigger value="selling">Selling</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="reports" className="space-y-8 mt-6">
+              {/* Stats Grid */}
+              <div className="grid md:grid-cols-3 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -778,6 +792,24 @@ const Admin = () => {
               )}
             </CardContent>
           </Card>
+            </TabsContent>
+
+            <TabsContent value="selling" className="space-y-8 mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Selling</CardTitle>
+                  <CardDescription>
+                    Sales and business metrics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
