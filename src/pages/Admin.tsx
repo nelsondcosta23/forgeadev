@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText, Map } from "lucide-react";
+import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText, Map, Plus, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
 
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { questions } from "@/components/quiz/questions";
 import {
   Select,
@@ -106,6 +108,18 @@ const Admin = () => {
   const [storeLinkSearch, setStoreLinkSearch] = useState("");
   const [storeLinkCountry, setStoreLinkCountry] = useState("all");
   const [storeLinkStatus, setStoreLinkStatus] = useState<boolean | "all">("all");
+  const [currentStoreLinkPage, setCurrentStoreLinkPage] = useState(1);
+  const [storeLinkDialogOpen, setStoreLinkDialogOpen] = useState(false);
+  const [storeLinkDeleteDialogOpen, setStoreLinkDeleteDialogOpen] = useState(false);
+  const [storeLinkToDelete, setStoreLinkToDelete] = useState<string | null>(null);
+  const [editingStoreLink, setEditingStoreLink] = useState<StoreLink | null>(null);
+  const [storeLinkFormData, setStoreLinkFormData] = useState({
+    country_code: "",
+    country_name: "",
+    store_name: "",
+    store_url: "",
+    status: true,
+  });
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -438,6 +452,11 @@ const Admin = () => {
     setCurrentPage(1);
   }, [searchTerm, selectedCountry, dateFrom, dateTo]);
 
+  // Reset store link page when filters change
+  useEffect(() => {
+    setCurrentStoreLinkPage(1);
+  }, [storeLinkSearch, storeLinkCountry, storeLinkStatus]);
+
   // Filter store links
   const filteredStoreLinks = storeLinks.filter((link) => {
     const matchesSearch = 
@@ -448,6 +467,12 @@ const Admin = () => {
     
     return matchesSearch && matchesCountry && matchesStatus;
   });
+
+  // Paginate store links
+  const totalStoreLinkPages = Math.ceil(filteredStoreLinks.length / itemsPerPage);
+  const storeLinkStartIndex = (currentStoreLinkPage - 1) * itemsPerPage;
+  const storeLinkEndIndex = storeLinkStartIndex + itemsPerPage;
+  const paginatedStoreLinks = filteredStoreLinks.slice(storeLinkStartIndex, storeLinkEndIndex);
 
   // Get unique countries from store links
   const storeCountries = Array.from(new Set(storeLinks.map(link => link.country_code)))
@@ -471,6 +496,89 @@ const Admin = () => {
     } catch (error) {
       console.error("Error updating store status:", error);
       toast.error("Error updating store status");
+    }
+  };
+
+  const openStoreLinkDialog = (link?: StoreLink) => {
+    if (link) {
+      setEditingStoreLink(link);
+      setStoreLinkFormData({
+        country_code: link.country_code,
+        country_name: link.country_name,
+        store_name: link.store_name,
+        store_url: link.store_url,
+        status: link.status,
+      });
+    } else {
+      setEditingStoreLink(null);
+      setStoreLinkFormData({
+        country_code: "",
+        country_name: "",
+        store_name: "",
+        store_url: "",
+        status: true,
+      });
+    }
+    setStoreLinkDialogOpen(true);
+  };
+
+  const handleStoreLinkSubmit = async () => {
+    if (!storeLinkFormData.country_code || !storeLinkFormData.country_name || 
+        !storeLinkFormData.store_name || !storeLinkFormData.store_url) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    try {
+      if (editingStoreLink) {
+        const { error } = await supabase
+          .from("country_store_links")
+          .update(storeLinkFormData)
+          .eq("id", editingStoreLink.id);
+
+        if (error) throw error;
+        toast.success("Store link updated successfully!");
+      } else {
+        const { error } = await supabase
+          .from("country_store_links")
+          .insert([storeLinkFormData]);
+
+        if (error) throw error;
+        toast.success("Store link created successfully!");
+      }
+
+      setStoreLinkDialogOpen(false);
+      setEditingStoreLink(null);
+      fetchStoreLinks();
+    } catch (error) {
+      console.error("Error saving store link:", error);
+      toast.error("Error saving store link");
+    }
+  };
+
+  const openStoreLinkDeleteDialog = (linkId: string) => {
+    setStoreLinkToDelete(linkId);
+    setStoreLinkDeleteDialogOpen(true);
+  };
+
+  const handleStoreLinkDelete = async () => {
+    if (!storeLinkToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("country_store_links")
+        .delete()
+        .eq("id", storeLinkToDelete);
+
+      if (error) throw error;
+
+      toast.success("Store link deleted successfully!");
+      setStoreLinkDeleteDialogOpen(false);
+      setStoreLinkToDelete(null);
+      fetchStoreLinks();
+    } catch (error) {
+      console.error("Error deleting store link:", error);
+      toast.error("Error deleting store link");
     }
   };
 
@@ -837,10 +945,18 @@ const Admin = () => {
             <TabsContent value="selling" className="space-y-8 mt-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Country Store Links</CardTitle>
-                  <CardDescription>
-                    Manage store associations by country
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Country Store Links</CardTitle>
+                      <CardDescription>
+                        Manage store associations by country
+                      </CardDescription>
+                    </div>
+                    <Button onClick={() => openStoreLinkDialog()} className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add Store Link
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Filters */}
@@ -869,19 +985,16 @@ const Admin = () => {
                       </SelectContent>
                     </Select>
 
-                    <Select 
-                      value={storeLinkStatus === "all" ? "all" : storeLinkStatus.toString()} 
-                      onValueChange={(value) => setStoreLinkStatus(value === "all" ? "all" : value === "true")}
-                    >
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All status</SelectItem>
-                        <SelectItem value="true">Active</SelectItem>
-                        <SelectItem value="false">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-4 px-4 py-2 border rounded-lg">
+                      <Label htmlFor="status-filter" className="text-sm whitespace-nowrap">
+                        Active Only
+                      </Label>
+                      <Switch
+                        id="status-filter"
+                        checked={storeLinkStatus === true}
+                        onCheckedChange={(checked) => setStoreLinkStatus(checked ? true : "all")}
+                      />
+                    </div>
                   </div>
 
                   {/* Store Links Table */}
@@ -897,14 +1010,14 @@ const Admin = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredStoreLinks.length === 0 ? (
+                        {paginatedStoreLinks.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={5} className="text-center text-muted-foreground">
                               No store links found
                             </TableCell>
                           </TableRow>
                         ) : (
-                          filteredStoreLinks.map((link) => (
+                          paginatedStoreLinks.map((link) => (
                             <TableRow key={link.id}>
                               <TableCell className="font-medium">
                                 {link.country_name}
@@ -915,28 +1028,39 @@ const Admin = () => {
                                   href={link.store_url} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="text-primary hover:underline"
+                                  className="text-primary hover:underline truncate block max-w-[300px]"
                                 >
                                   {link.store_url}
                                 </a>
                               </TableCell>
                               <TableCell>
-                                <Button
-                                  variant={link.status ? "default" : "outline"}
-                                  size="sm"
-                                  onClick={() => handleToggleStoreStatus(link.id, link.status)}
-                                >
-                                  {link.status ? "Active" : "Inactive"}
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  <Switch
+                                    checked={link.status}
+                                    onCheckedChange={() => handleToggleStoreStatus(link.id, link.status)}
+                                  />
+                                  <span className="text-sm">
+                                    {link.status ? "Active" : "Inactive"}
+                                  </span>
+                                </div>
                               </TableCell>
                               <TableCell className="text-right">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => window.open(link.store_url, '_blank')}
-                                >
-                                  Visit Store
-                                </Button>
+                                <div className="flex justify-end gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openStoreLinkDialog(link)}
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openStoreLinkDeleteDialog(link.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))
@@ -944,6 +1068,46 @@ const Admin = () => {
                       </TableBody>
                     </Table>
                   </div>
+
+                  {/* Pagination */}
+                  {totalStoreLinkPages > 1 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {storeLinkStartIndex + 1} to {Math.min(storeLinkEndIndex, filteredStoreLinks.length)} of {filteredStoreLinks.length} results
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentStoreLinkPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentStoreLinkPage === 1}
+                        >
+                          Previous
+                        </Button>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: totalStoreLinkPages }, (_, i) => i + 1).map((page) => (
+                            <Button
+                              key={page}
+                              variant={currentStoreLinkPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentStoreLinkPage(page)}
+                              className="w-10"
+                            >
+                              {page}
+                            </Button>
+                          ))}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentStoreLinkPage(prev => Math.min(totalStoreLinkPages, prev + 1))}
+                          disabled={currentStoreLinkPage === totalStoreLinkPages}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1064,6 +1228,90 @@ const Admin = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Store Link Dialog */}
+      <Dialog open={storeLinkDialogOpen} onOpenChange={setStoreLinkDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingStoreLink ? "Edit Store Link" : "Add Store Link"}</DialogTitle>
+            <DialogDescription>
+              {editingStoreLink ? "Update the store link information" : "Create a new store link"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Country Code</Label>
+              <Input
+                value={storeLinkFormData.country_code}
+                onChange={(e) => setStoreLinkFormData({ ...storeLinkFormData, country_code: e.target.value.toUpperCase() })}
+                placeholder="e.g., PT, ES, GB"
+                maxLength={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Country Name</Label>
+              <Input
+                value={storeLinkFormData.country_name}
+                onChange={(e) => setStoreLinkFormData({ ...storeLinkFormData, country_name: e.target.value })}
+                placeholder="e.g., Portugal"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Store Name</Label>
+              <Input
+                value={storeLinkFormData.store_name}
+                onChange={(e) => setStoreLinkFormData({ ...storeLinkFormData, store_name: e.target.value })}
+                placeholder="e.g., Worten"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Store URL</Label>
+              <Input
+                value={storeLinkFormData.store_url}
+                onChange={(e) => setStoreLinkFormData({ ...storeLinkFormData, store_url: e.target.value })}
+                placeholder="https://..."
+                type="url"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={storeLinkFormData.status}
+                onCheckedChange={(checked) => setStoreLinkFormData({ ...storeLinkFormData, status: checked })}
+              />
+              <Label>Active</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStoreLinkDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleStoreLinkSubmit}>
+              {editingStoreLink ? "Update" : "Create"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Store Link Delete Dialog */}
+      <AlertDialog open={storeLinkDeleteDialogOpen} onOpenChange={setStoreLinkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem a certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isto irá apagar permanentemente este vínculo de loja.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleStoreLinkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Apagar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
