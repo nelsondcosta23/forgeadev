@@ -780,7 +780,6 @@ const Admin = () => {
         <div className="max-w-6xl mx-auto space-y-8">
           <div>
             <h2 className="text-3xl font-bold">Administrative Panel</h2>
-            <p className="text-sm text-muted-foreground mt-1">Manage and monitor the Forgea system</p>
           </div>
 
           {/* Tabs */}
