@@ -1407,17 +1407,7 @@ const Admin = () => {
             </TabsContent>
 
             <TabsContent value="roadmap" className="space-y-8 mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Project Roadmap</CardTitle>
-                  <CardDescription>
-                    View and manage the project roadmap
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RoadmapContent />
-                </CardContent>
-              </Card>
+              <RoadmapContent />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-8 mt-6">

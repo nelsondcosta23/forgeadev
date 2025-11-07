@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -148,10 +148,28 @@ export function RoadmapContent() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Search and Add Button */}
-      <div className="flex gap-4">
-        <div className="flex-1 relative">
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Project Roadmap</CardTitle>
+            <CardDescription>
+              View and manage the project roadmap
+            </CardDescription>
+          </div>
+          <Button
+            onClick={() => setIsAddingNew(true)}
+            disabled={isAddingNew}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Item
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Search */}
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search roadmap items..."
@@ -160,107 +178,99 @@ export function RoadmapContent() {
             className="pl-9"
           />
         </div>
-        <Button
-          onClick={() => setIsAddingNew(true)}
-          disabled={isAddingNew}
-          className="gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Add Item
-        </Button>
-      </div>
 
-      {/* Add/Edit Form */}
-      {isAddingNew && (
-        <Card className="p-4 space-y-4 border-primary/30 bg-primary/5">
-          <div className="space-y-2">
-            <Label>Priority</Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value: "High" | "Medium" | "Low") =>
-                setFormData({ ...formData, priority: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Add/Edit Form */}
+        {isAddingNew && (
+          <Card className="p-4 space-y-4 border-primary/30 bg-primary/5">
+            <div className="space-y-2">
+              <Label>Priority</Label>
+              <Select
+                value={formData.priority}
+                onValueChange={(value: "High" | "Medium" | "Low") =>
+                  setFormData({ ...formData, priority: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Title</Label>
-            <Input
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              placeholder="Enter roadmap item title..."
-            />
-          </div>
+            <div className="space-y-2">
+              <Label>Title</Label>
+              <Input
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                placeholder="Enter roadmap item title..."
+              />
+            </div>
 
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit}>
-              {editingId ? "Update" : "Create"}
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {/* Roadmap List */}
-      <div className="space-y-3">
-        {filteredItems.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">
-            No roadmap items found
-          </p>
-        ) : (
-          filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              className={`p-4 border ${priorityColor[item.priority]}`}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold px-2 py-1 rounded border">
-                      {item.priority}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      Created: {format(new Date(item.created_at), "MMM dd, yyyy HH:mm")}
-                    </span>
-                  </div>
-                  <p className="text-sm">{item.title}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleEdit(item)}
-                    className="h-8 w-8"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openDeleteDialog(item.id)}
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={handleCancel}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit}>
+                {editingId ? "Update" : "Create"}
+              </Button>
+            </div>
+          </Card>
         )}
-      </div>
+
+        {/* Roadmap List */}
+        <div className="space-y-3">
+          {filteredItems.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              No roadmap items found
+            </p>
+          ) : (
+            filteredItems.map((item) => (
+              <Card
+                key={item.id}
+                className={`p-4 border ${priorityColor[item.priority]}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold px-2 py-1 rounded border">
+                        {item.priority}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Created: {format(new Date(item.created_at), "MMM dd, yyyy HH:mm")}
+                      </span>
+                    </div>
+                    <p className="text-sm">{item.title}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(item)}
+                      className="h-8 w-8"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openDeleteDialog(item.id)}
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+      </CardContent>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -282,6 +292,6 @@ export function RoadmapContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Card>
   );
 }
