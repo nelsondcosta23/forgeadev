@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ interface Company {
 }
 
 export const CompanyManagement = () => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [creditOpen, setCreditOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
@@ -163,20 +165,7 @@ export const CompanyManagement = () => {
   };
 
   const handleEdit = (company: Company) => {
-    setEditingCompany(company);
-    setFormData({
-      name: company.name,
-      website: company.website,
-      country_code: "",
-      country_name: company.country_name,
-      billing_email: company.billing_email,
-      billing_address: "",
-      tax_id: "",
-      cpc_default: company.cpc_default.toString(),
-      daily_limit: "",
-      low_balance_threshold: "100",
-    });
-    setOpen(true);
+    navigate(`/admin/company/${company.id}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
