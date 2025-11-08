@@ -8,8 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, CreditCard } from "lucide-react";
+import { Plus, Edit, CreditCard, Search } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 interface Company {
   id: string;
@@ -30,6 +32,15 @@ export const CompanyManagement = () => {
   const [creditAmount, setCreditAmount] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const queryClient = useQueryClient();
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState<string>("all");
+  const [creditMin, setCreditMin] = useState("");
+  const [creditMax, setCreditMax] = useState("");
+  const [statusFilter, setStatusFilter] = useState<boolean | "all">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -189,6 +200,33 @@ export const CompanyManagement = () => {
 
   if (isLoading) return <div>Carregando...</div>;
 
+  // Get unique countries
+  const uniqueCountries = Array.from(new Set(companies?.map(c => c.country_name) || [])).sort();
+
+  // Filter companies
+  const filteredCompanies = companies?.filter((company) => {
+    const matchesSearch = 
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.website.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.billing_email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCountry = selectedCountry === "all" || company.country_name === selectedCountry;
+    
+    const minCredit = creditMin ? parseInt(creditMin) : 0;
+    const maxCredit = creditMax ? parseInt(creditMax) : 1000;
+    const matchesCredits = company.credits >= minCredit && company.credits <= maxCredit;
+    
+    const matchesStatus = statusFilter === "all" || company.status === statusFilter;
+    
+    return matchesSearch && matchesCountry && matchesCredits && matchesStatus;
+  }) || [];
+
+  // Pagination
+  const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCompanies = filteredCompanies.slice(startIndex, endIndex);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -298,6 +336,101 @@ export const CompanyManagement = () => {
         </Dialog>
       </div>
 
+      {/* Filters */}
+      <div className="space-y-4 p-4 border rounded-lg bg-card">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Search */}
+          <div className="lg:col-span-2">
+            <Label>Pesquisar</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Nome, website ou email..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
+          {/* Country Filter */}
+          <div>
+            <Label>País</Label>
+            <Select value={selectedCountry} onValueChange={(value) => {
+              setSelectedCountry(value);
+              setCurrentPage(1);
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os países</SelectItem>
+                {uniqueCountries.map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Credit Range */}
+          <div>
+            <Label>Créditos (min-max)</Label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="0"
+                value={creditMin}
+                onChange={(e) => {
+                  setCreditMin(e.target.value);
+                  setCurrentPage(1);
+                }}
+                min="0"
+                max="1000"
+              />
+              <Input
+                type="number"
+                placeholder="1000"
+                value={creditMax}
+                onChange={(e) => {
+                  setCreditMax(e.target.value);
+                  setCurrentPage(1);
+                }}
+                min="0"
+                max="1000"
+              />
+            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <Label>Status</Label>
+            <div className="flex items-center gap-4 h-10 px-4 border rounded-lg bg-background">
+              <Label htmlFor="status-toggle" className="text-sm whitespace-nowrap cursor-pointer">
+                Apenas Ativos
+              </Label>
+              <Switch
+                id="status-toggle"
+                checked={statusFilter === true}
+                onCheckedChange={(checked) => {
+                  setStatusFilter(checked ? true : "all");
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Results Count */}
+        <div className="text-sm text-muted-foreground">
+          Mostrando {paginatedCompanies.length} de {filteredCompanies.length} empresas
+        </div>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -312,44 +445,104 @@ export const CompanyManagement = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {companies?.map((company) => (
-            <TableRow key={company.id}>
-              <TableCell className="font-medium">{company.name}</TableCell>
-              <TableCell>{company.website}</TableCell>
-              <TableCell>{company.country_name}</TableCell>
-              <TableCell>€{company.cpc_default.toFixed(4)}</TableCell>
-              <TableCell>
-                <Badge variant={company.credits < 100 ? "destructive" : "default"}>
-                  {company.credits}
-                </Badge>
-              </TableCell>
-              <TableCell>{company.credits_used}</TableCell>
-              <TableCell>
-                <Badge variant={company.status ? "default" : "secondary"}>
-                  {company.status ? "Ativo" : "Pausado"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(company)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedCompany(company);
-                      setCreditOpen(true);
-                    }}
-                  >
-                    <CreditCard className="h-4 w-4" />
-                  </Button>
-                </div>
+          {paginatedCompanies.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                Nenhuma empresa encontrada
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            paginatedCompanies.map((company) => (
+              <TableRow key={company.id}>
+                <TableCell className="font-medium">{company.name}</TableCell>
+                <TableCell>{company.website}</TableCell>
+                <TableCell>{company.country_name}</TableCell>
+                <TableCell>€{company.cpc_default.toFixed(4)}</TableCell>
+                <TableCell>
+                  <Badge variant={company.credits < 100 ? "destructive" : "default"}>
+                    {company.credits}
+                  </Badge>
+                </TableCell>
+                <TableCell>{company.credits_used}</TableCell>
+                <TableCell>
+                  <Badge variant={company.status ? "default" : "secondary"}>
+                    {company.status ? "Ativo" : "Pausado"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(company)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCompany(company);
+                        setCreditOpen(true);
+                      }}
+                    >
+                      <CreditCard className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Página {currentPage} de {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className="w-10"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Dialog de Adicionar Créditos */}
       <Dialog open={creditOpen} onOpenChange={setCreditOpen}>
