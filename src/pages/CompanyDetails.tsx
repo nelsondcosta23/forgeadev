@@ -7,12 +7,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Lista de países
+const COUNTRIES = [
+  { name: "Portugal", code: "PT" },
+  { name: "Espanha", code: "ES" },
+  { name: "França", code: "FR" },
+  { name: "Alemanha", code: "DE" },
+  { name: "Itália", code: "IT" },
+  { name: "Reino Unido", code: "GB" },
+  { name: "Holanda", code: "NL" },
+  { name: "Bélgica", code: "BE" },
+  { name: "Suíça", code: "CH" },
+  { name: "Áustria", code: "AT" },
+  { name: "Polónia", code: "PL" },
+  { name: "Suécia", code: "SE" },
+  { name: "Noruega", code: "NO" },
+  { name: "Dinamarca", code: "DK" },
+  { name: "Finlândia", code: "FI" },
+  { name: "Irlanda", code: "IE" },
+  { name: "Brasil", code: "BR" },
+  { name: "Estados Unidos", code: "US" },
+  { name: "Canadá", code: "CA" },
+];
 
 interface Company {
   id: string;
@@ -56,6 +80,7 @@ const CompanyDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -69,6 +94,21 @@ const CompanyDetails = () => {
     daily_limit: "",
     low_balance_threshold: "100",
   });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.size <= 20 * 1024 * 1024); // 20MB max
+    
+    if (validFiles.length !== files.length) {
+      toast.error("Alguns ficheiros excedem 20MB e foram ignorados");
+    }
+    
+    setUploadedFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   // Fetch company data
   const { data: company, isLoading } = useQuery({
@@ -229,94 +269,137 @@ const CompanyDetails = () => {
                 <CardDescription>Gerir dados e configurações da empresa</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Nome da Empresa *</Label>
-                      <Input
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Website *</Label>
-                      <Input
-                        value={formData.website}
-                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>País *</Label>
-                      <Input
-                        value={formData.country_name}
-                        onChange={(e) => setFormData({ ...formData, country_name: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Código do País *</Label>
-                      <Input
-                        value={formData.country_code}
-                        onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
-                        placeholder="PT"
-                        maxLength={2}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Email de Faturação *</Label>
-                      <Input
-                        type="email"
-                        value={formData.billing_email}
-                        onChange={(e) => setFormData({ ...formData, billing_email: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>NIF</Label>
-                      <Input
-                        value={formData.tax_id}
-                        onChange={(e) => setFormData({ ...formData, tax_id: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label>CPC Padrão (€) *</Label>
-                      <Input
-                        type="number"
-                        step="0.0001"
-                        value={formData.cpc_default}
-                        onChange={(e) => setFormData({ ...formData, cpc_default: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Limite Diário (€)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={formData.daily_limit}
-                        onChange={(e) => setFormData({ ...formData, daily_limit: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label>Limite de Saldo Baixo</Label>
-                      <Input
-                        type="number"
-                        value={formData.low_balance_threshold}
-                        onChange={(e) => setFormData({ ...formData, low_balance_threshold: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Morada de Faturação</Label>
-                    <Textarea
-                      value={formData.billing_address}
-                      onChange={(e) => setFormData({ ...formData, billing_address: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                       <Label>Nome da Empresa *</Label>
+                       <Input
+                         value={formData.name}
+                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                         required
+                       />
+                     </div>
+                     <div>
+                       <Label>Website *</Label>
+                       <Input
+                         value={formData.website}
+                         onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                         required
+                       />
+                     </div>
+                     <div>
+                       <Label>País *</Label>
+                       <Select
+                         value={formData.country_name}
+                         onValueChange={(value) => {
+                           const country = COUNTRIES.find(c => c.name === value);
+                           setFormData({ 
+                             ...formData, 
+                             country_name: value,
+                             country_code: country?.code || ""
+                           });
+                         }}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Selecione um país" />
+                         </SelectTrigger>
+                         <SelectContent className="bg-background">
+                           {COUNTRIES.map((country) => (
+                             <SelectItem key={country.code} value={country.name}>
+                               {country.name}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div>
+                       <Label>Código do País *</Label>
+                       <Select
+                         value={formData.country_code}
+                         onValueChange={(value) => {
+                           const country = COUNTRIES.find(c => c.code === value);
+                           setFormData({ 
+                             ...formData, 
+                             country_code: value,
+                             country_name: country?.name || ""
+                           });
+                         }}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Selecione" />
+                         </SelectTrigger>
+                         <SelectContent className="bg-background">
+                           {COUNTRIES.map((country) => (
+                             <SelectItem key={country.code} value={country.code}>
+                               {country.code} - {country.name}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div>
+                       <Label>Email de Faturação *</Label>
+                       <Input
+                         type="email"
+                         value={formData.billing_email}
+                         onChange={(e) => setFormData({ ...formData, billing_email: e.target.value })}
+                         required
+                       />
+                     </div>
+                     <div>
+                       <Label>NIF</Label>
+                       <Input
+                         value={formData.tax_id}
+                         onChange={(e) => setFormData({ ...formData, tax_id: e.target.value })}
+                       />
+                     </div>
+                   </div>
+                   <div>
+                     <Label>Morada de Faturação</Label>
+                     <Textarea
+                       value={formData.billing_address}
+                       onChange={(e) => setFormData({ ...formData, billing_address: e.target.value })}
+                       rows={2}
+                       className="mb-2"
+                     />
+                     <div className="space-y-2">
+                       <div className="flex items-center gap-2">
+                         <Button
+                           type="button"
+                           variant="outline"
+                           onClick={() => document.getElementById('file-upload')?.click()}
+                         >
+                           <Upload className="w-4 h-4 mr-2" />
+                           Upload Ficheiros (max 20MB cada)
+                         </Button>
+                         <input
+                           id="file-upload"
+                           type="file"
+                           multiple
+                           className="hidden"
+                           onChange={handleFileUpload}
+                           accept="*/*"
+                         />
+                       </div>
+                       {uploadedFiles.length > 0 && (
+                         <div className="space-y-1">
+                           {uploadedFiles.map((file, index) => (
+                             <div key={index} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
+                               <span className="truncate flex-1">{file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)</span>
+                               <Button
+                                 type="button"
+                                 variant="ghost"
+                                 size="sm"
+                                 onClick={() => removeFile(index)}
+                               >
+                                 <X className="w-4 h-4" />
+                               </Button>
+                             </div>
+                           ))}
+                         </div>
+                       )}
+                     </div>
+                   </div>
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => navigate("/admin")}>
                       Cancelar
@@ -366,6 +449,55 @@ const CompanyDetails = () => {
                 </CardContent>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de Créditos</CardTitle>
+                <CardDescription>Gerir limites e valores de cobrança</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>CPC Padrão (€) *</Label>
+                      <Input
+                        type="number"
+                        step="0.0001"
+                        value={formData.cpc_default}
+                        onChange={(e) => setFormData({ ...formData, cpc_default: e.target.value })}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Custo por clique padrão</p>
+                    </div>
+                    <div>
+                      <Label>Limite Diário (€)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={formData.daily_limit}
+                        onChange={(e) => setFormData({ ...formData, daily_limit: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Gasto máximo diário</p>
+                    </div>
+                    <div>
+                      <Label>Limite de Saldo Baixo</Label>
+                      <Input
+                        type="number"
+                        value={formData.low_balance_threshold}
+                        onChange={(e) => setFormData({ ...formData, low_balance_threshold: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Alerta quando créditos abaixo de</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button type="submit" disabled={updateMutation.isPending}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Guardar Configurações
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>
