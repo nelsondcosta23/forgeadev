@@ -32,6 +32,7 @@ const Quiz = ({ onBack }: QuizProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [isSessionReady, setIsSessionReady] = useState(false);
+  const [detectedCountry, setDetectedCountry] = useState<string>("");
   const { toast } = useToast();
 
   // Create a quiz session when component mounts
@@ -49,6 +50,7 @@ const Quiz = ({ onBack }: QuizProps) => {
         if (countryData && !countryData.error) {
           countryCode = countryData.country_code;
           countryName = countryData.country_name;
+          setDetectedCountry(countryCode); // Store detected country for pre-selection
         }
       } catch (error) {
         if (import.meta.env.DEV) {
@@ -383,6 +385,7 @@ const Quiz = ({ onBack }: QuizProps) => {
             question={currentQuestion}
             onAnswer={handleAnswer}
             disabled={!isSessionReady}
+            defaultValue={currentQuestion.id === "country" ? detectedCountry : undefined}
           />
         </div>
       </div>

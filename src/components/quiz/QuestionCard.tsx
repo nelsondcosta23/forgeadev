@@ -5,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Question } from "./questions";
 import { Check } from "lucide-react";
+import { CountrySelect } from "./CountrySelect";
 
 interface QuestionCardProps {
   question: Question;
   onAnswer: (answer: string | number) => void;
   disabled?: boolean;
+  defaultValue?: string;
 }
 
-const QuestionCard = ({ question, onAnswer, disabled = false }: QuestionCardProps) => {
+const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: QuestionCardProps) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [numberValue, setNumberValue] = useState<number>(question.min || 0);
 
@@ -41,39 +43,57 @@ const QuestionCard = ({ question, onAnswer, disabled = false }: QuestionCardProp
 
         {/* Options */}
         {question.type === "single" && question.options && (
-          <div className="grid gap-4 pt-4">
-            {question.options.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => handleOptionSelect(option.value)}
-                disabled={disabled}
-                className={`group relative p-6 rounded-lg border-2 text-left transition-all duration-300 ${
-                  disabled ? "opacity-50 cursor-not-allowed" : ""
-                } ${
-                  selectedOption === option.value
-                    ? "border-primary bg-primary/10 scale-[0.98]"
-                    : "border-border hover:border-primary/50 hover:bg-card/80"
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  {option.icon && (
-                    <span className="text-3xl">{option.icon}</span>
-                  )}
-                  <div className="flex-1">
-                    <div className="font-semibold text-lg mb-1">{option.label}</div>
-                    {option.description && (
-                      <div className="text-sm text-muted-foreground">
-                        {option.description}
+          <>
+            {/* Special country selector with search */}
+            {question.id === "country" ? (
+              <div className="pt-4">
+                <CountrySelect
+                  countries={question.options.map(opt => ({
+                    value: opt.value,
+                    label: opt.label,
+                    icon: opt.icon || ""
+                  }))}
+                  onSelect={handleOptionSelect}
+                  defaultValue={defaultValue}
+                  disabled={disabled}
+                />
+              </div>
+            ) : (
+              <div className="grid gap-4 pt-4">
+                {question.options.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleOptionSelect(option.value)}
+                    disabled={disabled}
+                    className={`group relative p-6 rounded-lg border-2 text-left transition-all duration-300 ${
+                      disabled ? "opacity-50 cursor-not-allowed" : ""
+                    } ${
+                      selectedOption === option.value
+                        ? "border-primary bg-primary/10 scale-[0.98]"
+                        : "border-border hover:border-primary/50 hover:bg-card/80"
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      {option.icon && (
+                        <span className="text-3xl">{option.icon}</span>
+                      )}
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg mb-1">{option.label}</div>
+                        {option.description && (
+                          <div className="text-sm text-muted-foreground">
+                            {option.description}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  {selectedOption === option.value && (
-                    <Check className="w-6 h-6 text-primary" />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
+                      {selectedOption === option.value && (
+                        <Check className="w-6 h-6 text-primary" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* Number Input */}
