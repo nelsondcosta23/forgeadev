@@ -132,10 +132,10 @@ Be specific with model numbers and explain why each component fits their needs.`
 
     // Call AI with retry logic
     const callAIWithRetry = async (model: string, maxRetries = 3): Promise<string> => {
-      const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+      const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
       
-      if (!lovableApiKey) {
-        throw new Error('LOVABLE_API_KEY not configured');
+      if (!openaiApiKey) {
+        throw new Error('OPENAI_API_KEY not configured');
       }
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -146,11 +146,11 @@ Be specific with model numbers and explain why each component fits their needs.`
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 45000);
           
-          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
             signal: controller.signal,
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${lovableApiKey}`,
+              'Authorization': `Bearer ${openaiApiKey}`,
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
@@ -160,6 +160,8 @@ Be specific with model numbers and explain why each component fits their needs.`
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
               ],
+              max_tokens: 2000,
+              temperature: 0.7,
               stream: false,
             }),
           });
@@ -287,9 +289,9 @@ Be specific with model numbers and explain why each component fits their needs.`
 
     // Try main model first
     let recommendation = '';
-    let usedModel = 'openai/gpt-5-nano';
+    let usedModel = 'gpt-4o-mini';
     try {
-      recommendation = await callAIWithRetry('openai/gpt-5-nano');
+      recommendation = await callAIWithRetry('gpt-4o-mini');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Primary model failed:', errorMessage);
@@ -299,9 +301,9 @@ Be specific with model numbers and explain why each component fits their needs.`
           errorMessage === 'SSE_PARSE_FAILED' || 
           errorMessage === 'PARSE_FAILED' ||
           errorMessage === 'CONTENT_TOO_SHORT') {
-        console.log('Attempting fallback retry with openai/gpt-5-nano...');
+        console.log('Attempting fallback retry with gpt-4o-mini...');
         try {
-          recommendation = await callAIWithRetry('openai/gpt-5-nano', 2);
+          recommendation = await callAIWithRetry('gpt-4o-mini', 2);
         } catch (fallbackError) {
           const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
           console.error('Fallback retry failed:', fallbackMessage);
