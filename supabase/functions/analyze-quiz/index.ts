@@ -112,28 +112,21 @@ serve(async (req) => {
     console.log('Prompt filled with answers');
 
     const systemPrompt = filledPrompt ||
-      `You are an expert PC building advisor. Analyze the user's quiz responses and provide detailed, personalized PC component recommendations. Consider their budget, intended use (gaming, work, content creation), preferences, and IMPORTANTLY their country (${answers.country || 'N/A'}) for regional availability and pricing.
+      `You are an expert PC building advisor. Analyze the quiz responses and provide personalized recommendations.
 
-${answers.country ? `IMPORTANT: The user is from ${answers.country}. Consider:
-- Component availability in ${answers.country}
-- Regional pricing and import costs
-- Local market preferences
-- Power supply compatibility (voltage/plug types)
-- Warranty and support availability
-- Shipping costs and times for components
-- Local retailers and online stores` : ''}
+${answers.country ? `User location: ${answers.country}. Consider regional availability, pricing, and local retailers.` : ''}
 
-Provide recommendations in a clear, structured format with:
-1. CPU recommendation with reasoning
-2. GPU recommendation based on their gaming/work needs
-3. RAM amount and speed suggestions
-4. Storage recommendations (SSD/HDD mix)
-5. Power supply wattage
-6. Case and cooling suggestions
-7. Estimated total cost (in local currency if applicable)
-8. Where to buy recommendations (if country is known)
+Provide recommendations with:
+1. CPU (with model number)
+2. GPU (based on gaming/work needs)
+3. RAM (amount and speed)
+4. Storage (SSD/HDD)
+5. PSU wattage
+6. Case & cooling
+7. Total cost estimate
+8. Where to buy
 
-Be specific with model numbers when possible and explain why each component fits their needs and is suitable for their region.`;
+Be specific with model numbers and explain why each component fits their needs.`;
 
     const userPrompt = `Based on these quiz responses, provide comprehensive PC build recommendations:\n\n${JSON.stringify(quizData, null, 2)}`;
 
@@ -294,29 +287,25 @@ Be specific with model numbers when possible and explain why each component fits
 
     // Try main model first
     let recommendation = '';
+    let usedModel = 'openai/gpt-5-nano';
     try {
-      recommendation = await callAIWithRetry('google/gemini-2.5-pro');
+      recommendation = await callAIWithRetry('openai/gpt-5-nano');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Primary model failed:', errorMessage);
       
-      // Fallback strategy: try flash first, then flash-lite
+      // Fallback strategy: retry with same model
       if (errorMessage === 'TIMEOUT' ||
           errorMessage === 'SSE_PARSE_FAILED' || 
           errorMessage === 'PARSE_FAILED' ||
           errorMessage === 'CONTENT_TOO_SHORT') {
-        console.log('Attempting fallback to gemini-2.5-flash...');
+        console.log('Attempting fallback retry with openai/gpt-5-nano...');
         try {
-          recommendation = await callAIWithRetry('google/gemini-2.5-flash', 2);
-        } catch (flashError) {
-          console.log('Flash model failed, trying flash-lite...');
-          try {
-            recommendation = await callAIWithRetry('google/gemini-2.5-flash-lite', 1);
-          } catch (liteError) {
-            const liteMessage = liteError instanceof Error ? liteError.message : 'Unknown error';
-            console.error('All fallback models failed:', liteMessage);
-            throw error; // Throw original error
-          }
+          recommendation = await callAIWithRetry('openai/gpt-5-nano', 2);
+        } catch (fallbackError) {
+          const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
+          console.error('Fallback retry failed:', fallbackMessage);
+          throw error; // Throw original error
         }
       } else {
         throw error;
@@ -330,7 +319,7 @@ Be specific with model numbers when possible and explain why each component fits
         session_id: sessionId,
         recommendation_text: recommendation,
         prompt_used: systemPrompt,
-        model_used: 'google/gemini-2.5-pro',
+        model_used: usedModel,
       });
 
     if (insertError) {
