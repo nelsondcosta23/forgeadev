@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Cpu, Monitor, Sparkles } from "lucide-react";
 import Quiz from "@/components/Quiz";
 
 const Index = () => {
+  const { t } = useTranslation();
   const [showQuiz, setShowQuiz] = useState(false);
 
   if (showQuiz) {
@@ -24,21 +26,17 @@ const Index = () => {
           <div className="max-w-4xl mx-auto text-center space-y-8">
             {/* Logo/Brand */}
             <div className="mb-4">
-              <h2 className="text-2xl lg:text-3xl font-bold text-primary tracking-wider">FORGEA</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-primary tracking-wider">{t('landing.brand')}</h2>
             </div>
             
             {/* Title */}
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight">
-              Find Your
-              <span className="block mt-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Perfect PC
-              </span>
+              {t('landing.title')}
             </h1>
 
             {/* Description */}
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Answer a few simple questions and get personalized recommendations 
-              based on your needs and budget.
+              {t('landing.subtitle')}
             </p>
 
             {/* CTA */}
@@ -49,7 +47,7 @@ const Index = () => {
                 className="group relative overflow-hidden bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] transition-all duration-300"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Start Quiz
+                  {t('landing.startQuiz')}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
@@ -57,23 +55,23 @@ const Index = () => {
 
             {/* How It Works */}
             <div className="pt-12 max-w-5xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+              <h2 className="text-3xl font-bold text-center mb-12">{t('landing.howItWorksTitle')}</h2>
               <div className="grid md:grid-cols-3 gap-8">
                 {[
                   {
                     step: "01",
-                    title: "Answer",
-                    description: "Simple questions about intended use and preferences",
+                    title: t('landing.step1Title'),
+                    description: t('landing.step1Desc'),
                   },
                   {
                     step: "02",
-                    title: "Analyze",
-                    description: "Our system analyzes your answers and budget",
+                    title: t('landing.step2Title'),
+                    description: t('landing.step2Desc'),
                   },
                   {
                     step: "03",
-                    title: "Receive",
-                    description: "Personalized builds with detailed explanations",
+                    title: t('landing.step3Title'),
+                    description: t('landing.step3Desc'),
                   },
                 ].map((feature, i) => (
                   <Card key={i} className="p-8 bg-gradient-to-br from-card to-card/50 border-primary/50 relative overflow-hidden group hover:border-primary hover:shadow-[var(--glow-primary)] transition-all">
@@ -96,13 +94,13 @@ const Index = () => {
       <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2025 Forgea. All rights reserved.</p>
+            <p>{t('landing.copyright')}</p>
             <div className="flex gap-6">
               <a href="/terms" className="hover:text-primary transition-colors">
-                Terms & Conditions
+                {t('landing.terms')}
               </a>
               <a href="/privacy" className="hover:text-primary transition-colors">
-                Privacy Policy
+                {t('landing.privacy')}
               </a>
             </div>
           </div>

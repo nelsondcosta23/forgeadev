@@ -1,0 +1,189 @@
+{
+  "landing": {
+    "brand": "FORGEA",
+    "title": "Finden Sie Ihren Perfekten PC",
+    "subtitle": "Beantworten Sie einige einfache Fragen und erhalten Sie personalisierte PC-Empfehlungen, die auf Ihre Bedürfnisse und Ihr Budget zugeschnitten sind.",
+    "startQuiz": "Quiz Starten",
+    "howItWorksTitle": "Wie Es Funktioniert",
+    "step1Title": "Antworten",
+    "step1Desc": "Erzählen Sie uns von Ihren Bedürfnissen, Budget und Vorlieben",
+    "step2Title": "Analysieren",
+    "step2Desc": "Unsere KI analysiert Ihre Antworten, um die perfekte Übereinstimmung zu finden",
+    "step3Title": "Empfangen",
+    "step3Desc": "Erhalten Sie sofort personalisierte PC-Empfehlungen",
+    "copyright": "© 2025 Forgea. Alle Rechte vorbehalten.",
+    "terms": "Geschäftsbedingungen",
+    "privacy": "Datenschutzrichtlinie"
+  },
+  "quiz": {
+    "header": "FORGEA",
+    "back": "Zurück",
+    "question": "Frage",
+    "of": "von",
+    "initializing": "Sitzung wird initialisiert...",
+    "submit": "Antwort Senden",
+    "analyzing": "Ihre Antworten werden mit KI analysiert",
+    "pleaseWait": "Dies kann einen Moment dauern, bitte warten",
+    "errorTitle": "Analyse Fehlgeschlagen",
+    "tryAgain": "Erneut Versuchen",
+    "viewWithoutAI": "Ergebnisse Ohne KI Anzeigen",
+    "restartQuiz": "Quiz Neu Starten"
+  },
+  "questions": {
+    "purpose": {
+      "question": "Wofür brauchen Sie den PC?",
+      "gaming": "Gaming",
+      "professional": "Berufliche Arbeit",
+      "content": "Content-Erstellung"
+    },
+    "games": {
+      "question": "Welche Art von Spielen werden Sie spielen?",
+      "competitive": "Wettbewerbsfähig/Esports (Hohe FPS)",
+      "aaa": "AAA-Titel (Hohe Grafik)",
+      "casual": "Gelegenheitsspiele"
+    },
+    "profession": {
+      "question": "Welche Art von beruflicher Arbeit?",
+      "programming": "Programmierung/Entwicklung",
+      "design": "Grafikdesign",
+      "data": "Datenanalyse",
+      "office": "Büroarbeit"
+    },
+    "contentType": {
+      "question": "Welche Art von Inhalten werden Sie erstellen?",
+      "video": "Videobearbeitung",
+      "photo": "Fotobearbeitung",
+      "3d": "3D-Modellierung/Rendering",
+      "streaming": "Streaming"
+    },
+    "budget": {
+      "question": "Was ist Ihr Budget?",
+      "value": "Budget-Build (€600-€1000)",
+      "balanced": "Ausgewogene Build (€1000-€1500)",
+      "highEnd": "High-End Build (€1500+)"
+    },
+    "aesthetics": {
+      "question": "Möchten Sie RGB-Beleuchtung und Ästhetik?",
+      "yes": "Ja, ich liebe RGB",
+      "minimal": "Minimalistisches/Sauberes Aussehen",
+      "no": "Nein, nur Leistung"
+    },
+    "futureProof": {
+      "question": "Wie wichtig ist Zukunftssicherheit?",
+      "veryImportant": "Sehr Wichtig",
+      "somewhat": "Etwas Wichtig",
+      "notImportant": "Nicht Wichtig"
+    }
+  },
+  "results": {
+    "title": "Ihre Individuellen Builds",
+    "subtitle": "Hier sind personalisierte PC-Empfehlungen basierend auf Ihren Antworten",
+    "share": "Teilen",
+    "export": "PDF Exportieren",
+    "aiRecommendation": "KI-Empfehlung",
+    "buildName": "Build-Name",
+    "estimatedPrice": "Geschätzter Preis",
+    "components": "Komponenten",
+    "performance": "Leistungserwartungen",
+    "reasoning": "Warum Diese Build?",
+    "shareTitle": "Teilen Sie Ihre Build",
+    "shareDesc": "Teilen Sie diese eindeutige URL mit anderen:",
+    "copyLink": "Link Kopieren",
+    "copied": "Link kopiert!",
+    "restart": "Neue Build Erstellen",
+    "notFound": "Ergebnisse Nicht Gefunden",
+    "notFoundDesc": "Die Build-Ergebnisse, die Sie suchen, existieren nicht oder wurden möglicherweise entfernt.",
+    "loading": "Ergebnisse werden geladen..."
+  },
+  "privacy": {
+    "title": "Datenschutzrichtlinie",
+    "backToHome": "← Zurück zur Startseite",
+    "intro": {
+      "title": "Einführung",
+      "content": "Diese Datenschutzrichtlinie erklärt, wie wir mit Ihren Informationen umgehen, wenn Sie unsere Quiz-Anwendung nutzen. Wir schätzen Ihre Privatsphäre und sammeln nur die Daten, die notwendig sind, um den Service zu betreiben und zu verbessern."
+    },
+    "collected": {
+      "title": "Informationen, Die Wir Sammeln",
+      "content": "Wir sammeln minimale Informationen, insbesondere:",
+      "item1": "Herkunftsland, um anonyme Nutzungsstatistiken zu erstellen",
+      "note": "Wir sammeln keine Namen, E-Mails oder andere persönlich identifizierbare Daten."
+    },
+    "usage": {
+      "title": "Wie Wir Diese Informationen Verwenden",
+      "content": "Wir verwenden diese Informationen ausschließlich, um:",
+      "item1": "Zu verstehen, woher unsere Benutzer kommen (Statistiken auf Länderebene)",
+      "item2": "Die Quiz-Erfahrung zu verbessern und zu optimieren"
+    },
+    "security": {
+      "title": "Datensicherheit",
+      "content": "Wir verwenden Standardsicherheitsmaßnahmen, um Daten zu schützen und sicherzustellen, dass keine persönlichen Informationen offengelegt oder missbraucht werden."
+    },
+    "thirdParty": {
+      "title": "Drittanbieterdienste",
+      "content": "Wir können Drittanbieter-Tools (z. B. Analyseanbieter) verwenden, die anonymisierte technische Informationen wie Browsertyp oder Gerät erhalten, um uns zu helfen zu verstehen, wie Benutzer mit der Website interagieren."
+    },
+    "rights": {
+      "title": "Ihre Rechte",
+      "content": "Sie können uns kontaktieren, wenn Sie Informationen über die Datenverarbeitung oder Löschung anfordern möchten. Da wir keine identifizierbaren persönlichen Daten speichern, gibt es normalerweise nichts zu löschen."
+    },
+    "changes": {
+      "title": "Änderungen an Dieser Richtlinie",
+      "content": "Wir können diese Datenschutzrichtlinie gelegentlich aktualisieren. Aktualisierungen werden auf dieser Seite veröffentlicht."
+    },
+    "contact": {
+      "title": "Kontakt",
+      "content": "Wenn Sie Fragen haben, wenden Sie sich bitte über unsere Website an uns."
+    }
+  },
+  "terms": {
+    "title": "Geschäftsbedingungen",
+    "backToHome": "← Zurück zur Startseite",
+    "alertTitle": "Wichtiger Hinweis",
+    "alertDesc": "Die von diesem Service bereitgestellten PC-Build-Empfehlungen werden von KI generiert und spiegeln möglicherweise nicht immer die aktuellsten Marktpreise, Verfügbarkeit oder Kompatibilität wider. Bitte überprüfen Sie alle Empfehlungen, bevor Sie einen Kauf tätigen.",
+    "acceptance": {
+      "title": "Annahme der Bedingungen",
+      "content": "Durch den Zugriff und die Nutzung dieser Quiz-Anwendung akzeptieren Sie diese Geschäftsbedingungen und erklären sich damit einverstanden, an sie gebunden zu sein."
+    },
+    "aiContent": {
+      "title": "KI-Generierte Inhalte",
+      "content": "Unser Service nutzt künstliche Intelligenz, um PC-Build-Empfehlungen zu erstellen. Diese Empfehlungen:",
+      "item1": "Basieren auf den Informationen, die Sie im Quiz angeben",
+      "item2": "Spiegeln möglicherweise nicht die aktuellen Marktpreise oder Verfügbarkeit wider",
+      "item3": "Sollten vor jeder Kaufentscheidung überprüft werden",
+      "item4": "Sind nur Vorschläge und keine Garantien für Leistung oder Kompatibilität"
+    },
+    "useOfService": {
+      "title": "Nutzung des Services",
+      "content": "Sie stimmen zu, diesen Service nur für rechtmäßige Zwecke zu nutzen. Sie dürfen unseren Service nicht missbrauchen, indem Sie schädlichen Code einführen oder versuchen, unbefugten Zugriff zu erlangen."
+    },
+    "intellectual": {
+      "title": "Geistiges Eigentum",
+      "content": "Der Inhalt, die Features und die Funktionalität dieses Services gehören uns und sind durch Urheberrechte und andere Gesetze zum Schutz des geistigen Eigentums geschützt."
+    },
+    "limitation": {
+      "title": "Haftungsbeschränkung",
+      "content": "Wir haften nicht für indirekte, zufällige, besondere oder Folgeschäden, die sich aus Ihrer Nutzung dieses Services ergeben."
+    },
+    "accuracy": {
+      "title": "Genauigkeit der Informationen",
+      "content": "Obwohl wir uns bemühen, genaue und aktuelle Informationen bereitzustellen, geben wir keine Garantien für die Vollständigkeit, Zuverlässigkeit oder Genauigkeit der bereitgestellten Empfehlungen ab."
+    },
+    "changes": {
+      "title": "Änderungen der Bedingungen",
+      "content": "Wir behalten uns das Recht vor, diese Bedingungen jederzeit zu ändern. Änderungen treten sofort nach der Veröffentlichung in Kraft."
+    },
+    "governing": {
+      "title": "Anwendbares Recht",
+      "content": "Diese Bedingungen unterliegen den geltenden Gesetzen und sind entsprechend auszulegen."
+    },
+    "contact": {
+      "title": "Kontakt",
+      "content": "Wenn Sie Fragen zu diesen Geschäftsbedingungen haben, kontaktieren Sie uns bitte über unsere Website."
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Hoppla! Seite nicht gefunden",
+    "home": "Zurück zur Startseite"
+  }
+}

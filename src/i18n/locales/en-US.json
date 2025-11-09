@@ -1,0 +1,189 @@
+{
+  "landing": {
+    "brand": "FORGEA",
+    "title": "Find Your Perfect PC",
+    "subtitle": "Answer a few simple questions and get personalized PC build recommendations tailored to your needs and budget.",
+    "startQuiz": "Start Quiz",
+    "howItWorksTitle": "How It Works",
+    "step1Title": "Answer",
+    "step1Desc": "Tell us about your needs, budget, and preferences",
+    "step2Title": "Analyze",
+    "step2Desc": "Our AI analyzes your responses to find the perfect match",
+    "step3Title": "Receive",
+    "step3Desc": "Get personalized PC build recommendations instantly",
+    "copyright": "© 2025 Forgea. All rights reserved.",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy"
+  },
+  "quiz": {
+    "header": "FORGEA",
+    "back": "Back",
+    "question": "Question",
+    "of": "of",
+    "initializing": "Initializing session...",
+    "submit": "Submit Answer",
+    "analyzing": "Analyzing your answers with AI",
+    "pleaseWait": "This may take a moment, please wait",
+    "errorTitle": "Analysis Failed",
+    "tryAgain": "Try Again",
+    "viewWithoutAI": "View Results Without AI",
+    "restartQuiz": "Restart Quiz"
+  },
+  "questions": {
+    "purpose": {
+      "question": "What do you need the PC for?",
+      "gaming": "Gaming",
+      "professional": "Professional Work",
+      "content": "Content Creation"
+    },
+    "games": {
+      "question": "What types of games will you be playing?",
+      "competitive": "Competitive/Esports (High FPS)",
+      "aaa": "AAA Titles (High Graphics)",
+      "casual": "Casual Gaming"
+    },
+    "profession": {
+      "question": "What type of professional work?",
+      "programming": "Programming/Development",
+      "design": "Graphic Design",
+      "data": "Data Analysis",
+      "office": "Office Work"
+    },
+    "contentType": {
+      "question": "What type of content will you create?",
+      "video": "Video Editing",
+      "photo": "Photo Editing",
+      "3d": "3D Modeling/Rendering",
+      "streaming": "Streaming"
+    },
+    "budget": {
+      "question": "What's your budget?",
+      "value": "Value Build ($600-$1000)",
+      "balanced": "Balanced Build ($1000-$1500)",
+      "highEnd": "High-End Build ($1500+)"
+    },
+    "aesthetics": {
+      "question": "Do you want RGB lighting and aesthetics?",
+      "yes": "Yes, I love RGB",
+      "minimal": "Minimal/Clean Look",
+      "no": "No, performance only"
+    },
+    "futureProof": {
+      "question": "How important is future-proofing?",
+      "veryImportant": "Very Important",
+      "somewhat": "Somewhat Important",
+      "notImportant": "Not Important"
+    }
+  },
+  "results": {
+    "title": "Your Custom Builds",
+    "subtitle": "Here are personalized PC build recommendations based on your responses",
+    "share": "Share",
+    "export": "Export PDF",
+    "aiRecommendation": "AI Recommendation",
+    "buildName": "Build Name",
+    "estimatedPrice": "Estimated Price",
+    "components": "Components",
+    "performance": "Performance Expectations",
+    "reasoning": "Why This Build?",
+    "shareTitle": "Share Your Build",
+    "shareDesc": "Share this unique URL with others:",
+    "copyLink": "Copy Link",
+    "copied": "Link copied!",
+    "restart": "Create New Build",
+    "notFound": "Results Not Found",
+    "notFoundDesc": "The build results you're looking for don't exist or may have been removed.",
+    "loading": "Loading results..."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "backToHome": "← Back to Home",
+    "intro": {
+      "title": "Introduction",
+      "content": "This Privacy Policy explains how we handle your information when you use our quiz application. We value your privacy and collect only the data necessary to operate and improve the service."
+    },
+    "collected": {
+      "title": "Information We Collect",
+      "content": "We collect minimal information, specifically:",
+      "item1": "Country of origin, to generate anonymous usage statistics",
+      "note": "We do not collect names, emails, or any personally identifying data."
+    },
+    "usage": {
+      "title": "How We Use This Information",
+      "content": "We use this information solely to:",
+      "item1": "Understand where our users come from (country-level statistics)",
+      "item2": "Improve and optimize the quiz experience"
+    },
+    "security": {
+      "title": "Data Security",
+      "content": "We use standard security measures to protect data and ensure that no personal information is exposed or misused."
+    },
+    "thirdParty": {
+      "title": "Third-Party Services",
+      "content": "We may use third-party tools (e.g., analytics providers) that receive anonymized technical information, such as browser type or device, to help us understand how users interact with the site."
+    },
+    "rights": {
+      "title": "Your Rights",
+      "content": "You can contact us if you wish to request information about data handling or deletion. Since we do not store identifiable personal data, there is usually nothing to delete."
+    },
+    "changes": {
+      "title": "Changes to This Policy",
+      "content": "We may update this Privacy Policy occasionally. Updates will be published on this page."
+    },
+    "contact": {
+      "title": "Contact",
+      "content": "If you have any questions, please reach out through our website."
+    }
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "backToHome": "← Back to Home",
+    "alertTitle": "Important Notice",
+    "alertDesc": "The PC build recommendations provided by this service are generated by AI and may not always reflect the most current market prices, availability, or compatibility. Please verify all recommendations before making any purchase.",
+    "acceptance": {
+      "title": "Acceptance of Terms",
+      "content": "By accessing and using this quiz application, you accept and agree to be bound by these Terms and Conditions."
+    },
+    "aiContent": {
+      "title": "AI-Generated Content",
+      "content": "Our service uses artificial intelligence to generate PC build recommendations. These recommendations:",
+      "item1": "Are based on the information you provide in the quiz",
+      "item2": "May not reflect current market prices or availability",
+      "item3": "Should be verified before making any purchase decisions",
+      "item4": "Are suggestions only and not guarantees of performance or compatibility"
+    },
+    "useOfService": {
+      "title": "Use of Service",
+      "content": "You agree to use this service for lawful purposes only. You must not misuse our service by introducing malicious code or attempting to gain unauthorized access."
+    },
+    "intellectual": {
+      "title": "Intellectual Property",
+      "content": "The content, features, and functionality of this service are owned by us and are protected by copyright and other intellectual property laws."
+    },
+    "limitation": {
+      "title": "Limitation of Liability",
+      "content": "We shall not be liable for any indirect, incidental, special, or consequential damages resulting from your use of this service."
+    },
+    "accuracy": {
+      "title": "Accuracy of Information",
+      "content": "While we strive to provide accurate and up-to-date information, we make no warranties about the completeness, reliability, or accuracy of the recommendations provided."
+    },
+    "changes": {
+      "title": "Changes to Terms",
+      "content": "We reserve the right to modify these terms at any time. Changes will be effective immediately upon posting."
+    },
+    "governing": {
+      "title": "Governing Law",
+      "content": "These terms shall be governed by and construed in accordance with applicable laws."
+    },
+    "contact": {
+      "title": "Contact",
+      "content": "If you have questions about these Terms and Conditions, please contact us through our website."
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Oops! Page not found",
+    "home": "Return to Home"
+  }
+}

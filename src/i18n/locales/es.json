@@ -1,0 +1,189 @@
+{
+  "landing": {
+    "brand": "FORGEA",
+    "title": "Encuentra Tu PC Perfecto",
+    "subtitle": "Responde algunas preguntas simples y obtén recomendaciones personalizadas de PC adaptadas a tus necesidades y presupuesto.",
+    "startQuiz": "Iniciar Quiz",
+    "howItWorksTitle": "Cómo Funciona",
+    "step1Title": "Responder",
+    "step1Desc": "Cuéntanos sobre tus necesidades, presupuesto y preferencias",
+    "step2Title": "Analizar",
+    "step2Desc": "Nuestra IA analiza tus respuestas para encontrar la combinación perfecta",
+    "step3Title": "Recibir",
+    "step3Desc": "Obtén recomendaciones personalizadas de PC al instante",
+    "copyright": "© 2025 Forgea. Todos los derechos reservados.",
+    "terms": "Términos y Condiciones",
+    "privacy": "Política de Privacidad"
+  },
+  "quiz": {
+    "header": "FORGEA",
+    "back": "Atrás",
+    "question": "Pregunta",
+    "of": "de",
+    "initializing": "Inicializando sesión...",
+    "submit": "Enviar Respuesta",
+    "analyzing": "Analizando tus respuestas con IA",
+    "pleaseWait": "Esto puede tomar un momento, por favor espera",
+    "errorTitle": "Análisis Falló",
+    "tryAgain": "Intentar de Nuevo",
+    "viewWithoutAI": "Ver Resultados Sin IA",
+    "restartQuiz": "Reiniciar Quiz"
+  },
+  "questions": {
+    "purpose": {
+      "question": "¿Para qué necesitas el PC?",
+      "gaming": "Juegos",
+      "professional": "Trabajo Profesional",
+      "content": "Creación de Contenido"
+    },
+    "games": {
+      "question": "¿Qué tipos de juegos vas a jugar?",
+      "competitive": "Competitivo/Esports (FPS Alto)",
+      "aaa": "Títulos AAA (Gráficos Elevados)",
+      "casual": "Juegos Casuales"
+    },
+    "profession": {
+      "question": "¿Qué tipo de trabajo profesional?",
+      "programming": "Programación/Desarrollo",
+      "design": "Diseño Gráfico",
+      "data": "Análisis de Datos",
+      "office": "Trabajo de Oficina"
+    },
+    "contentType": {
+      "question": "¿Qué tipo de contenido vas a crear?",
+      "video": "Edición de Video",
+      "photo": "Edición de Fotografía",
+      "3d": "Modelado/Renderizado 3D",
+      "streaming": "Streaming"
+    },
+    "budget": {
+      "question": "¿Cuál es tu presupuesto?",
+      "value": "Build Económica (€600-€1000)",
+      "balanced": "Build Equilibrada (€1000-€1500)",
+      "highEnd": "Build High-End (€1500+)"
+    },
+    "aesthetics": {
+      "question": "¿Quieres iluminación RGB y estética?",
+      "yes": "Sí, me encanta RGB",
+      "minimal": "Visual Minimalista/Limpio",
+      "no": "No, solo rendimiento"
+    },
+    "futureProof": {
+      "question": "¿Qué tan importante es estar preparado para el futuro?",
+      "veryImportant": "Muy Importante",
+      "somewhat": "Algo Importante",
+      "notImportant": "No es Importante"
+    }
+  },
+  "results": {
+    "title": "Tus Builds Personalizadas",
+    "subtitle": "Aquí están las recomendaciones de PC personalizadas basadas en tus respuestas",
+    "share": "Compartir",
+    "export": "Exportar PDF",
+    "aiRecommendation": "Recomendación IA",
+    "buildName": "Nombre de la Build",
+    "estimatedPrice": "Precio Estimado",
+    "components": "Componentes",
+    "performance": "Expectativas de Rendimiento",
+    "reasoning": "¿Por Qué Esta Build?",
+    "shareTitle": "Compartir Tu Build",
+    "shareDesc": "Comparte esta URL única con otros:",
+    "copyLink": "Copiar Link",
+    "copied": "¡Link copiado!",
+    "restart": "Crear Nueva Build",
+    "notFound": "Resultados No Encontrados",
+    "notFoundDesc": "Los resultados de la build que buscas no existen o pueden haber sido eliminados.",
+    "loading": "Cargando resultados..."
+  },
+  "privacy": {
+    "title": "Política de Privacidad",
+    "backToHome": "← Volver al Inicio",
+    "intro": {
+      "title": "Introducción",
+      "content": "Esta Política de Privacidad explica cómo manejamos tu información cuando usas nuestra aplicación de quiz. Valoramos tu privacidad y recopilamos solo los datos necesarios para operar y mejorar el servicio."
+    },
+    "collected": {
+      "title": "Información Que Recopilamos",
+      "content": "Recopilamos información mínima, específicamente:",
+      "item1": "País de origen, para generar estadísticas de uso anónimas",
+      "note": "No recopilamos nombres, correos electrónicos o cualquier dato de identificación personal."
+    },
+    "usage": {
+      "title": "Cómo Usamos Esta Información",
+      "content": "Usamos esta información únicamente para:",
+      "item1": "Entender de dónde vienen nuestros usuarios (estadísticas a nivel de país)",
+      "item2": "Mejorar y optimizar la experiencia del quiz"
+    },
+    "security": {
+      "title": "Seguridad de Datos",
+      "content": "Utilizamos medidas de seguridad estándar para proteger los datos y garantizar que ninguna información personal sea expuesta o mal utilizada."
+    },
+    "thirdParty": {
+      "title": "Servicios de Terceros",
+      "content": "Podemos usar herramientas de terceros (por ejemplo, proveedores de análisis) que reciben información técnica anonimizada, como tipo de navegador o dispositivo, para ayudarnos a entender cómo los usuarios interactúan con el sitio."
+    },
+    "rights": {
+      "title": "Tus Derechos",
+      "content": "Puedes contactarnos si deseas solicitar información sobre el manejo o eliminación de datos. Como no almacenamos datos personales identificables, generalmente no hay nada que eliminar."
+    },
+    "changes": {
+      "title": "Cambios a Esta Política",
+      "content": "Podemos actualizar esta Política de Privacidad ocasionalmente. Las actualizaciones se publicarán en esta página."
+    },
+    "contact": {
+      "title": "Contacto",
+      "content": "Si tienes alguna pregunta, comunícate a través de nuestro sitio web."
+    }
+  },
+  "terms": {
+    "title": "Términos y Condiciones",
+    "backToHome": "← Volver al Inicio",
+    "alertTitle": "Aviso Importante",
+    "alertDesc": "Las recomendaciones de build de PC proporcionadas por este servicio son generadas por IA y pueden no reflejar siempre los precios de mercado, disponibilidad o compatibilidad más actuales. Por favor, verifica todas las recomendaciones antes de realizar cualquier compra.",
+    "acceptance": {
+      "title": "Aceptación de los Términos",
+      "content": "Al acceder y usar esta aplicación de quiz, aceptas y estás de acuerdo en estar vinculado a estos Términos y Condiciones."
+    },
+    "aiContent": {
+      "title": "Contenido Generado por IA",
+      "content": "Nuestro servicio usa inteligencia artificial para generar recomendaciones de build de PC. Estas recomendaciones:",
+      "item1": "Están basadas en la información que proporcionas en el quiz",
+      "item2": "Pueden no reflejar los precios de mercado o disponibilidad actuales",
+      "item3": "Deben ser verificadas antes de tomar cualquier decisión de compra",
+      "item4": "Son solo sugerencias y no garantías de rendimiento o compatibilidad"
+    },
+    "useOfService": {
+      "title": "Uso del Servicio",
+      "content": "Aceptas usar este servicio solo para fines legales. No debes hacer mal uso de nuestro servicio introduciendo código malicioso o intentando obtener acceso no autorizado."
+    },
+    "intellectual": {
+      "title": "Propiedad Intelectual",
+      "content": "El contenido, funcionalidades y funcionalidad de este servicio son propiedad nuestra y están protegidos por derechos de autor y otras leyes de propiedad intelectual."
+    },
+    "limitation": {
+      "title": "Limitación de Responsabilidad",
+      "content": "No seremos responsables por cualquier daño indirecto, incidental, especial o consecuente resultante de tu uso de este servicio."
+    },
+    "accuracy": {
+      "title": "Precisión de la Información",
+      "content": "Aunque nos esforzamos por proporcionar información precisa y actualizada, no hacemos garantías sobre la integridad, confiabilidad o precisión de las recomendaciones proporcionadas."
+    },
+    "changes": {
+      "title": "Cambios a los Términos",
+      "content": "Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor inmediatamente después de su publicación."
+    },
+    "governing": {
+      "title": "Ley Aplicable",
+      "content": "Estos términos serán regidos e interpretados de acuerdo con las leyes aplicables."
+    },
+    "contact": {
+      "title": "Contacto",
+      "content": "Si tienes preguntas sobre estos Términos y Condiciones, contáctanos a través de nuestro sitio web."
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "¡Ups! Página no encontrada",
+    "home": "Volver al Inicio"
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "landing": {
+    "brand": "FORGEA",
+    "title": "Trouvez Votre PC Parfait",
+    "subtitle": "Répondez à quelques questions simples et obtenez des recommandations personnalisées de PC adaptées à vos besoins et budget.",
+    "startQuiz": "Démarrer le Quiz",
+    "howItWorksTitle": "Comment Ça Marche",
+    "step1Title": "Répondre",
+    "step1Desc": "Parlez-nous de vos besoins, budget et préférences",
+    "step2Title": "Analyser",
+    "step2Desc": "Notre IA analyse vos réponses pour trouver la combinaison parfaite",
+    "step3Title": "Recevoir",
+    "step3Desc": "Obtenez des recommandations personnalisées de PC instantanément",
+    "copyright": "© 2025 Forgea. Tous droits réservés.",
+    "terms": "Conditions Générales",
+    "privacy": "Politique de Confidentialité"
+  },
+  "quiz": {
+    "header": "FORGEA",
+    "back": "Retour",
+    "question": "Question",
+    "of": "sur",
+    "initializing": "Initialisation de la session...",
+    "submit": "Soumettre la Réponse",
+    "analyzing": "Analyse de vos réponses avec l'IA",
+    "pleaseWait": "Cela peut prendre un moment, veuillez patienter",
+    "errorTitle": "Échec de l'Analyse",
+    "tryAgain": "Réessayer",
+    "viewWithoutAI": "Voir les Résultats Sans IA",
+    "restartQuiz": "Redémarrer le Quiz"
+  },
+  "questions": {
+    "purpose": {
+      "question": "Pour quoi avez-vous besoin du PC?",
+      "gaming": "Jeux",
+      "professional": "Travail Professionnel",
+      "content": "Création de Contenu"
+    },
+    "games": {
+      "question": "Quels types de jeux allez-vous jouer?",
+      "competitive": "Compétitif/Esports (FPS Élevé)",
+      "aaa": "Titres AAA (Graphismes Élevés)",
+      "casual": "Jeux Occasionnels"
+    },
+    "profession": {
+      "question": "Quel type de travail professionnel?",
+      "programming": "Programmation/Développement",
+      "design": "Design Graphique",
+      "data": "Analyse de Données",
+      "office": "Travail de Bureau"
+    },
+    "contentType": {
+      "question": "Quel type de contenu allez-vous créer?",
+      "video": "Montage Vidéo",
+      "photo": "Retouche Photo",
+      "3d": "Modélisation/Rendu 3D",
+      "streaming": "Streaming"
+    },
+    "budget": {
+      "question": "Quel est votre budget?",
+      "value": "Build Économique (€600-€1000)",
+      "balanced": "Build Équilibrée (€1000-€1500)",
+      "highEnd": "Build Haut de Gamme (€1500+)"
+    },
+    "aesthetics": {
+      "question": "Voulez-vous un éclairage RGB et de l'esthétique?",
+      "yes": "Oui, j'adore le RGB",
+      "minimal": "Look Minimaliste/Épuré",
+      "no": "Non, performance seulement"
+    },
+    "futureProof": {
+      "question": "Quelle importance accordez-vous à la pérennité?",
+      "veryImportant": "Très Important",
+      "somewhat": "Assez Important",
+      "notImportant": "Pas Important"
+    }
+  },
+  "results": {
+    "title": "Vos Builds Personnalisées",
+    "subtitle": "Voici des recommandations de PC personnalisées basées sur vos réponses",
+    "share": "Partager",
+    "export": "Exporter PDF",
+    "aiRecommendation": "Recommandation IA",
+    "buildName": "Nom de la Build",
+    "estimatedPrice": "Prix Estimé",
+    "components": "Composants",
+    "performance": "Attentes de Performance",
+    "reasoning": "Pourquoi Cette Build?",
+    "shareTitle": "Partager Votre Build",
+    "shareDesc": "Partagez cette URL unique avec d'autres:",
+    "copyLink": "Copier le Lien",
+    "copied": "Lien copié!",
+    "restart": "Créer une Nouvelle Build",
+    "notFound": "Résultats Non Trouvés",
+    "notFoundDesc": "Les résultats de la build que vous recherchez n'existent pas ou ont peut-être été supprimés.",
+    "loading": "Chargement des résultats..."
+  },
+  "privacy": {
+    "title": "Politique de Confidentialité",
+    "backToHome": "← Retour à l'Accueil",
+    "intro": {
+      "title": "Introduction",
+      "content": "Cette Politique de Confidentialité explique comment nous gérons vos informations lorsque vous utilisez notre application de quiz. Nous valorisons votre vie privée et ne collectons que les données nécessaires pour opérer et améliorer le service."
+    },
+    "collected": {
+      "title": "Informations Que Nous Collectons",
+      "content": "Nous collectons un minimum d'informations, spécifiquement:",
+      "item1": "Pays d'origine, pour générer des statistiques d'utilisation anonymes",
+      "note": "Nous ne collectons pas de noms, d'e-mails ou toute donnée d'identification personnelle."
+    },
+    "usage": {
+      "title": "Comment Nous Utilisons Ces Informations",
+      "content": "Nous utilisons ces informations uniquement pour:",
+      "item1": "Comprendre d'où viennent nos utilisateurs (statistiques au niveau du pays)",
+      "item2": "Améliorer et optimiser l'expérience du quiz"
+    },
+    "security": {
+      "title": "Sécurité des Données",
+      "content": "Nous utilisons des mesures de sécurité standard pour protéger les données et garantir qu'aucune information personnelle n'est exposée ou mal utilisée."
+    },
+    "thirdParty": {
+      "title": "Services Tiers",
+      "content": "Nous pouvons utiliser des outils tiers (par exemple, des fournisseurs d'analyse) qui reçoivent des informations techniques anonymisées, telles que le type de navigateur ou l'appareil, pour nous aider à comprendre comment les utilisateurs interagissent avec le site."
+    },
+    "rights": {
+      "title": "Vos Droits",
+      "content": "Vous pouvez nous contacter si vous souhaitez demander des informations sur le traitement ou la suppression des données. Comme nous ne stockons pas de données personnelles identifiables, il n'y a généralement rien à supprimer."
+    },
+    "changes": {
+      "title": "Modifications de Cette Politique",
+      "content": "Nous pouvons mettre à jour cette Politique de Confidentialité occasionnellement. Les mises à jour seront publiées sur cette page."
+    },
+    "contact": {
+      "title": "Contact",
+      "content": "Si vous avez des questions, veuillez nous contacter via notre site web."
+    }
+  },
+  "terms": {
+    "title": "Conditions Générales",
+    "backToHome": "← Retour à l'Accueil",
+    "alertTitle": "Avis Important",
+    "alertDesc": "Les recommandations de build de PC fournies par ce service sont générées par IA et peuvent ne pas toujours refléter les prix du marché, la disponibilité ou la compatibilité les plus actuels. Veuillez vérifier toutes les recommandations avant d'effectuer tout achat.",
+    "acceptance": {
+      "title": "Acceptation des Conditions",
+      "content": "En accédant et en utilisant cette application de quiz, vous acceptez et consentez à être lié par ces Conditions Générales."
+    },
+    "aiContent": {
+      "title": "Contenu Généré par IA",
+      "content": "Notre service utilise l'intelligence artificielle pour générer des recommandations de build de PC. Ces recommandations:",
+      "item1": "Sont basées sur les informations que vous fournissez dans le quiz",
+      "item2": "Peuvent ne pas refléter les prix du marché ou la disponibilité actuels",
+      "item3": "Doivent être vérifiées avant de prendre toute décision d'achat",
+      "item4": "Sont des suggestions uniquement et non des garanties de performance ou de compatibilité"
+    },
+    "useOfService": {
+      "title": "Utilisation du Service",
+      "content": "Vous acceptez d'utiliser ce service uniquement à des fins légales. Vous ne devez pas abuser de notre service en introduisant du code malveillant ou en tentant d'obtenir un accès non autorisé."
+    },
+    "intellectual": {
+      "title": "Propriété Intellectuelle",
+      "content": "Le contenu, les fonctionnalités et la fonctionnalité de ce service nous appartiennent et sont protégés par le droit d'auteur et d'autres lois sur la propriété intellectuelle."
+    },
+    "limitation": {
+      "title": "Limitation de Responsabilité",
+      "content": "Nous ne serons pas responsables de tout dommage indirect, accessoire, spécial ou consécutif résultant de votre utilisation de ce service."
+    },
+    "accuracy": {
+      "title": "Précision des Informations",
+      "content": "Bien que nous nous efforcions de fournir des informations précises et à jour, nous ne faisons aucune garantie quant à l'exhaustivité, la fiabilité ou la précision des recommandations fournies."
+    },
+    "changes": {
+      "title": "Modifications des Conditions",
+      "content": "Nous nous réservons le droit de modifier ces conditions à tout moment. Les modifications entreront en vigueur immédiatement après leur publication."
+    },
+    "governing": {
+      "title": "Loi Applicable",
+      "content": "Ces conditions seront régies et interprétées conformément aux lois applicables."
+    },
+    "contact": {
+      "title": "Contact",
+      "content": "Si vous avez des questions sur ces Conditions Générales, veuillez nous contacter via notre site web."
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Oups! Page non trouvée",
+    "home": "Retour à l'Accueil"
+  }
+}
