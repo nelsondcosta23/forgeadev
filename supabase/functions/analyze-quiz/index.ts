@@ -18,6 +18,48 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   );
 
+  // Language mapping: country code -> language for AI responses
+  const countryToLanguage: { [key: string]: string } = {
+    'PT': 'Portuguese (Portugal)', 'BR': 'Portuguese (Brazil)', 'ES': 'Spanish', 'FR': 'French',
+    'DE': 'German', 'IT': 'Italian', 'NL': 'Dutch', 'BE': 'Dutch/French', 'AT': 'German',
+    'CH': 'German/French', 'PL': 'Polish', 'SE': 'Swedish', 'NO': 'Norwegian', 'DK': 'Danish',
+    'FI': 'Finnish', 'IE': 'English', 'GB': 'English (UK)', 'US': 'English (US)', 'CA': 'English',
+    'AU': 'English', 'NZ': 'English', 'MX': 'Spanish', 'AR': 'Spanish', 'CL': 'Spanish',
+    'CO': 'Spanish', 'PE': 'Spanish', 'JP': 'Japanese', 'KR': 'Korean', 'CN': 'Chinese',
+    'IN': 'English', 'SG': 'English', 'TH': 'Thai', 'MY': 'English', 'ID': 'Indonesian',
+    'PH': 'English', 'VN': 'Vietnamese', 'ZA': 'English', 'AE': 'English', 'SA': 'Arabic',
+    'IL': 'Hebrew', 'TR': 'Turkish', 'RU': 'Russian', 'UA': 'Ukrainian', 'CZ': 'Czech',
+    'GR': 'Greek', 'RO': 'Romanian', 'HU': 'Hungarian', 'OTHER': 'English',
+  };
+
+  // Currency mapping: country code -> currency symbol and code
+  const countryToCurrency: { [key: string]: { symbol: string; code: string } } = {
+    'PT': { symbol: '€', code: 'EUR' }, 'ES': { symbol: '€', code: 'EUR' },
+    'FR': { symbol: '€', code: 'EUR' }, 'DE': { symbol: '€', code: 'EUR' },
+    'IT': { symbol: '€', code: 'EUR' }, 'NL': { symbol: '€', code: 'EUR' },
+    'BE': { symbol: '€', code: 'EUR' }, 'AT': { symbol: '€', code: 'EUR' },
+    'IE': { symbol: '€', code: 'EUR' }, 'FI': { symbol: '€', code: 'EUR' },
+    'GR': { symbol: '€', code: 'EUR' }, 'BR': { symbol: 'R$', code: 'BRL' },
+    'GB': { symbol: '£', code: 'GBP' }, 'US': { symbol: '$', code: 'USD' },
+    'CA': { symbol: 'CA$', code: 'CAD' }, 'AU': { symbol: 'AU$', code: 'AUD' },
+    'NZ': { symbol: 'NZ$', code: 'NZD' }, 'MX': { symbol: 'MX$', code: 'MXN' },
+    'AR': { symbol: 'AR$', code: 'ARS' }, 'CL': { symbol: 'CL$', code: 'CLP' },
+    'CO': { symbol: 'CO$', code: 'COP' }, 'PE': { symbol: 'S/', code: 'PEN' },
+    'CH': { symbol: 'CHF', code: 'CHF' }, 'SE': { symbol: 'kr', code: 'SEK' },
+    'NO': { symbol: 'kr', code: 'NOK' }, 'DK': { symbol: 'kr', code: 'DKK' },
+    'PL': { symbol: 'zł', code: 'PLN' }, 'CZ': { symbol: 'Kč', code: 'CZK' },
+    'HU': { symbol: 'Ft', code: 'HUF' }, 'RO': { symbol: 'lei', code: 'RON' },
+    'JP': { symbol: '¥', code: 'JPY' }, 'KR': { symbol: '₩', code: 'KRW' },
+    'CN': { symbol: '¥', code: 'CNY' }, 'IN': { symbol: '₹', code: 'INR' },
+    'SG': { symbol: 'S$', code: 'SGD' }, 'TH': { symbol: '฿', code: 'THB' },
+    'MY': { symbol: 'RM', code: 'MYR' }, 'ID': { symbol: 'Rp', code: 'IDR' },
+    'PH': { symbol: '₱', code: 'PHP' }, 'VN': { symbol: '₫', code: 'VND' },
+    'ZA': { symbol: 'R', code: 'ZAR' }, 'AE': { symbol: 'AED', code: 'AED' },
+    'SA': { symbol: 'SAR', code: 'SAR' }, 'IL': { symbol: '₪', code: 'ILS' },
+    'TR': { symbol: '₺', code: 'TRY' }, 'RU': { symbol: '₽', code: 'RUB' },
+    'UA': { symbol: '₴', code: 'UAH' }, 'OTHER': { symbol: '$', code: 'USD' },
+  };
+
   try {
     const { answers, questions, sessionId } = await req.json();
     
@@ -82,6 +124,54 @@ serve(async (req) => {
     
     console.log('Custom prompt length:', sanitizedPrompt.length);
 
+    // Extract user's country from answers
+    const userCountryCode = answers.country || 'US';
+    const userLanguage = countryToLanguage[userCountryCode] || 'English';
+    const userCurrency = countryToCurrency[userCountryCode] || { symbol: '$', code: 'USD' };
+
+    console.log('User location info:', { 
+      country: userCountryCode, 
+      language: userLanguage, 
+      currency: userCurrency 
+    });
+
+    // Fetch store links for the user's country from database
+    const { data: storeLinks, error: storeError } = await supabase
+      .from('country_store_links')
+      .select('store_name, store_url')
+      .eq('country_code', userCountryCode)
+      .eq('status', true);
+
+    if (storeError) {
+      console.error('Error fetching store links:', storeError);
+    }
+
+    // Build store recommendations based on what we found
+    let storeInstructions = '';
+    if (storeLinks && storeLinks.length > 0) {
+      const storeList = storeLinks
+        .map(store => `  - ${store.store_name}: ${store.store_url}`)
+        .join('\n');
+      
+      storeInstructions = `
+RECOMMENDED STORES for ${userCountryCode}:
+${storeList}
+
+CRITICAL: When suggesting where to buy components, you MUST ONLY recommend these stores.
+For each component, specify which store to check and what to search for.
+Example: "Search for 'RTX 4060' at ${storeLinks[0].store_name}"`;
+      
+      console.log('Found', storeLinks.length, 'stores for', userCountryCode);
+    } else {
+      storeInstructions = `
+NO SPECIFIC STORES AVAILABLE for ${userCountryCode}.
+
+FALLBACK: Recommend Amazon.com as the primary source for components.
+Mention that prices may vary and shipping costs may apply to ${userCountryCode}.`;
+      
+      console.log('No stores found for', userCountryCode, '- using Amazon.com fallback');
+    }
+
     // Format the quiz data for AI analysis
     const quizData = questions.map((q: any) => ({
       question: q.question,
@@ -112,21 +202,108 @@ serve(async (req) => {
     console.log('Prompt filled with answers');
 
     const systemPrompt = filledPrompt ||
-      `You are an expert PC building advisor. Analyze the quiz responses and provide personalized recommendations.
+      `You are an expert PC building advisor with deep knowledge of hardware and regional availability.
 
-${answers.country ? `User location: ${answers.country}. Consider regional availability, pricing, and local retailers.` : ''}
+═══════════════════════════════════════════════════════════════
+🌍 CRITICAL LOCALIZATION REQUIREMENTS (MUST FOLLOW):
+═══════════════════════════════════════════════════════════════
 
-Provide recommendations with:
-1. CPU (with model number)
-2. GPU (based on gaming/work needs)
-3. RAM (amount and speed)
-4. Storage (SSD/HDD)
-5. PSU wattage
-6. Case & cooling
-7. Total cost estimate
-8. Where to buy
+1. 🗣️ LANGUAGE: Respond ENTIRELY in ${userLanguage}
+   - ALL text, explanations, component names, and descriptions must be in this language
+   - Use natural, native phrasing appropriate for this language
+   - Do NOT mix languages - stay consistent throughout
 
-Be specific with model numbers and explain why each component fits their needs.`;
+2. 💰 CURRENCY: Display ALL prices in ${userCurrency.code} (${userCurrency.symbol})
+   - Format: ${userCurrency.symbol}XXX (example: ${userCurrency.symbol}1,200)
+   - Consider regional pricing differences
+   - Mention if prices are approximate
+
+3. 🛒 STORES: ${storeLinks && storeLinks.length > 0 ? 'ONLY recommend the following stores' : 'Use Amazon.com as fallback'}
+${storeInstructions}
+
+═══════════════════════════════════════════════════════════════
+📋 USER PROFILE:
+═══════════════════════════════════════════════════════════════
+- Country: ${userCountryCode}
+- Language: ${userLanguage}
+- Currency: ${userCurrency.code}
+- Budget: ${answers.budget || 'Not specified'}${userCurrency.symbol}
+
+═══════════════════════════════════════════════════════════════
+🎯 RECOMMENDATION STRUCTURE (in ${userLanguage}):
+═══════════════════════════════════════════════════════════════
+
+Provide a comprehensive PC build recommendation with these sections:
+
+1. **CPU (Processor)**
+   - Specific model with generation
+   - Why it fits their needs
+   - Approximate price in ${userCurrency.code}
+   - Where to buy (from approved stores)
+
+2. **GPU (Graphics Card)**
+   - Exact model and VRAM
+   - Performance expectations for their use case
+   - Price in ${userCurrency.code}
+   - Store recommendation
+
+3. **Motherboard**
+   - Model compatible with CPU
+   - Key features (WiFi, connectivity)
+   - Price in ${userCurrency.code}
+   - Where to find it
+
+4. **RAM (Memory)**
+   - Capacity, speed, and specific kit
+   - Why this amount is suitable
+   - Price in ${userCurrency.code}
+   - Store suggestion
+
+5. **Storage**
+   - Primary NVMe SSD (capacity and speed)
+   - Optional secondary HDD if needed
+   - Prices in ${userCurrency.code}
+   - Where to buy
+
+6. **PSU (Power Supply)**
+   - Wattage and efficiency rating (80+ Bronze/Gold)
+   - Why this capacity
+   - Price in ${userCurrency.code}
+   - Store recommendation
+
+7. **Case**
+   - Model with good cooling
+   - Size preference consideration
+   - Price in ${userCurrency.code}
+   - Where to buy
+
+8. **💰 TOTAL COST ESTIMATE**
+   - Sum of all components in ${userCurrency.code}
+   - Mention if peripherals are included
+   - Note any additional costs (shipping, etc.)
+
+9. **🛒 SHOPPING GUIDE**
+   - Step-by-step purchasing advice
+   - Priority order for buying components
+   - Tips for finding deals in ${userCountryCode}
+
+10. **⚡ PERFORMANCE EXPECTATIONS**
+    - What they can expect with this build
+    - FPS estimates for games (if gaming PC)
+    - Rendering times (if content creation)
+
+═══════════════════════════════════════════════════════════════
+✅ QUALITY CHECKLIST:
+═══════════════════════════════════════════════════════════════
+- [ ] Entire response in ${userLanguage}
+- [ ] All prices in ${userCurrency.code} (${userCurrency.symbol})
+- [ ] Only recommended stores listed
+- [ ] Specific model numbers for all components
+- [ ] Clear explanations for each choice
+- [ ] Total cost within or near budget
+- [ ] Realistic performance expectations
+
+Remember: This recommendation will directly impact their purchasing decisions. Be accurate, specific, and helpful!`;
 
     const userPrompt = `Based on these quiz responses, provide comprehensive PC build recommendations:\n\n${JSON.stringify(quizData, null, 2)}`;
 
