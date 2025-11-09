@@ -30,6 +30,10 @@
     "restartQuiz": "Reiniciar Quiz"
   },
   "questions": {
+    "country": {
+      "question": "¿De qué país eres?",
+      "description": "Esto nos ayuda a proporcionar recomendaciones más precisas"
+    },
     "purpose": {
       "question": "¿Para qué necesitas el PC?",
       "gaming": "Juegos",

@@ -30,6 +30,10 @@
     "restartQuiz": "Quiz Neu Starten"
   },
   "questions": {
+    "country": {
+      "question": "Aus welchem Land kommen Sie?",
+      "description": "Dies hilft uns, genauere Empfehlungen zu geben"
+    },
     "purpose": {
       "question": "Wofür brauchen Sie den PC?",
       "gaming": "Gaming",

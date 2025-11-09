@@ -22,6 +22,29 @@ export interface Question {
 
 export const questions: Question[] = [
   {
+    id: "country",
+    question: "What country are you from?",
+    description: "This helps us provide more accurate recommendations",
+    type: "single",
+    options: [
+      { value: "PT", label: "Portugal", icon: "🇵🇹" },
+      { value: "BR", label: "Brazil", icon: "🇧🇷" },
+      { value: "ES", label: "Spain", icon: "🇪🇸" },
+      { value: "US", label: "United States", icon: "🇺🇸" },
+      { value: "GB", label: "United Kingdom", icon: "🇬🇧" },
+      { value: "FR", label: "France", icon: "🇫🇷" },
+      { value: "DE", label: "Germany", icon: "🇩🇪" },
+      { value: "IT", label: "Italy", icon: "🇮🇹" },
+      { value: "NL", label: "Netherlands", icon: "🇳🇱" },
+      { value: "BE", label: "Belgium", icon: "🇧🇪" },
+      { value: "MX", label: "Mexico", icon: "🇲🇽" },
+      { value: "AR", label: "Argentina", icon: "🇦🇷" },
+      { value: "CA", label: "Canada", icon: "🇨🇦" },
+      { value: "AU", label: "Australia", icon: "🇦🇺" },
+      { value: "OTHER", label: "Other", icon: "🌍" },
+    ],
+  },
+  {
     id: "purpose",
     question: "What do you need the PC for?",
     description: "Select your computer's primary use",

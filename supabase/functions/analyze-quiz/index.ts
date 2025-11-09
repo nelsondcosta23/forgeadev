@@ -92,6 +92,7 @@ serve(async (req) => {
     // Interpolate placeholders in prompt
     const fillPromptPlaceholders = (prompt: string, answers: any): string => {
       const placeholderMap: { [key: string]: string } = {
+        country: String(answers.country || 'N/A'),
         use: String(answers.purpose || 'N/A'),
         genres_or_workloads: answers.purpose === 'gaming' ? String(answers.games || 'N/A') : String(answers.purpose || 'N/A'),
         resolution: String(answers.resolution || 'N/A'),
@@ -111,7 +112,16 @@ serve(async (req) => {
     console.log('Prompt filled with answers');
 
     const systemPrompt = filledPrompt ||
-      `You are an expert PC building advisor. Analyze the user's quiz responses and provide detailed, personalized PC component recommendations. Consider their budget, intended use (gaming, work, content creation), and preferences.
+      `You are an expert PC building advisor. Analyze the user's quiz responses and provide detailed, personalized PC component recommendations. Consider their budget, intended use (gaming, work, content creation), preferences, and IMPORTANTLY their country (${answers.country || 'N/A'}) for regional availability and pricing.
+
+${answers.country ? `IMPORTANT: The user is from ${answers.country}. Consider:
+- Component availability in ${answers.country}
+- Regional pricing and import costs
+- Local market preferences
+- Power supply compatibility (voltage/plug types)
+- Warranty and support availability
+- Shipping costs and times for components
+- Local retailers and online stores` : ''}
 
 Provide recommendations in a clear, structured format with:
 1. CPU recommendation with reasoning
@@ -120,9 +130,10 @@ Provide recommendations in a clear, structured format with:
 4. Storage recommendations (SSD/HDD mix)
 5. Power supply wattage
 6. Case and cooling suggestions
-7. Estimated total cost
+7. Estimated total cost (in local currency if applicable)
+8. Where to buy recommendations (if country is known)
 
-Be specific with model numbers when possible and explain why each component fits their needs.`;
+Be specific with model numbers when possible and explain why each component fits their needs and is suitable for their region.`;
 
     const userPrompt = `Based on these quiz responses, provide comprehensive PC build recommendations:\n\n${JSON.stringify(quizData, null, 2)}`;
 
