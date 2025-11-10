@@ -210,12 +210,19 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
       doc.setTextColor(255, 90, 30);
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("🤖 AI Personalized Recommendation", margin + 10, yPos + 8);
+      doc.text("AI Personalized Recommendation", margin + 10, yPos + 8);
       
       yPos += 18;
 
       // Process AI recommendation with improved formatting
-      const recLines = aiRecommendation.replace(/\r\n/g, "\n").split("\n");
+      // Remove all emojis from the content
+      const cleanedRecommendation = aiRecommendation
+        .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Remove emojis
+        .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Remove misc symbols
+        .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Remove dingbats
+        .replace(/[🤖🔧⚡💡💰🛒🎯✅📋🌍🗣️]/g, ''); // Remove specific emojis
+      
+      const recLines = cleanedRecommendation.replace(/\r\n/g, "\n").split("\n");
       let inTable = false;
       let tableHeaders: string[] = [];
       let tableRows: string[][] = [];
@@ -361,19 +368,32 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
         // Process bold text (keep formatting)
         const hasBold = /\*\*(.+?)\*\*/.test(trimmed);
         
-        // Detect list items
+        // Detect list items and checkboxes
         const isBullet = /^\s*[-*•]\s+/.test(trimmed);
         const isNumbered = /^\s*\d+\.\s+/.test(trimmed);
+        const isCheckbox = /^\s*\[[ xX✓]\]\s+/.test(trimmed) || trimmed.toLowerCase().startsWith('cpu:') || 
+                           trimmed.toLowerCase().startsWith('gpu:') || trimmed.toLowerCase().startsWith('ram:') ||
+                           trimmed.toLowerCase().startsWith('motherboard:') || trimmed.toLowerCase().startsWith('psu:') ||
+                           trimmed.toLowerCase().startsWith('storage:') || trimmed.toLowerCase().startsWith('case:') ||
+                           trimmed.toLowerCase().startsWith('cooler:');
         
-        if (isBullet || isNumbered) {
+        if (isBullet || isNumbered || isCheckbox) {
           checkNewPage(12);
           let cleanLine = trimmed
             .replace(/^\s*[-*•]\s+/, "")
             .replace(/^\s*\d+\.\s+/, "")
+            .replace(/^\s*\[[ xX✓]\]\s+/, "")
             .replace(/\*\*(.*?)\*\*/g, "$1")
             .replace(/\*(.*?)\*/g, "$1")
-            .replace(/`(.*?)`/g, "$1")
-            .replace(/\[(.*?)\]\(.*?\)/g, "$1");
+            .replace(/`(.*?)`/g, "$1");
+          
+          // Extract links and show URLs
+          const linkMatches = [...cleanLine.matchAll(/\[(.*?)\]\((.*?)\)/g)];
+          linkMatches.forEach(match => {
+            const linkText = match[1];
+            const url = match[2];
+            cleanLine = cleanLine.replace(match[0], `${linkText} (${url})`);
+          });
 
           doc.setFontSize(9);
           doc.setFont("helvetica", "normal");
@@ -383,12 +403,18 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
           wrapped.forEach((wLine: string, idx: number) => {
             checkNewPage(6);
             if (idx === 0) {
-              doc.setTextColor(255, 120, 50);
-              doc.text("●", margin + 2, yPos);
+              // Use checkbox symbol for checkbox items, bullet for others
+              if (isCheckbox) {
+                doc.setTextColor(50, 150, 50);
+                doc.text("[✓]", margin + 2, yPos);
+              } else {
+                doc.setTextColor(255, 120, 50);
+                doc.text("•", margin + 2, yPos);
+              }
               doc.setTextColor(60, 60, 60);
-              doc.text(wLine, margin + 10, yPos);
+              doc.text(wLine, margin + 12, yPos);
             } else {
-              doc.text(wLine, margin + 10, yPos);
+              doc.text(wLine, margin + 12, yPos);
             }
             yPos += 5;
           });
@@ -404,8 +430,15 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
             .replace(/\*\*(.*?)\*\*/g, "$1")
             .replace(/\*(.*?)\*/g, "$1")
             .replace(/`(.*?)`/g, "$1")
-            .replace(/\[(.*?)\]\(.*?\)/g, "$1")
             .replace(/^>\s+/, "");
+          
+          // Extract and show URLs for links
+          const linkMatches = [...cleanLine.matchAll(/\[(.*?)\]\((.*?)\)/g)];
+          linkMatches.forEach(match => {
+            const linkText = match[1];
+            const url = match[2];
+            cleanLine = cleanLine.replace(match[0], `${linkText} (${url})`);
+          });
 
           doc.setFontSize(9);
           doc.setFont("helvetica", "normal");
@@ -461,18 +494,18 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
-        doc.text("🔧 Components", margin + 5, yPos + 6);
+        doc.text("Components", margin + 5, yPos + 6);
         yPos += 12;
 
         const components = [
-          { icon: "▪", label: "CPU", value: build.components.cpu },
-          { icon: "▪", label: "GPU", value: build.components.gpu },
-          { icon: "▪", label: "RAM", value: build.components.ram },
-          { icon: "▪", label: "Storage", value: build.components.storage },
-          { icon: "▪", label: "Motherboard", value: build.components.motherboard },
-          { icon: "▪", label: "PSU", value: build.components.psu },
-          { icon: "▪", label: "Case", value: build.components.case },
-          { icon: "▪", label: "Cooler", value: build.components.cooler },
+          { icon: ">", label: "CPU", value: build.components.cpu },
+          { icon: ">", label: "GPU", value: build.components.gpu },
+          { icon: ">", label: "RAM", value: build.components.ram },
+          { icon: ">", label: "Storage", value: build.components.storage },
+          { icon: ">", label: "Motherboard", value: build.components.motherboard },
+          { icon: ">", label: "PSU", value: build.components.psu },
+          { icon: ">", label: "Case", value: build.components.case },
+          { icon: ">", label: "Cooler", value: build.components.cooler },
         ];
 
         components.forEach((comp, idx) => {
@@ -507,14 +540,14 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
         doc.setTextColor(255, 90, 30);
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
-        doc.text("⚡ Expected Performance", margin + 8, yPos + 6);
+        doc.text("Expected Performance", margin + 8, yPos + 6);
         yPos += 12;
 
         build.performance.forEach((perf) => {
           checkNewPage(7);
           doc.setTextColor(255, 120, 50);
           doc.setFontSize(9);
-          doc.text("●", margin + 3, yPos);
+          doc.text(">", margin + 3, yPos);
           
           doc.setTextColor(60, 60, 60);
           doc.setFont("helvetica", "normal");
@@ -530,7 +563,7 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
         doc.setTextColor(255, 90, 30);
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
-        doc.text("💡 Why This Build?", margin + 8, yPos + 6);
+        doc.text("Why This Build?", margin + 8, yPos + 6);
         yPos += 12;
 
         build.reasoning.forEach((reason) => {
@@ -538,7 +571,7 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
           
           doc.setTextColor(255, 120, 50);
           doc.setFontSize(9);
-          doc.text("●", margin + 3, yPos);
+          doc.text(">", margin + 3, yPos);
           
           doc.setTextColor(60, 60, 60);
           doc.setFont("helvetica", "normal");
