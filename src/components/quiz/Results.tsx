@@ -179,6 +179,14 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(10);
     doc.text("www.forgea.com", pageWidth / 2, 35, { align: "center" });
+    
+    // Add clickable share URL
+    doc.setTextColor(200, 200, 200);
+    doc.setFontSize(8);
+    const urlText = shareUrl;
+    const urlWidth = doc.getTextWidth(urlText);
+    const urlX = (pageWidth - urlWidth) / 2;
+    doc.textWithLink(urlText, urlX, 41, { url: shareUrl });
 
     yPos = 55;
 
