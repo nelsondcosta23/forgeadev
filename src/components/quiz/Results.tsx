@@ -8,6 +8,7 @@ import { ShareDialog } from "./ShareDialog";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import QRCode from "qrcode";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -149,7 +150,7 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -157,9 +158,40 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
     const contentWidth = pageWidth - (2 * margin);
     let yPos = 20;
 
+    // Generate QR Code for the share URL
+    let qrCodeDataUrl = '';
+    try {
+      qrCodeDataUrl = await QRCode.toDataURL(shareUrl, {
+        width: 200,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+    } catch (err) {
+      console.error('Error generating QR code:', err);
+    }
+
+    // Helper function to add watermark to current page
+    const addWatermark = () => {
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const watermarkText = `Generated on ${currentDate} | www.forgea.com`;
+      
+      doc.setTextColor(220, 220, 220);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "italic");
+      doc.text(watermarkText, pageWidth / 2, pageHeight - 5, { align: "center" });
+    };
+
     // Helper function to check if we need a new page
     const checkNewPage = (spaceNeeded: number = 20) => {
       if (yPos + spaceNeeded > pageHeight - 25) {
+        addWatermark(); // Add watermark before creating new page
         doc.addPage();
         yPos = margin;
         return true;
@@ -167,18 +199,18 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
       return false;
     };
 
-    // Header with Forgea branding
+    // Header with Forgea branding and QR code
     doc.setFillColor(20, 20, 20);
-    doc.rect(0, 0, pageWidth, 45, "F");
+    doc.rect(0, 0, pageWidth, 50, "F");
     
     doc.setTextColor(255, 120, 50);
     doc.setFontSize(28);
     doc.setFont("helvetica", "bold");
-    doc.text("FORGEA", pageWidth / 2, 25, { align: "center" });
+    doc.text("FORGEA", pageWidth / 2, 22, { align: "center" });
     
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(10);
-    doc.text("www.forgea.com", pageWidth / 2, 35, { align: "center" });
+    doc.text("www.forgea.com", pageWidth / 2, 32, { align: "center" });
     
     // Add clickable share URL
     doc.setTextColor(200, 200, 200);
@@ -186,9 +218,20 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
     const urlText = shareUrl;
     const urlWidth = doc.getTextWidth(urlText);
     const urlX = (pageWidth - urlWidth) / 2;
-    doc.textWithLink(urlText, urlX, 41, { url: shareUrl });
+    doc.textWithLink(urlText, urlX, 40, { url: shareUrl });
+    
+    // Add QR code in top right corner if generated successfully
+    if (qrCodeDataUrl) {
+      const qrSize = 35;
+      doc.addImage(qrCodeDataUrl, 'PNG', pageWidth - qrSize - 5, 8, qrSize, qrSize);
+      
+      // Add "Scan to view online" text below QR code
+      doc.setTextColor(200, 200, 200);
+      doc.setFontSize(6);
+      doc.text("Scan to view", pageWidth - qrSize / 2 - 5, 45, { align: "center" });
+    }
 
-    yPos = 55;
+    yPos = 60;
 
     // Title section with gradient-like effect
     doc.setFillColor(250, 250, 250);
@@ -463,6 +506,9 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
       });
 
       yPos += 12;
+      
+      // Add watermark to AI recommendation pages
+      addWatermark();
     }
 
     // Build details - only if no AI recommendation or as supplement
@@ -592,22 +638,9 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
           yPos += 2;
         });
 
-        // Footer on each page
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        const footerY = pageHeight - 10;
-        doc.text("© 2025 Forgea - Professional PC Building Recommendations", pageWidth / 2, footerY, { align: "center" });
-        doc.setTextColor(255, 120, 50);
-        doc.text("www.forgea.com", pageWidth / 2, footerY + 5, { align: "center" });
+        // Add watermark to each build page
+        addWatermark();
       });
-    } else if (aiRecommendation) {
-      // Add footer to AI recommendation pages
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      const footerY = pageHeight - 10;
-      doc.text("© 2025 Forgea - AI-Powered PC Building Recommendations", pageWidth / 2, footerY, { align: "center" });
-      doc.setTextColor(255, 120, 50);
-      doc.text("www.forgea.com", pageWidth / 2, footerY + 5, { align: "center" });
     }
 
 
