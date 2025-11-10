@@ -146,6 +146,18 @@ serve(async (req) => {
       console.error('Error fetching store links:', storeError);
     }
 
+    // Build store URLs list for (user_country) tag replacement
+    let countryStoreUrls = '';
+    if (storeLinks && storeLinks.length > 0) {
+      countryStoreUrls = storeLinks
+        .map(store => `${store.store_name}: ${store.store_url}`)
+        .join('\n');
+      console.log('Found', storeLinks.length, 'stores for', userCountryCode);
+    } else {
+      countryStoreUrls = 'Amazon.com: https://www.amazon.com';
+      console.log('No stores found for', userCountryCode, '- using Amazon.com fallback');
+    }
+
     // Build store recommendations based on what we found
     let storeInstructions = '';
     if (storeLinks && storeLinks.length > 0) {
@@ -161,15 +173,12 @@ CRITICAL: When suggesting where to buy components, you MUST ONLY recommend these
 For each component, specify which store to check and what to search for.
 Example: "Search for 'RTX 4060' at ${storeLinks[0].store_name}"`;
       
-      console.log('Found', storeLinks.length, 'stores for', userCountryCode);
     } else {
       storeInstructions = `
 NO SPECIFIC STORES AVAILABLE for ${userCountryCode}.
 
 FALLBACK: Recommend Amazon.com as the primary source for components.
 Mention that prices may vary and shipping costs may apply to ${userCountryCode}.`;
-      
-      console.log('No stores found for', userCountryCode, '- using Amazon.com fallback');
     }
 
     // Format the quiz data for AI analysis
@@ -198,7 +207,14 @@ Mention that prices may vary and shipping costs may apply to ${userCountryCode}.
       return prompt.replace(/\{\{(\w+)\}\}/g, (_, key) => placeholderMap[key] || `{{${key}}}`);
     };
 
-    const filledPrompt = sanitizedPrompt ? fillPromptPlaceholders(sanitizedPrompt, answers) : '';
+    let filledPrompt = sanitizedPrompt ? fillPromptPlaceholders(sanitizedPrompt, answers) : '';
+    
+    // Replace (user_country) tag with store URLs from SQL
+    if (filledPrompt.includes('(user_country)')) {
+      filledPrompt = filledPrompt.replace(/\(user_country\)/g, countryStoreUrls);
+      console.log('Replaced (user_country) tag with store URLs');
+    }
+    
     console.log('Prompt filled with answers');
 
     const systemPrompt = filledPrompt ||
