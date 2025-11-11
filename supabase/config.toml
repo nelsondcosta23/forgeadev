@@ -3,6 +3,9 @@ project_id = "xrkzqvkyvrbkjaxrwwak"
 [functions.detect-country]
 verify_jwt = false
 
+[functions.track-click]
+verify_jwt = false
+
 [functions.analyze-quiz]
 verify_jwt = false
 

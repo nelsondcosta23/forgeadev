@@ -507,12 +507,108 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       }
     }
 
+    // Process recommendation to create tracked links
+    let processedRecommendation = recommendation;
+    
+    try {
+      console.log('Processing recommendation to create tracked links...');
+      
+      // Extract all URLs from the recommendation text
+      const urlRegex = /https?:\/\/[^\s<>"]+/gi;
+      const urls = recommendation.match(urlRegex) || [];
+      const uniqueUrls = [...new Set(urls)];
+      
+      console.log('Found', uniqueUrls.length, 'unique URLs in recommendation');
+      
+      // Map to store original URL -> tracked URL
+      const urlMapping = new Map<string, string>();
+      
+      for (const originalUrl of uniqueUrls) {
+        // Skip if already a forgea.com tracked link
+        if (originalUrl.includes('forgea.com/go/')) {
+          continue;
+        }
+        
+        // Check if tracked link already exists for this URL
+        const { data: existingLink } = await supabase
+          .from('tracked_links')
+          .select('short_code')
+          .eq('destination_url', originalUrl)
+          .eq('status', true)
+          .maybeSingle();
+        
+        let shortCode = '';
+        
+        if (existingLink) {
+          shortCode = existingLink.short_code;
+          console.log('Found existing tracked link:', shortCode, 'for', originalUrl);
+        } else {
+          // Generate unique short code (8 characters)
+          shortCode = Math.random().toString(36).substring(2, 10);
+          
+          // Extract product label from context (try to get text before URL)
+          const urlIndex = recommendation.indexOf(originalUrl);
+          const contextBefore = recommendation.substring(Math.max(0, urlIndex - 100), urlIndex);
+          let label = 'Product';
+          
+          // Try to extract product name from markdown link [text](url) format
+          const markdownMatch = recommendation.match(new RegExp(`\\[([^\\]]+)\\]\\(${originalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`));
+          if (markdownMatch && markdownMatch[1]) {
+            label = markdownMatch[1].substring(0, 50);
+          } else if (contextBefore.includes(':')) {
+            // Try to get text after last colon (component name)
+            const parts = contextBefore.split(':');
+            label = parts[parts.length - 1].trim().substring(0, 50) || 'Product';
+          }
+          
+          // Create new tracked link
+          const { error: linkError } = await supabase
+            .from('tracked_links')
+            .insert({
+              short_code: shortCode,
+              destination_url: originalUrl,
+              label: label,
+              company_id: null,
+              status: true,
+            });
+          
+          if (linkError) {
+            console.error('Error creating tracked link:', linkError);
+            continue; // Skip this URL
+          }
+          
+          console.log('Created new tracked link:', shortCode, 'for', originalUrl, 'label:', label);
+        }
+        
+        // Store mapping
+        const trackedUrl = `https://forgea.com/go/${shortCode}`;
+        urlMapping.set(originalUrl, trackedUrl);
+      }
+      
+      // Replace all original URLs with tracked URLs in the recommendation
+      for (const [originalUrl, trackedUrl] of urlMapping.entries()) {
+        // Use a more careful replacement to preserve markdown formatting
+        const escapedUrl = originalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        processedRecommendation = processedRecommendation.replace(
+          new RegExp(escapedUrl, 'g'),
+          trackedUrl
+        );
+      }
+      
+      console.log('Processed recommendation with', urlMapping.size, 'tracked links');
+      
+    } catch (trackingError) {
+      console.error('Error processing tracked links:', trackingError);
+      // Continue with original recommendation if tracking fails
+      processedRecommendation = recommendation;
+    }
+
     // Save to database
     const { error: insertError } = await supabase
       .from('ai_recommendations')
       .insert({
         session_id: sessionId,
-        recommendation_text: recommendation,
+        recommendation_text: processedRecommendation,
         prompt_used: systemPrompt,
         model_used: usedModel,
       });
@@ -542,7 +638,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     return new Response(
       JSON.stringify({ 
         success: true, 
-        recommendation 
+        recommendation: processedRecommendation 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

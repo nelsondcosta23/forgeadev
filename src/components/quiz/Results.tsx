@@ -9,6 +9,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import QRCode from "qrcode";
+import TrackableLink from "./TrackableLink";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -739,8 +740,10 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
-                        a: ({ node, ...props }) => (
-                          <a {...props} target="_blank" rel="noopener noreferrer" />
+                        a: ({ href, children }) => (
+                          <TrackableLink href={href} sessionId={sessionId}>
+                            {children}
+                          </TrackableLink>
                         ),
                       }}
                     >
