@@ -10,8 +10,8 @@ const TrackableLink = ({ href, children, sessionId, className = "" }: TrackableL
     return <span className={className}>{children}</span>;
   }
 
-  // Check if it's already a tracked link (/go/xxx)
-  const isTrackedLink = href.includes('/go/');
+  // Check if it's already a tracked link (/go/xxx or edge function)
+  const isTrackedLink = href.includes('/go/') || href.includes('/functions/v1/track-click/');
   
   let finalUrl = href;
   if (isTrackedLink && !href.includes('session=')) {

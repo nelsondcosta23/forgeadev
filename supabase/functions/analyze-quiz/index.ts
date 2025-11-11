@@ -524,8 +524,8 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       const urlMapping = new Map<string, string>();
       
       for (const originalUrl of uniqueUrls) {
-        // Skip if already a forgea.dev tracked link
-        if (originalUrl.includes('forgea.dev/go/')) {
+        // Skip if already a tracked link
+        if (originalUrl.includes('/functions/v1/track-click/') || originalUrl.includes('/go/')) {
           continue;
         }
         
@@ -581,7 +581,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
         }
         
         // Store mapping
-        const trackedUrl = `https://forgea.dev/go/${shortCode}`;
+        const trackedUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/track-click/${shortCode}`;
         urlMapping.set(originalUrl, trackedUrl);
       }
       
