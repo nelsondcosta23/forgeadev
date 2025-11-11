@@ -524,8 +524,8 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       const urlMapping = new Map<string, string>();
       
       for (const originalUrl of uniqueUrls) {
-        // Skip if already a forgea.com tracked link
-        if (originalUrl.includes('forgea.com/go/')) {
+        // Skip if already a forgea.dev tracked link
+        if (originalUrl.includes('forgea.dev/go/')) {
           continue;
         }
         
@@ -581,7 +581,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
         }
         
         // Store mapping
-        const trackedUrl = `https://forgea.com/go/${shortCode}`;
+        const trackedUrl = `https://forgea.dev/go/${shortCode}`;
         urlMapping.set(originalUrl, trackedUrl);
       }
       
