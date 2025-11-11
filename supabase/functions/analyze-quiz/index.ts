@@ -513,8 +513,8 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     try {
       console.log('Processing recommendation to create tracked links...');
       
-      // Extract all URLs from the recommendation text
-      const urlRegex = /https?:\/\/[^\s<>"]+/gi;
+      // Extract all URLs from the recommendation text (exclude parentheses to avoid markdown syntax)
+      const urlRegex = /https?:\/\/[^\s<>"()]+/gi;
       const urls = recommendation.match(urlRegex) || [];
       const uniqueUrls = [...new Set(urls)];
       
