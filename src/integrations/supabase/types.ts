@@ -104,6 +104,8 @@ export type Database = {
           is_valid: boolean
           link_id: string
           referer: string | null
+          session_id: string | null
+          source: string | null
           user_agent: string | null
         }
         Insert: {
@@ -120,6 +122,8 @@ export type Database = {
           is_valid?: boolean
           link_id: string
           referer?: string | null
+          session_id?: string | null
+          source?: string | null
           user_agent?: string | null
         }
         Update: {
@@ -136,6 +140,8 @@ export type Database = {
           is_valid?: boolean
           link_id?: string
           referer?: string | null
+          session_id?: string | null
+          source?: string | null
           user_agent?: string | null
         }
         Relationships: [
@@ -397,7 +403,7 @@ export type Database = {
       }
       tracked_links: {
         Row: {
-          company_id: string
+          company_id: string | null
           cpc_override: number | null
           created_at: string
           daily_limit: number | null
@@ -413,7 +419,7 @@ export type Database = {
           valid_clicks: number
         }
         Insert: {
-          company_id: string
+          company_id?: string | null
           cpc_override?: number | null
           created_at?: string
           daily_limit?: number | null
@@ -429,7 +435,7 @@ export type Database = {
           valid_clicks?: number
         }
         Update: {
-          company_id?: string
+          company_id?: string | null
           cpc_override?: number | null
           created_at?: string
           daily_limit?: number | null
@@ -477,7 +483,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      ai_link_analytics: {
+        Row: {
+          country_name: string | null
+          destination_url: string | null
+          product: string | null
+          short_code: string | null
+          source: string | null
+          total_clicks: number | null
+          unique_sessions: number | null
+          valid_clicks: number | null
+          valid_rate: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
