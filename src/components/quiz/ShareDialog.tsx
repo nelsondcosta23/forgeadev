@@ -34,12 +34,12 @@ export const ShareDialog = ({ open, onOpenChange, shareUrl }: ShareDialogProps) 
   const [copied, setCopied] = useState(false);
 
   const messages = {
-    facebook: "🚀 Acabei de criar meu PC dos sonhos com o Forgea! Descubra qual é o setup perfeito para você em menos de 2 minutos. Confira minha build personalizada! 💻✨",
-    twitter: "🔥 Criei meu PC ideal com o Forgea! Configure o seu em 2 minutos 💻 #PCGaming #TechSetup",
-    whatsapp: "Olá! 👋 Acabei de montar meu PC ideal usando o Forgea - super rápido e fácil! Dá uma olhada na minha configuração e cria a tua também! 🎮💻",
-    linkedin: "🚀 Acabei de criar meu PC dos sonhos com o Forgea! Descubra qual é o setup perfeito para você em menos de 2 minutos. Confira minha build personalizada! 💻✨",
-    reddit: "Used Forgea to build my dream PC setup - check out my custom build! What do you think? 🖥️",
-    telegram: "🚀 Criei meu PC ideal com o Forgea! Configure o seu em 2 minutos 💻✨",
+    facebook: `🚀 Acabei de criar meu PC dos sonhos com o Forgea! Veja todos os detalhes da minha build personalizada no link: ${shareUrl} 💻✨`,
+    twitter: `🔥 Criei meu PC ideal com o Forgea! Confira minha build completa: ${shareUrl} 💻 #PCGaming #TechSetup`,
+    whatsapp: `Olá! 👋 Acabei de montar meu PC ideal usando o Forgea! Dá uma olhada na minha configuração completa: ${shareUrl} 🎮💻`,
+    linkedin: `🚀 Acabei de criar meu PC dos sonhos com o Forgea! Veja todos os detalhes da minha build personalizada: ${shareUrl} 💻✨`,
+    reddit: `Used Forgea to build my dream PC setup! Check out my full custom build here: ${shareUrl} - What do you think? 🖥️`,
+    telegram: `🚀 Criei meu PC ideal com o Forgea! Veja a build completa: ${shareUrl} 💻✨`,
   };
 
   const handleCopyLink = async () => {
