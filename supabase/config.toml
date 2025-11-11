@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.analyze-quiz]
 verify_jwt = false
+
+[functions.meta-tags]
+verify_jwt = false
