@@ -79,6 +79,7 @@ interface CountryStats {
   country_name: string;
   country_code: string;
   count: number;
+  completed_count: number;
 }
 
 interface StoreLink {
@@ -221,9 +222,12 @@ const Admin = () => {
         const country = session.country_name || "Unknown";
         const code = session.country_code || "XX";
         if (!stats[country]) {
-          stats[country] = { country_name: country, country_code: code, count: 0 };
+          stats[country] = { country_name: country, country_code: code, count: 0, completed_count: 0 };
         }
         stats[country].count++;
+        if (session.completed_at !== null) {
+          stats[country].completed_count++;
+        }
       });
 
       setCountryStats(Object.values(stats).sort((a, b) => b.count - a.count));
@@ -1008,6 +1012,7 @@ const Admin = () => {
                           <TableHead>Country</TableHead>
                           <TableHead>Store Name</TableHead>
                           <TableHead>Store URL</TableHead>
+                          <TableHead>Quizzes Completados</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -1015,58 +1020,73 @@ const Admin = () => {
                       <TableBody>
                         {paginatedStoreLinks.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground">
+                            <TableCell colSpan={6} className="text-center text-muted-foreground">
                               No store links found
                             </TableCell>
                           </TableRow>
                         ) : (
-                          paginatedStoreLinks.map((link) => (
-                            <TableRow key={link.id}>
-                              <TableCell className="font-medium">
-                                {link.country_name}
-                              </TableCell>
-                              <TableCell>{link.store_name}</TableCell>
-                              <TableCell>
-                                <a 
-                                  href={link.store_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline truncate block max-w-[300px]"
-                                >
-                                  {link.store_url}
-                                </a>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Switch
-                                    checked={link.status}
-                                    onCheckedChange={() => handleToggleStoreStatus(link.id, link.status)}
-                                  />
-                                  <span className="text-sm">
-                                    {link.status ? "Active" : "Inactive"}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openStoreLinkDialog(link)}
+                          paginatedStoreLinks.map((link) => {
+                            const countryStat = countryStats.find(
+                              stat => stat.country_code === link.country_code
+                            );
+                            const completedCount = countryStat?.completed_count || 0;
+                            
+                            return (
+                              <TableRow key={link.id}>
+                                <TableCell className="font-medium">
+                                  {link.country_name}
+                                </TableCell>
+                                <TableCell>{link.store_name}</TableCell>
+                                <TableCell>
+                                  <a 
+                                    href={link.store_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline truncate block max-w-[300px]"
                                   >
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openStoreLinkDeleteDialog(link.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
+                                    {link.store_url}
+                                  </a>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-semibold">{completedCount}</span>
+                                    <span className="text-muted-foreground text-sm">
+                                      {countryStat ? `/ ${countryStat.count}` : ''}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Switch
+                                      checked={link.status}
+                                      onCheckedChange={() => handleToggleStoreStatus(link.id, link.status)}
+                                    />
+                                    <span className="text-sm">
+                                      {link.status ? "Active" : "Inactive"}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openStoreLinkDialog(link)}
+                                    >
+                                      <Pencil className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openStoreLinkDeleteDialog(link.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
                         )}
                       </TableBody>
                     </Table>
