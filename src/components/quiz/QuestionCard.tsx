@@ -20,6 +20,13 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
 
   const handleOptionSelect = (value: string) => {
     setSelectedOption(value);
+    // Auto-advance for questions that don't require confirmation
+    if (question.id !== "country" && question.id !== "budget") {
+      setTimeout(() => {
+        onAnswer(value);
+        setSelectedOption(null);
+      }, 300);
+    }
   };
 
   const handleOptionSubmit = () => {
@@ -96,7 +103,8 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
               </div>
             )}
 
-            {selectedOption && (
+            {/* Show Continue button only for country and budget questions */}
+            {selectedOption && (question.id === "country" || question.id === "budget") && (
               <Button
                 onClick={handleOptionSubmit}
                 disabled={disabled}
