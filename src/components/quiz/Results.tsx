@@ -14,6 +14,7 @@ import TrackableLink from "./TrackableLink";
 interface ResultsProps {
   answers: QuizAnswers;
   onRestart: () => void;
+  onBack: () => void;
   sessionId: string;
   aiRecommendation?: string;
 }
@@ -130,7 +131,7 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
   return [budgetBuild, balancedBuild, highEndBuild];
 };
 
-const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsProps) => {
+const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: ResultsProps) => {
   const builds = generateBuilds(answers);
   const shareUrl = `${window.location.origin}/build/${sessionId}`;
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -656,7 +657,10 @@ const Results = ({ answers, onRestart, sessionId, aiRecommendation }: ResultsPro
         {/* Header */}
         <div className="max-w-6xl mx-auto mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 
+              className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={onBack}
+            >
               FORGEA
             </h1>
             <Button

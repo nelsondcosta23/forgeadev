@@ -84,9 +84,68 @@ const Quiz = ({ onBack }: QuizProps) => {
     createSession();
   }, []);
 
+  // Function to get currency based on country
+  const getCurrencyInfo = (countryCode: string) => {
+    const currencyMap: Record<string, { symbol: string, code: string }> = {
+      PT: { symbol: '€', code: 'EUR' },
+      ES: { symbol: '€', code: 'EUR' },
+      FR: { symbol: '€', code: 'EUR' },
+      DE: { symbol: '€', code: 'EUR' },
+      IT: { symbol: '€', code: 'EUR' },
+      NL: { symbol: '€', code: 'EUR' },
+      BE: { symbol: '€', code: 'EUR' },
+      AT: { symbol: '€', code: 'EUR' },
+      IE: { symbol: '€', code: 'EUR' },
+      FI: { symbol: '€', code: 'EUR' },
+      GR: { symbol: '€', code: 'EUR' },
+      BR: { symbol: 'R$', code: 'BRL' },
+      GB: { symbol: '£', code: 'GBP' },
+      US: { symbol: '$', code: 'USD' },
+      CA: { symbol: 'CA$', code: 'CAD' },
+      AU: { symbol: 'AU$', code: 'AUD' },
+      NZ: { symbol: 'NZ$', code: 'NZD' },
+      MX: { symbol: 'MX$', code: 'MXN' },
+      AR: { symbol: 'AR$', code: 'ARS' },
+      CL: { symbol: 'CL$', code: 'CLP' },
+      CO: { symbol: 'CO$', code: 'COP' },
+      PE: { symbol: 'S/', code: 'PEN' },
+      JP: { symbol: '¥', code: 'JPY' },
+      KR: { symbol: '₩', code: 'KRW' },
+      CN: { symbol: '¥', code: 'CNY' },
+      IN: { symbol: '₹', code: 'INR' },
+      CH: { symbol: 'CHF', code: 'CHF' },
+      SE: { symbol: 'kr', code: 'SEK' },
+      NO: { symbol: 'kr', code: 'NOK' },
+      DK: { symbol: 'kr', code: 'DKK' },
+      PL: { symbol: 'zł', code: 'PLN' },
+      CZ: { symbol: 'Kč', code: 'CZK' },
+      HU: { symbol: 'Ft', code: 'HUF' },
+      RO: { symbol: 'lei', code: 'RON' },
+      TR: { symbol: '₺', code: 'TRY' },
+      ZA: { symbol: 'R', code: 'ZAR' },
+      SG: { symbol: 'S$', code: 'SGD' },
+      AE: { symbol: 'AED', code: 'AED' },
+      SA: { symbol: 'SAR', code: 'SAR' },
+      IL: { symbol: '₪', code: 'ILS' },
+    };
+    
+    return currencyMap[countryCode] || { symbol: '$', code: 'USD' };
+  };
+
   const currentQuestions = questions.filter(q => {
     if (!q.condition) return true;
     return q.condition(answers);
+  }).map(q => {
+    // Dynamically update budget question based on selected country
+    if (q.id === 'budget' && answers.country) {
+      const currency = getCurrencyInfo(answers.country as string);
+      return {
+        ...q,
+        description: `In ${currency.code} (${currency.symbol})`,
+        suffix: currency.symbol,
+      };
+    }
+    return q;
   });
 
   const currentQuestion = currentQuestions[currentStep];
@@ -299,7 +358,7 @@ const Quiz = ({ onBack }: QuizProps) => {
   }
 
   if (showResults) {
-    return <Results answers={answers} sessionId={sessionId} aiRecommendation={aiRecommendation} onRestart={async () => {
+    return <Results answers={answers} sessionId={sessionId} aiRecommendation={aiRecommendation} onBack={onBack} onRestart={async () => {
       setAnswers({});
       setCurrentStep(0);
       setShowResults(false);
@@ -352,7 +411,10 @@ const Quiz = ({ onBack }: QuizProps) => {
         {/* Header */}
         <div className="max-w-3xl mx-auto mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 
+              className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={onBack}
+            >
               FORGEA
             </h1>
             <Button

@@ -82,6 +82,7 @@ const SharedResults = () => {
   const extractQuestionId = (questionText: string): string | null => {
     // Map question texts to their IDs based on the questions.ts structure
     const questionMap: { [key: string]: string } = {
+      "What country are you from?": "country",
       "What do you need the PC for?": "purpose",
       "What games or genres do you play the most?": "games",
       "What resolution do you want to play at?": "resolution",
@@ -136,6 +137,7 @@ const SharedResults = () => {
     <Results 
       answers={answers} 
       onRestart={() => navigate("/")} 
+      onBack={() => navigate("/")}
       sessionId={sessionId || ""} 
       aiRecommendation={aiRecommendation}
     />
