@@ -20,10 +20,12 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
 
   const handleOptionSelect = (value: string) => {
     setSelectedOption(value);
-    setTimeout(() => {
-      onAnswer(value);
-      setSelectedOption(null);
-    }, 300);
+  };
+
+  const handleOptionSubmit = () => {
+    if (selectedOption) {
+      onAnswer(selectedOption);
+    }
   };
 
   const handleNumberSubmit = () => {
@@ -43,7 +45,7 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
 
         {/* Options */}
         {question.type === "single" && question.options && (
-          <>
+          <div className="space-y-6">
             {/* Special country selector with search */}
             {question.id === "country" ? (
               <div className="pt-4">
@@ -93,7 +95,18 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
                 ))}
               </div>
             )}
-          </>
+
+            {selectedOption && (
+              <Button
+                onClick={handleOptionSubmit}
+                disabled={disabled}
+                className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
+                size="lg"
+              >
+                Continue
+              </Button>
+            )}
+          </div>
         )}
 
         {/* Number Input */}

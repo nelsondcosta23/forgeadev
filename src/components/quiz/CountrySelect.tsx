@@ -49,9 +49,7 @@ export const CountrySelect = ({
   const handleSelect = (currentValue: string) => {
     setValue(currentValue);
     setOpen(false);
-    setTimeout(() => {
-      onSelect(currentValue);
-    }, 300);
+    onSelect(currentValue);
   };
 
   return (
