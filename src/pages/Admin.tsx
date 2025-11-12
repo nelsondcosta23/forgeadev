@@ -642,7 +642,7 @@ const Admin = () => {
             <TabsList className="grid w-full max-w-5xl grid-cols-5">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
-              <TabsTrigger value="billingcpc">CPC</TabsTrigger>
+              <TabsTrigger value="billingcpc">CRM</TabsTrigger>
               <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
