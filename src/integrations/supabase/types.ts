@@ -92,7 +92,7 @@ export type Database = {
       clicks: {
         Row: {
           clicked_at: string
-          company_id: string
+          company_id: string | null
           cost: number | null
           country_code: string | null
           country_name: string | null
@@ -110,7 +110,7 @@ export type Database = {
         }
         Insert: {
           clicked_at?: string
-          company_id: string
+          company_id?: string | null
           cost?: number | null
           country_code?: string | null
           country_name?: string | null
@@ -128,7 +128,7 @@ export type Database = {
         }
         Update: {
           clicked_at?: string
-          company_id?: string
+          company_id?: string | null
           cost?: number | null
           country_code?: string | null
           country_name?: string | null

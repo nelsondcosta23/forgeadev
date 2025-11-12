@@ -537,98 +537,258 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       }
     }
 
-    // Process recommendation to create tracked links
+    // Process recommendation to create search-based tracked links
     let processedRecommendation = recommendation;
     
     try {
-      console.log('Processing recommendation to create tracked links...');
+      console.log('Processing recommendation to create search-based tracked links...');
       
-      // Extract all URLs from the recommendation text (exclude parentheses to avoid markdown syntax)
-      const urlRegex = /https?:\/\/[^\s<>"()]+/gi;
-      const urls = recommendation.match(urlRegex) || [];
-      const uniqueUrls = [...new Set(urls)];
+      // Step 1: Remove any direct http(s) URLs from AI output (except markdown-formatted ones)
+      const directUrlRegex = /(?<!\]\()https?:\/\/[^\s<>"()]+/gi;
+      const removedUrls = recommendation.match(directUrlRegex) || [];
+      if (removedUrls.length > 0) {
+        console.log('Removing', removedUrls.length, 'direct URLs from AI output');
+        processedRecommendation = processedRecommendation.replace(directUrlRegex, '[removed]');
+      }
       
-      console.log('Found', uniqueUrls.length, 'unique URLs in recommendation');
-      
-      // Map to store original URL -> tracked URL
-      const urlMapping = new Map<string, string>();
-      
-      for (const originalUrl of uniqueUrls) {
-        // Skip if already a tracked link
-        if (originalUrl.includes('/functions/v1/track-click/') || originalUrl.includes('/go/')) {
-          continue;
+      // Step 2: Build allowlist of store domains from country_store_links
+      const storeDomainMap = new Map<string, { name: string; url: string }>();
+      if (storeLinks && storeLinks.length > 0) {
+        for (const store of storeLinks) {
+          try {
+            const storeUrl = new URL(store.store_url);
+            const domain = storeUrl.hostname.replace('www.', '');
+            storeDomainMap.set(domain, { name: store.store_name, url: store.store_url });
+          } catch (e) {
+            console.error('Invalid store URL:', store.store_url);
+          }
         }
-        
-        // Check if tracked link already exists for this URL
-        const { data: existingLink } = await supabase
-          .from('tracked_links')
-          .select('short_code')
-          .eq('destination_url', originalUrl)
-          .eq('status', true)
-          .maybeSingle();
-        
-        let shortCode = '';
-        
-        if (existingLink) {
-          shortCode = existingLink.short_code;
-          console.log('Found existing tracked link:', shortCode, 'for', originalUrl);
-        } else {
-          // Generate unique short code (8 characters)
-          shortCode = Math.random().toString(36).substring(2, 10);
+      }
+      console.log('Built allowlist with', storeDomainMap.size, 'store domains');
+      
+      // Step 3: Extract "Search for '...' at ..." patterns
+      const searchPatterns = [
+        /Search for ['"]([^'"]+)['"] at ([^\n.]+)/gi,
+        /Procure ['"]([^'"]+)['"] em ([^\n.]+)/gi,
+        /Busca ['"]([^'"]+)['"] en ([^\n.]+)/gi,
+        /Cherchez ['"]([^'"]+)['"] chez ([^\n.]+)/gi,
+      ];
+      
+      interface ComponentLink {
+        component: string;
+        searchTerm: string;
+        storeName: string;
+        searchUrl: string;
+        shortCode: string;
+      }
+      
+      const componentLinks: ComponentLink[] = [];
+      const componentCategories = ['CPU', 'GPU', 'Motherboard', 'RAM', 'Storage', 'PSU', 'Case', 'Cooler'];
+      
+      // Try to extract from explicit "Search for..." patterns first
+      for (const pattern of searchPatterns) {
+        let match;
+        while ((match = pattern.exec(processedRecommendation)) !== null) {
+          const searchTerm = match[1].trim();
+          const storeName = match[2].trim();
           
-          // Extract product label from context (try to get text before URL)
-          const urlIndex = recommendation.indexOf(originalUrl);
-          const contextBefore = recommendation.substring(Math.max(0, urlIndex - 100), urlIndex);
-          let label = 'Product';
-          
-          // Try to extract product name from markdown link [text](url) format
-          const markdownMatch = recommendation.match(new RegExp(`\\[([^\\]]+)\\]\\(${originalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`));
-          if (markdownMatch && markdownMatch[1]) {
-            label = markdownMatch[1].substring(0, 50);
-          } else if (contextBefore.includes(':')) {
-            // Try to get text after last colon (component name)
-            const parts = contextBefore.split(':');
-            label = parts[parts.length - 1].trim().substring(0, 50) || 'Product';
+          // Find matching store domain
+          let matchedStore = null;
+          for (const [domain, storeInfo] of storeDomainMap.entries()) {
+            if (storeInfo.name.toLowerCase().includes(storeName.toLowerCase()) || 
+                storeName.toLowerCase().includes(storeInfo.name.toLowerCase())) {
+              matchedStore = { domain, ...storeInfo };
+              break;
+            }
           }
           
-          // Create new tracked link
-          const { error: linkError } = await supabase
-            .from('tracked_links')
-            .insert({
-              short_code: shortCode,
-              destination_url: originalUrl,
-              label: label,
-              company_id: null,
-              status: true,
+          if (matchedStore) {
+            // Determine component category from context
+            let component = 'Component';
+            for (const cat of componentCategories) {
+              if (searchTerm.toLowerCase().includes(cat.toLowerCase()) || 
+                  processedRecommendation.substring(Math.max(0, match.index - 200), match.index).toLowerCase().includes(cat.toLowerCase())) {
+                component = cat;
+                break;
+              }
+            }
+            
+            // Generate search URL based on store domain
+            let searchUrl = '';
+            const encodedTerm = encodeURIComponent(searchTerm);
+            
+            if (matchedStore.domain.includes('pcdiga.com')) {
+              searchUrl = `https://www.pcdiga.com/catalogsearch/result/?q=${encodedTerm}`;
+            } else if (matchedStore.domain.includes('pccomponentes.com') || matchedStore.domain.includes('pccomponentes.pt')) {
+              searchUrl = `https://www.pccomponentes.pt/pesquisa/?query=${encodedTerm}`;
+            } else if (matchedStore.domain.includes('amazon.')) {
+              searchUrl = `${matchedStore.url}/s?k=${encodedTerm}`;
+            } else if (matchedStore.domain.includes('worten.')) {
+              searchUrl = `https://www.google.com/search?q=site:${matchedStore.domain}+${encodedTerm}`;
+              console.log('Using Google fallback for worten:', searchUrl);
+            } else if (matchedStore.domain.includes('globaldata.')) {
+              searchUrl = `https://www.google.com/search?q=site:${matchedStore.domain}+${encodedTerm}`;
+              console.log('Using Google fallback for globaldata:', searchUrl);
+            } else {
+              // Generic fallback: Google site search
+              searchUrl = `https://www.google.com/search?q=site:${matchedStore.domain}+${encodedTerm}`;
+              console.log('Using Google fallback for unknown store:', matchedStore.domain);
+            }
+            
+            // Check if tracked link exists
+            const { data: existingLink } = await supabase
+              .from('tracked_links')
+              .select('short_code')
+              .eq('destination_url', searchUrl)
+              .eq('status', true)
+              .maybeSingle();
+            
+            let shortCode = '';
+            if (existingLink) {
+              shortCode = existingLink.short_code;
+              console.log('Found existing search link:', shortCode);
+            } else {
+              shortCode = Math.random().toString(36).substring(2, 10);
+              const { error: linkError } = await supabase
+                .from('tracked_links')
+                .insert({
+                  short_code: shortCode,
+                  destination_url: searchUrl,
+                  label: `Search: ${searchTerm.substring(0, 40)}`,
+                  company_id: null,
+                  status: true,
+                });
+              
+              if (linkError) {
+                console.error('Error creating search link:', linkError);
+                continue;
+              }
+              console.log('Created search link:', shortCode, 'for', searchTerm);
+            }
+            
+            componentLinks.push({
+              component,
+              searchTerm,
+              storeName: matchedStore.name,
+              searchUrl,
+              shortCode,
             });
-          
-          if (linkError) {
-            console.error('Error creating tracked link:', linkError);
-            continue; // Skip this URL
           }
+        }
+      }
+      
+      console.log('Extracted', componentLinks.length, 'component search links');
+      
+      // Step 4: If no explicit patterns found, try to infer from component sections
+      if (componentLinks.length === 0 && storeLinks && storeLinks.length > 0) {
+        console.log('No explicit search patterns found, attempting inference from component sections');
+        
+        for (const category of componentCategories) {
+          // Find sections mentioning this component category
+          const categoryRegex = new RegExp(`\\*\\*${category}[^*]*\\*\\*[^*]+?([A-Za-z0-9][A-Za-z0-9\\s-]+(?:RTX|RX|Ryzen|Intel|Core|DDR|GB|TB|MHz|GHz)[A-Za-z0-9\\s-]+)`, 'i');
+          const match = categoryRegex.exec(processedRecommendation);
           
-          console.log('Created new tracked link:', shortCode, 'for', originalUrl, 'label:', label);
+          if (match && match[1]) {
+            const inferredProduct = match[1].trim().substring(0, 60);
+            const primaryStore = storeLinks[0];
+            
+            let searchUrl = '';
+            const encodedTerm = encodeURIComponent(inferredProduct);
+            const storeDomain = new URL(primaryStore.store_url).hostname.replace('www.', '');
+            
+            if (storeDomain.includes('pcdiga.com')) {
+              searchUrl = `https://www.pcdiga.com/catalogsearch/result/?q=${encodedTerm}`;
+            } else if (storeDomain.includes('pccomponentes.')) {
+              searchUrl = `https://www.pccomponentes.pt/pesquisa/?query=${encodedTerm}`;
+            } else if (storeDomain.includes('amazon.')) {
+              searchUrl = `${primaryStore.store_url}/s?k=${encodedTerm}`;
+            } else {
+              searchUrl = `https://www.google.com/search?q=site:${storeDomain}+${encodedTerm}`;
+            }
+            
+            const { data: existingLink } = await supabase
+              .from('tracked_links')
+              .select('short_code')
+              .eq('destination_url', searchUrl)
+              .maybeSingle();
+            
+            let shortCode = '';
+            if (existingLink) {
+              shortCode = existingLink.short_code;
+            } else {
+              shortCode = Math.random().toString(36).substring(2, 10);
+              await supabase.from('tracked_links').insert({
+                short_code: shortCode,
+                destination_url: searchUrl,
+                label: `${category}: ${inferredProduct.substring(0, 30)}`,
+                company_id: null,
+                status: true,
+              });
+            }
+            
+            componentLinks.push({
+              component: category,
+              searchTerm: inferredProduct,
+              storeName: primaryStore.store_name,
+              searchUrl,
+              shortCode,
+            });
+          }
         }
         
-        // Store mapping
-        const trackedUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/track-click/${shortCode}`;
-        urlMapping.set(originalUrl, trackedUrl);
+        console.log('Inferred', componentLinks.length, 'component links from sections');
       }
       
-      // Replace all original URLs with tracked URLs in the recommendation
-      for (const [originalUrl, trackedUrl] of urlMapping.entries()) {
-        // Use a more careful replacement to preserve markdown formatting
-        const escapedUrl = originalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        processedRecommendation = processedRecommendation.replace(
-          new RegExp(escapedUrl, 'g'),
-          trackedUrl
-        );
+      // Step 5: Inject "Links rápidos" section with tracked links
+      if (componentLinks.length > 0) {
+        const languageHeaders: { [key: string]: string } = {
+          'Portuguese (Portugal)': '## 🔗 Links Rápidos',
+          'Portuguese (Brazil)': '## 🔗 Links Rápidos',
+          'Spanish': '## 🔗 Enlaces Rápidos',
+          'French': '## 🔗 Liens Rapides',
+          'English': '## 🔗 Quick Links',
+        };
+        
+        const header = languageHeaders[userLanguage] || '## 🔗 Quick Links';
+        const linksList = componentLinks
+          .map(link => {
+            const trackedUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/track-click/${link.shortCode}`;
+            return `- **${link.component}**: [${link.searchTerm}](${trackedUrl}) - ${link.storeName}`;
+          })
+          .join('\n');
+        
+        const linksSection = `\n\n${header}\n\n${linksList}\n\n*Click nos links acima para pesquisar cada componente diretamente nas lojas recomendadas.*\n`;
+        
+        // Inject before the final section (total cost or shopping guide)
+        const insertBeforePatterns = [
+          /##\s*💰\s*(?:TOTAL|CUSTO|COST|COÛT)/i,
+          /##\s*🛒\s*(?:SHOPPING|COMPRAS|ACHATS)/i,
+          /##\s*⚡\s*(?:PERFORMANCE|DESEMPENHO|RENDIMIENTO)/i,
+        ];
+        
+        let inserted = false;
+        for (const pattern of insertBeforePatterns) {
+          const match = processedRecommendation.search(pattern);
+          if (match !== -1) {
+            processedRecommendation = 
+              processedRecommendation.substring(0, match) + 
+              linksSection + 
+              processedRecommendation.substring(match);
+            inserted = true;
+            break;
+          }
+        }
+        
+        if (!inserted) {
+          // Append at the end if no suitable section found
+          processedRecommendation += linksSection;
+        }
+        
+        console.log('Injected links section with', componentLinks.length, 'component links');
       }
-      
-      console.log('Processed recommendation with', urlMapping.size, 'tracked links');
       
     } catch (trackingError) {
-      console.error('Error processing tracked links:', trackingError);
+      console.error('Error processing search-based tracked links:', trackingError);
       // Continue with original recommendation if tracking fails
       processedRecommendation = recommendation;
     }
