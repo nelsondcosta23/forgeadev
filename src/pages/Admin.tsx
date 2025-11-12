@@ -10,7 +10,6 @@ import { RoadmapContent } from "@/components/admin/RoadmapContent";
 import { CompanyManagement } from "@/components/admin/billing/CompanyManagement";
 import { LinkManagement } from "@/components/admin/billing/LinkManagement";
 import { AnalyticsDashboard } from "@/components/admin/billing/AnalyticsDashboard";
-import { LinkAnalytics } from "@/components/admin/LinkAnalytics";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -640,11 +639,10 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="reports" className="w-full">
-            <TabsList className="grid w-full max-w-5xl grid-cols-6">
+            <TabsList className="grid w-full max-w-5xl grid-cols-5">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
               <TabsTrigger value="billingcpc">CPC</TabsTrigger>
-              <TabsTrigger value="linkanalytics">Link Analytics</TabsTrigger>
               <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
@@ -1156,10 +1154,6 @@ const Admin = () => {
 
             <TabsContent value="roadmap" className="space-y-8 mt-6">
               <RoadmapContent />
-            </TabsContent>
-
-            <TabsContent value="linkanalytics" className="space-y-8 mt-6">
-              <LinkAnalytics />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-8 mt-6">
