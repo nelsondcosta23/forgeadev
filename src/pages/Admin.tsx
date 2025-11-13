@@ -224,14 +224,45 @@ const Admin = () => {
 
       if (responsesError) throw responsesError;
 
-      // Format the data
+      // Format the data with Best Value, Balanced, High Performance structure
       const formattedData = {
-        session_id: sessionData.session_id,
-        country_code: sessionData.country_code,
-        country_name: sessionData.country_name,
-        started_at: sessionData.started_at,
-        completed_at: sessionData.completed_at,
-        questions_and_answers: responsesData?.map((response) => ({
+        session_info: {
+          session_id: sessionData.session_id,
+          country: sessionData.country_name,
+          country_code: sessionData.country_code,
+          total_score: sessionData.total_score,
+          completed_at: sessionData.completed_at,
+        },
+        recommendations: {
+          "Best Value": {
+            processor: "Intel Core i5-13400F / AMD Ryzen 5 7600",
+            graphics_card: "NVIDIA RTX 4060 / AMD RX 7600",
+            ram: "16GB DDR4",
+            storage: "512GB NVMe SSD",
+            power_supply: "550W 80+ Bronze",
+            estimated_price_range: "€700-900",
+            performance_tier: "Good for 1080p gaming",
+          },
+          "Balanced": {
+            processor: "Intel Core i7-13700F / AMD Ryzen 7 7800X3D",
+            graphics_card: "NVIDIA RTX 4070 / AMD RX 7800 XT",
+            ram: "32GB DDR5",
+            storage: "1TB NVMe Gen4 SSD",
+            power_supply: "750W 80+ Gold",
+            estimated_price_range: "€1200-1500",
+            performance_tier: "Excellent for 1440p gaming",
+          },
+          "High Performance": {
+            processor: "Intel Core i9-14900K / AMD Ryzen 9 7950X3D",
+            graphics_card: "NVIDIA RTX 4090 / AMD RX 7900 XTX",
+            ram: "64GB DDR5",
+            storage: "2TB NVMe Gen4 SSD + 2TB HDD",
+            power_supply: "1000W 80+ Platinum",
+            estimated_price_range: "€2500-3500",
+            performance_tier: "Best for 4K gaming and content creation",
+          },
+        },
+        user_responses: responsesData?.map((response) => ({
           question_number: response.question_number,
           question: response.question_text,
           answer: response.selected_answer,
