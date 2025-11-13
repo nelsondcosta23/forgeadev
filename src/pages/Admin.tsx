@@ -1279,17 +1279,41 @@ const Admin = () => {
                           Previous
                         </Button>
                         <div className="flex items-center gap-1">
-                          {Array.from({ length: totalStoreLinkPages }, (_, i) => i + 1).map((page) => (
-                            <Button
-                              key={page}
-                              variant={currentStoreLinkPage === page ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setCurrentStoreLinkPage(page)}
-                              className="w-10"
-                            >
-                              {page}
-                            </Button>
-                          ))}
+                          {(() => {
+                            const maxVisiblePages = 10;
+                            let startPage = 1;
+                            let endPage = totalStoreLinkPages;
+
+                            if (totalStoreLinkPages > maxVisiblePages) {
+                              if (currentStoreLinkPage <= 6) {
+                                startPage = 1;
+                                endPage = maxVisiblePages;
+                              } else if (currentStoreLinkPage >= totalStoreLinkPages - 5) {
+                                startPage = totalStoreLinkPages - maxVisiblePages + 1;
+                                endPage = totalStoreLinkPages;
+                              } else {
+                                startPage = currentStoreLinkPage - 5;
+                                endPage = currentStoreLinkPage + 4;
+                              }
+                            }
+
+                            const pages = Array.from(
+                              { length: endPage - startPage + 1 },
+                              (_, i) => startPage + i
+                            );
+
+                            return pages.map((page) => (
+                              <Button
+                                key={page}
+                                variant={currentStoreLinkPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCurrentStoreLinkPage(page)}
+                                className="w-10"
+                              >
+                                {page}
+                              </Button>
+                            ));
+                          })()}
                         </div>
                         <Button
                           variant="outline"
