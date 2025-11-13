@@ -1347,6 +1347,44 @@ const Admin = () => {
 
             <TabsContent value="settings" className="space-y-8 mt-6">
               <div className="grid gap-6">
+                {/* Export Options */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Export Data</CardTitle>
+                    <CardDescription>
+                      Download quiz data and questions
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={downloadQuizzesExcel}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Export Quizzes
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={downloadQuestionsCSV}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Export Questions
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={downloadQuizJSON}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Export JSON
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* AI Prompt Configuration */}
                 <Card>
                   <CardHeader>
@@ -1403,44 +1441,6 @@ const Admin = () => {
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         Copiar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Export Options */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Export Data</CardTitle>
-                    <CardDescription>
-                      Download quiz data and questions
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex flex-col gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={downloadQuizzesExcel}
-                        className="justify-start"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Export All Quizzes to Excel
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={downloadQuestionsCSV}
-                        className="justify-start"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Export Questions to CSV
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={downloadQuizJSON}
-                        className="justify-start"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Export Quiz Responses to JSON
                       </Button>
                     </div>
                   </CardContent>
