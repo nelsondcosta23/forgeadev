@@ -7,9 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
-import { CompanyManagement } from "@/components/admin/billing/CompanyManagement";
-import { LinkManagement } from "@/components/admin/billing/LinkManagement";
-import { AnalyticsDashboard } from "@/components/admin/billing/AnalyticsDashboard";
+import { CRM } from "@/components/admin/CRM";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1134,22 +1132,7 @@ const Admin = () => {
             </TabsContent>
 
             <TabsContent value="billingcpc" className="space-y-8 mt-6">
-              <Tabs defaultValue="companies">
-                <TabsList>
-                  <TabsTrigger value="companies">Empresas</TabsTrigger>
-                  <TabsTrigger value="links">Links</TabsTrigger>
-                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                </TabsList>
-                <TabsContent value="companies">
-                  <CompanyManagement />
-                </TabsContent>
-                <TabsContent value="links">
-                  <LinkManagement />
-                </TabsContent>
-                <TabsContent value="analytics">
-                  <AnalyticsDashboard />
-                </TabsContent>
-              </Tabs>
+              <CRM />
             </TabsContent>
 
             <TabsContent value="roadmap" className="space-y-8 mt-6">
