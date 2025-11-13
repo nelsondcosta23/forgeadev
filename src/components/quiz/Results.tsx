@@ -11,7 +11,7 @@ import remarkGfm from "remark-gfm";
 import QRCode from "qrcode";
 import TrackableLink from "./TrackableLink";
 import { AIResultsView } from "./AIResultsView";
-import { BuildData } from "./BuildCard";
+import { BuildCard, BuildData } from "./BuildCard";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -816,6 +816,49 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
               </div>
             </Card>
           )}
+
+          {/* Build Cards Grid */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {(() => {
+              try {
+                // Try to parse AI recommendation for build data
+                const buildData = aiRecommendation ? JSON.parse(aiRecommendation) : null;
+                
+                if (buildData?.builds) {
+                  return (
+                    <>
+                      {buildData.builds["Best Value"] && (
+                        <BuildCard
+                          title="Best Value"
+                          build={buildData.builds["Best Value"]}
+                          variant="value"
+                        />
+                      )}
+                      {buildData.builds["Balanced"] && (
+                        <BuildCard
+                          title="Balanced"
+                          build={buildData.builds["Balanced"]}
+                          variant="balanced"
+                          featured
+                        />
+                      )}
+                      {buildData.builds["High Performance"] && (
+                        <BuildCard
+                          title="High Performance"
+                          build={buildData.builds["High Performance"]}
+                          variant="premium"
+                        />
+                      )}
+                    </>
+                  );
+                }
+              } catch (e) {
+                // If JSON parsing fails, render nothing
+                console.log("No build data available");
+              }
+              return null;
+            })()}
+          </div>
         </div>
 
       </div>
