@@ -788,77 +788,108 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
           </Card>
 
           {/* AI Recommendation */}
-          {aiRecommendation && (
-            <Card className="mb-8 p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
-              <div className="flex items-start gap-6">
-                <div className="p-3 rounded-lg bg-primary/20 shrink-0">
-                  <Cpu className="w-8 h-8 text-primary" />
-                </div>
-                <div className="flex-1 space-y-4">
-                  <h3 className="text-xl font-bold flex items-center gap-2 text-white">
-                    🤖 AI Personalized Recommendation
-                  </h3>
-                  <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        a: ({ href, children }) => (
-                          <TrackableLink href={href} sessionId={sessionId}>
-                            {children}
-                          </TrackableLink>
-                        ),
-                      }}
-                    >
-                      {aiRecommendation}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
+          {(() => {
+            try {
+              // Try to parse as JSON with builds
+              const parsedData = JSON.parse(aiRecommendation);
+              
+              if (parsedData?.builds && parsedData?.explanation) {
+                return (
+                  <>
+                    {/* Explanation Card */}
+                    <Card className="mb-8 p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
+                      <div className="flex items-start gap-6">
+                        <div className="p-3 rounded-lg bg-primary/20 shrink-0">
+                          <Cpu className="w-8 h-8 text-primary" />
+                        </div>
+                        <div className="flex-1 space-y-4">
+                          <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                            🤖 AI Personalized Recommendation
+                          </h3>
+                          <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
+                            <ReactMarkdown 
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                a: ({ href, children }) => (
+                                  <TrackableLink href={href} sessionId={sessionId}>
+                                    {children}
+                                  </TrackableLink>
+                                ),
+                              }}
+                            >
+                              {parsedData.explanation}
+                            </ReactMarkdown>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
 
-          {/* Build Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {(() => {
-              try {
-                // Try to parse AI recommendation for build data
-                const buildData = aiRecommendation ? JSON.parse(aiRecommendation) : null;
-                
-                if (buildData?.builds) {
-                  return (
-                    <>
-                      {buildData.builds["Best Value"] && (
+                    {/* Build Cards Grid */}
+                    <div className="grid md:grid-cols-3 gap-6 mb-8">
+                      {parsedData.builds["Best Value"] && (
                         <BuildCard
                           title="Best Value"
-                          build={buildData.builds["Best Value"]}
+                          build={parsedData.builds["Best Value"]}
                           variant="value"
                         />
                       )}
-                      {buildData.builds["Balanced"] && (
+                      {parsedData.builds["Balanced"] && (
                         <BuildCard
                           title="Balanced"
-                          build={buildData.builds["Balanced"]}
+                          build={parsedData.builds["Balanced"]}
                           variant="balanced"
                           featured
                         />
                       )}
-                      {buildData.builds["High Performance"] && (
+                      {parsedData.builds["High Performance"] && (
                         <BuildCard
                           title="High Performance"
-                          build={buildData.builds["High Performance"]}
+                          build={parsedData.builds["High Performance"]}
                           variant="premium"
                         />
                       )}
-                    </>
-                  );
-                }
-              } catch (e) {
-                // If JSON parsing fails, render nothing
-                console.log("No build data available");
+                    </div>
+                  </>
+                );
               }
-              return null;
-            })()}
-          </div>
+            } catch (e) {
+              // If not JSON or parsing fails, render as plain markdown
+            }
+            
+            // Fallback: render as plain text/markdown (old format)
+            if (aiRecommendation && !aiRecommendation.startsWith('{')) {
+              return (
+                <Card className="mb-8 p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
+                  <div className="flex items-start gap-6">
+                    <div className="p-3 rounded-lg bg-primary/20 shrink-0">
+                      <Cpu className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-4">
+                      <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                        🤖 AI Personalized Recommendation
+                      </h3>
+                      <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({ href, children }) => (
+                              <TrackableLink href={href} sessionId={sessionId}>
+                                {children}
+                              </TrackableLink>
+                            ),
+                          }}
+                        >
+                          {aiRecommendation}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            }
+            
+            return null;
+          })()}
         </div>
 
       </div>

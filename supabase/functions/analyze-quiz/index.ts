@@ -354,7 +354,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     const userPrompt = `Based on these quiz responses, provide comprehensive PC build recommendations:\n\n${JSON.stringify(quizData, null, 2)}`;
 
     // Call AI with retry logic
-    const callAIWithRetry = async (model: string, maxRetries = 3): Promise<{ content: string; aiReport: any }> => {
+    const callAIWithRetry = async (model: string, maxRetries = 3): Promise<{ content: string; aiReport: any; builds: any }> => {
       const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
       
       if (!openaiApiKey) {
@@ -391,13 +391,58 @@ Remember: This recommendation will directly impact their purchasing decisions. B
                   type: "function",
                   function: {
                     name: "generate_pc_build_report",
-                    description: "Generate a comprehensive PC build recommendation with AI analysis report",
+                    description: "Generate a comprehensive PC build recommendation with AI analysis report and structured build data",
                     parameters: {
                       type: "object",
                       properties: {
                         recommendation: {
                           type: "string",
                           description: "The full PC build recommendation in markdown format with all component details, prices, and shopping guide"
+                        },
+                        builds: {
+                          type: "object",
+                          properties: {
+                            "Best Value": {
+                              type: "object",
+                              properties: {
+                                processor: { type: "string", description: "CPU model and generation" },
+                                graphics_card: { type: "string", description: "GPU model" },
+                                ram: { type: "string", description: "RAM capacity and speed" },
+                                storage: { type: "string", description: "Storage type and capacity" },
+                                power_supply: { type: "string", description: "PSU wattage and efficiency" },
+                                estimated_price_range: { type: "string", description: "Price range in user currency" },
+                                performance_tier: { type: "string", description: "Performance level description" }
+                              },
+                              required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
+                            },
+                            "Balanced": {
+                              type: "object",
+                              properties: {
+                                processor: { type: "string", description: "CPU model and generation" },
+                                graphics_card: { type: "string", description: "GPU model" },
+                                ram: { type: "string", description: "RAM capacity and speed" },
+                                storage: { type: "string", description: "Storage type and capacity" },
+                                power_supply: { type: "string", description: "PSU wattage and efficiency" },
+                                estimated_price_range: { type: "string", description: "Price range in user currency" },
+                                performance_tier: { type: "string", description: "Performance level description" }
+                              },
+                              required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
+                            },
+                            "High Performance": {
+                              type: "object",
+                              properties: {
+                                processor: { type: "string", description: "CPU model and generation" },
+                                graphics_card: { type: "string", description: "GPU model" },
+                                ram: { type: "string", description: "RAM capacity and speed" },
+                                storage: { type: "string", description: "Storage type and capacity" },
+                                power_supply: { type: "string", description: "PSU wattage and efficiency" },
+                                estimated_price_range: { type: "string", description: "Price range in user currency" },
+                                performance_tier: { type: "string", description: "Performance level description" }
+                              },
+                              required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
+                            }
+                          },
+                          required: ["Best Value", "Balanced", "High Performance"]
                         },
                         ai_report: {
                           type: "object",
@@ -422,7 +467,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
                           required: ["budget_range", "primary_use", "performance_level", "upgrade_priority"]
                         }
                       },
-                      required: ["recommendation", "ai_report"]
+                      required: ["recommendation", "builds", "ai_report"]
                     }
                   }
                 }
@@ -453,6 +498,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
 
           let aiContent = '';
           let extractedAiReport: any = null;
+          let extractedBuilds: any = null;
           
           // Try parsing as JSON first
           try {
@@ -465,7 +511,9 @@ Remember: This recommendation will directly impact their purchasing decisions. B
                 const functionArgs = JSON.parse(toolCall.function.arguments);
                 aiContent = functionArgs.recommendation || '';
                 extractedAiReport = functionArgs.ai_report || null;
+                extractedBuilds = functionArgs.builds || null;
                 console.log('Extracted AI report from tool call:', extractedAiReport);
+                console.log('Extracted builds from tool call:', extractedBuilds);
               }
             } else if (aiResponse.choices?.[0]?.message?.content) {
               // Fallback to content if no tool call
@@ -530,7 +578,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
           }
           
           console.log('AI analysis successful, content length:', aiContent.length);
-          return { content: aiContent, aiReport: extractedAiReport };
+          return { content: aiContent, aiReport: extractedAiReport, builds: extractedBuilds };
 
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -566,11 +614,13 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     // Try main model first
     let recommendation = '';
     let aiReport: any = null;
+    let builds: any = null;
     let usedModel = 'gpt-4o-mini';
     try {
       const result = await callAIWithRetry('gpt-4o-mini');
       recommendation = result.content;
       aiReport = result.aiReport;
+      builds = result.builds;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Primary model failed:', errorMessage);
@@ -585,6 +635,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
           const result = await callAIWithRetry('gpt-4o-mini', 2);
           recommendation = result.content;
           aiReport = result.aiReport;
+          builds = result.builds;
         } catch (fallbackError) {
           const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
           console.error('Fallback retry failed:', fallbackMessage);
@@ -859,6 +910,37 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       upgrade_priority: answers.upgradeExisting ? 'Upgrade' : 'New Build',
     };
 
+    // Use AI-generated builds or create empty fallback
+    const finalBuilds = builds || {
+      "Best Value": {
+        processor: "N/A",
+        graphics_card: "N/A",
+        ram: "N/A",
+        storage: "N/A",
+        power_supply: "N/A",
+        estimated_price_range: "N/A",
+        performance_tier: "N/A"
+      },
+      "Balanced": {
+        processor: "N/A",
+        graphics_card: "N/A",
+        ram: "N/A",
+        storage: "N/A",
+        power_supply: "N/A",
+        estimated_price_range: "N/A",
+        performance_tier: "N/A"
+      },
+      "High Performance": {
+        processor: "N/A",
+        graphics_card: "N/A",
+        ram: "N/A",
+        storage: "N/A",
+        power_supply: "N/A",
+        estimated_price_range: "N/A",
+        performance_tier: "N/A"
+      }
+    };
+
     // Save to database
     const { error: insertError } = await supabase
       .from('ai_recommendations')
@@ -891,20 +973,30 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       // Don't fail the request, recommendation was saved successfully
     }
 
-    // Return two separate JSON objects
+    // Get session info for response
+    const { data: sessionData } = await supabase
+      .from('quiz_sessions')
+      .select('*')
+      .eq('session_id', sessionId)
+      .single();
+
+    // Return structured JSON matching the user's specification
     return new Response(
       JSON.stringify({ 
-        success: true,
-        quiz_data: {
+        session_info: {
           session_id: sessionId,
-          answers: answers,
-          questions: questions,
+          country: sessionData?.country || userCountryCode,
           country_code: userCountryCode,
-          timestamp: new Date().toISOString()
-        },
-        build_data: {
-          recommendation: processedRecommendation,
+          total_score: sessionData?.total_score || null,
+          completed_at: sessionData?.completed_at || new Date().toISOString(),
           ai_report: finalAiReport
+        },
+        recommendations: finalBuilds,
+        explanation: processedRecommendation,
+        metadata: {
+          model_used: usedModel,
+          tokens_used: 0, // OpenAI doesn't return token count in tool call mode
+          created_at: new Date().toISOString()
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
