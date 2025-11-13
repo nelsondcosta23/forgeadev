@@ -30,7 +30,7 @@ export const CompanyClicksTab = ({ companyId }: CompanyClicksTabProps) => {
   const { data: clicks, isLoading } = useQuery({
     queryKey: ["company-clicks", companyId],
     queryFn: async () => {
-      // Get clicks for this specific company that have completed quiz sessions
+      // Get all clicks for this specific company
       const { data: clicksData, error } = await supabase
         .from("clicks")
         .select("*")
@@ -38,18 +38,7 @@ export const CompanyClicksTab = ({ companyId }: CompanyClicksTabProps) => {
         .order("clicked_at", { ascending: false });
 
       if (error) throw error;
-
-      // Filter clicks that have associated quiz sessions
-      const { data: sessions } = await supabase
-        .from("quiz_sessions")
-        .select("session_id, completed_at")
-        .not("completed_at", "is", null);
-
-      const completedSessionIds = new Set(sessions?.map(s => s.session_id) || []);
-      
-      return (clicksData || []).filter(click => 
-        click.session_id && completedSessionIds.has(click.session_id)
-      ) as ClickData[];
+      return clicksData as ClickData[];
     },
   });
 
