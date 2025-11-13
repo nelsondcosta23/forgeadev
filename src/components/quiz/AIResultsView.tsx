@@ -13,6 +13,13 @@ interface AIResultsViewProps {
     country_code: string;
     total_score: number | null;
     completed_at: string;
+    ai_report?: {
+      budget_range?: string;
+      primary_use?: string;
+      performance_level?: string;
+      upgrade_priority?: string;
+      [key: string]: any;
+    };
   };
   recommendations: {
     "Best Value": BuildData;
@@ -124,25 +131,61 @@ export const AIResultsView = ({
 
         {/* Session Info Card */}
         <Card className="mb-8 p-6 bg-gradient-to-br from-muted/30 to-muted/10 border-muted">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Country</p>
-              <p className="font-semibold">{sessionInfo.country}</p>
+          <div className="space-y-6">
+            {/* Header Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-6 border-b border-border/50">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Country</p>
+                <p className="font-semibold">{sessionInfo.country}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Session ID</p>
+                <p className="font-mono text-xs truncate">{sessionInfo.session_id}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Completed</p>
+                <p className="text-sm">
+                  {new Date(sessionInfo.completed_at).toLocaleDateString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Builds</p>
+                <p className="font-semibold">3 Options</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Session ID</p>
-              <p className="font-mono text-xs truncate">{sessionInfo.session_id}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Completed</p>
-              <p className="text-sm">
-                {new Date(sessionInfo.completed_at).toLocaleDateString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Builds</p>
-              <p className="font-semibold">3 Options</p>
-            </div>
+
+            {/* AI Report Details */}
+            {sessionInfo.ai_report && (
+              <div>
+                <h3 className="text-lg font-semibold mb-4">AI Analysis Report</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {sessionInfo.ai_report.budget_range && (
+                    <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground mb-1">Budget Range</p>
+                      <p className="font-semibold text-sm">{sessionInfo.ai_report.budget_range}</p>
+                    </div>
+                  )}
+                  {sessionInfo.ai_report.primary_use && (
+                    <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground mb-1">Primary Use</p>
+                      <p className="font-semibold text-sm">{sessionInfo.ai_report.primary_use}</p>
+                    </div>
+                  )}
+                  {sessionInfo.ai_report.performance_level && (
+                    <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground mb-1">Performance Level</p>
+                      <p className="font-semibold text-sm">{sessionInfo.ai_report.performance_level}</p>
+                    </div>
+                  )}
+                  {sessionInfo.ai_report.upgrade_priority && (
+                    <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground mb-1">Upgrade Priority</p>
+                      <p className="font-semibold text-sm">{sessionInfo.ai_report.upgrade_priority}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 
