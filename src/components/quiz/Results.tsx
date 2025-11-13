@@ -153,6 +153,16 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
           parsed.recommendations["High Performance"];
         
         if (hasRequiredBuilds) {
+          // Ensure session_info has ai_report field (it may be undefined, which is fine)
+          if (!parsed.session_info.ai_report) {
+            // Create default ai_report from answers if not present
+            parsed.session_info.ai_report = {
+              budget_range: answers.budget ? `${answers.budget}` : 'Not specified',
+              primary_use: answers.purpose || 'Not specified',
+              performance_level: answers.fps ? `${answers.fps} FPS @ ${answers.resolution || '1080p'}` : 'Standard',
+              upgrade_priority: answers.upgradability === 'yes' ? 'Upgrade Capable' : 'New Build',
+            };
+          }
           return parsed;
         }
       }
