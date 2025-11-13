@@ -46,7 +46,7 @@ export const CompanyClicksTab = ({ companyId }: CompanyClicksTabProps) => {
   const filteredClicks = useMemo(() => {
     return clicks?.filter((click) => {
       const matchesSearch = 
-        click.session_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        click.session_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         click.country_name?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const clickDate = new Date(click.clicked_at);
