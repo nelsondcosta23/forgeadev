@@ -434,6 +434,59 @@ const Admin = () => {
     }
   };
 
+  const downloadQuizJSON = async () => {
+    try {
+      // Get all quiz sessions
+      const { data: sessions, error: sessionsError } = await supabase
+        .from("quiz_sessions")
+        .select("*")
+        .order("started_at", { ascending: false });
+
+      if (sessionsError) throw sessionsError;
+
+      // Get all responses
+      const { data: responses, error: responsesError } = await supabase
+        .from("quiz_responses")
+        .select("*")
+        .order("session_id, question_number");
+
+      if (responsesError) throw responsesError;
+
+      // Group responses by session
+      const quizzesData = sessions?.map(session => {
+        const sessionResponses = responses?.filter(r => r.session_id === session.session_id) || [];
+        
+        return {
+          session_id: session.session_id,
+          country_code: session.country_code,
+          country_name: session.country_name,
+          started_at: session.started_at,
+          completed_at: session.completed_at,
+          questions_and_answers: sessionResponses.map(response => ({
+            question_number: response.question_number,
+            question: response.question_text,
+            answer: response.selected_answer,
+            answered_at: response.answered_at
+          }))
+        };
+      }) || [];
+
+      const jsonContent = JSON.stringify(quizzesData, null, 2);
+      const blob = new Blob([jsonContent], { type: "application/json" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `quiz_responses_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("JSON exportado com sucesso!");
+    } catch (error) {
+      console.error("Error exporting JSON:", error);
+      toast.error("Erro ao exportar JSON");
+    }
+  };
+
   const filteredSessions = quizSessions.filter((session) => {
     const matchesSearch =
       session.session_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1227,6 +1280,14 @@ const Admin = () => {
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         Export Questions to CSV
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={downloadQuizJSON}
+                        className="justify-start"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Export Quiz Responses to JSON
                       </Button>
                     </div>
                   </CardContent>
