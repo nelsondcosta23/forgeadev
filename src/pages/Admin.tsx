@@ -124,6 +124,7 @@ const Admin = () => {
     status: true,
   });
   const [showAllCountries, setShowAllCountries] = useState(false);
+  const [demoJsonData, setDemoJsonData] = useState<string>('[]');
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -160,6 +161,7 @@ const Admin = () => {
       fetchQuizData();
       fetchPrompt();
       fetchStoreLinks();
+      fetchDemoJsonData();
     }
   }, [isAuthenticated]);
 
@@ -193,6 +195,54 @@ const Admin = () => {
     } catch (error) {
       console.error("Error fetching store links:", error);
       toast.error("Error loading store links");
+    }
+  };
+
+  const fetchDemoJsonData = async () => {
+    try {
+      // Fetch the last completed quiz session
+      const { data: sessionData, error: sessionError } = await supabase
+        .from("quiz_sessions")
+        .select("*")
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (sessionError) throw sessionError;
+      if (!sessionData) {
+        setDemoJsonData('[]');
+        return;
+      }
+
+      // Fetch all responses for this session
+      const { data: responsesData, error: responsesError } = await supabase
+        .from("quiz_responses")
+        .select("*")
+        .eq("session_id", sessionData.session_id)
+        .order("question_number", { ascending: true });
+
+      if (responsesError) throw responsesError;
+
+      // Format the data
+      const formattedData = {
+        session_id: sessionData.session_id,
+        country_code: sessionData.country_code,
+        country_name: sessionData.country_name,
+        started_at: sessionData.started_at,
+        completed_at: sessionData.completed_at,
+        questions_and_answers: responsesData?.map((response) => ({
+          question_number: response.question_number,
+          question: response.question_text,
+          answer: response.selected_answer,
+          answered_at: response.answered_at,
+        })) || [],
+      };
+
+      setDemoJsonData(JSON.stringify([formattedData], null, 2));
+    } catch (error) {
+      console.error("Error fetching demo JSON data:", error);
+      setDemoJsonData('[]');
     }
   };
 
@@ -1304,227 +1354,14 @@ const Admin = () => {
                   <CardContent className="space-y-4">
                     <div className="relative">
                       <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs max-h-[500px]">
-{`[
-  {
-    "session_id": "abc123-gaming",
-    "country_code": "PT",
-    "country_name": "Portugal",
-    "started_at": "2024-01-15T10:30:00Z",
-    "completed_at": "2024-01-15T10:35:00Z",
-    "questions_and_answers": [
-      {
-        "question_number": 1,
-        "question": "What is your primary use for the PC?",
-        "answer": "gaming",
-        "answered_at": "2024-01-15T10:30:15Z"
-      },
-      {
-        "question_number": 2,
-        "question": "What type of games do you play?",
-        "answer": "aaa",
-        "answered_at": "2024-01-15T10:30:45Z"
-      },
-      {
-        "question_number": 3,
-        "question": "What gaming features are important to you?",
-        "answer": "high_fps",
-        "answered_at": "2024-01-15T10:31:15Z"
-      },
-      {
-        "question_number": 4,
-        "question": "What is your budget?",
-        "answer": "1500",
-        "answered_at": "2024-01-15T10:31:45Z"
-      },
-      {
-        "question_number": 5,
-        "question": "What is important to you in a PC?",
-        "answer": "performance",
-        "answered_at": "2024-01-15T10:32:15Z"
-      }
-    ]
-  },
-  {
-    "session_id": "def456-professional",
-    "country_code": "ES",
-    "country_name": "Spain",
-    "started_at": "2024-01-15T11:00:00Z",
-    "completed_at": "2024-01-15T11:04:00Z",
-    "questions_and_answers": [
-      {
-        "question_number": 1,
-        "question": "What is your primary use for the PC?",
-        "answer": "professional",
-        "answered_at": "2024-01-15T11:00:20Z"
-      },
-      {
-        "question_number": 2,
-        "question": "What professional software do you use?",
-        "answer": "office",
-        "answered_at": "2024-01-15T11:00:50Z"
-      },
-      {
-        "question_number": 3,
-        "question": "What is your budget?",
-        "answer": "800",
-        "answered_at": "2024-01-15T11:01:20Z"
-      },
-      {
-        "question_number": 4,
-        "question": "What is important to you in a PC?",
-        "answer": "reliability",
-        "answered_at": "2024-01-15T11:01:50Z"
-      }
-    ]
-  },
-  {
-    "session_id": "ghi789-content",
-    "country_code": "FR",
-    "country_name": "France",
-    "started_at": "2024-01-15T12:00:00Z",
-    "completed_at": "2024-01-15T12:05:00Z",
-    "questions_and_answers": [
-      {
-        "question_number": 1,
-        "question": "What is your primary use for the PC?",
-        "answer": "content",
-        "answered_at": "2024-01-15T12:00:15Z"
-      },
-      {
-        "question_number": 2,
-        "question": "What type of content do you create?",
-        "answer": "video",
-        "answered_at": "2024-01-15T12:00:45Z"
-      },
-      {
-        "question_number": 3,
-        "question": "What is your budget?",
-        "answer": "2000",
-        "answered_at": "2024-01-15T12:01:15Z"
-      },
-      {
-        "question_number": 4,
-        "question": "What is important to you in a PC?",
-        "answer": "multitasking",
-        "answered_at": "2024-01-15T12:01:45Z"
-      }
-    ]
-  }
-]`}
+{demoJsonData}
                       </pre>
                       <Button
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2"
                         onClick={() => {
-                          const jsonExample = `[
-  {
-    "session_id": "abc123-gaming",
-    "country_code": "PT",
-    "country_name": "Portugal",
-    "started_at": "2024-01-15T10:30:00Z",
-    "completed_at": "2024-01-15T10:35:00Z",
-    "questions_and_answers": [
-      {
-        "question_number": 1,
-        "question": "What is your primary use for the PC?",
-        "answer": "gaming",
-        "answered_at": "2024-01-15T10:30:15Z"
-      },
-      {
-        "question_number": 2,
-        "question": "What type of games do you play?",
-        "answer": "aaa",
-        "answered_at": "2024-01-15T10:30:45Z"
-      },
-      {
-        "question_number": 3,
-        "question": "What gaming features are important to you?",
-        "answer": "high_fps",
-        "answered_at": "2024-01-15T10:31:15Z"
-      },
-      {
-        "question_number": 4,
-        "question": "What is your budget?",
-        "answer": "1500",
-        "answered_at": "2024-01-15T10:31:45Z"
-      },
-      {
-        "question_number": 5,
-        "question": "What is important to you in a PC?",
-        "answer": "performance",
-        "answered_at": "2024-01-15T10:32:15Z"
-      }
-    ]
-  },
-  {
-    "session_id": "def456-professional",
-    "country_code": "ES",
-    "country_name": "Spain",
-    "started_at": "2024-01-15T11:00:00Z",
-    "completed_at": "2024-01-15T11:04:00Z",
-    "questions_and_answers": [
-      {
-        "question_number": 1,
-        "question": "What is your primary use for the PC?",
-        "answer": "professional",
-        "answered_at": "2024-01-15T11:00:20Z"
-      },
-      {
-        "question_number": 2,
-        "question": "What professional software do you use?",
-        "answer": "office",
-        "answered_at": "2024-01-15T11:00:50Z"
-      },
-      {
-        "question_number": 3,
-        "question": "What is your budget?",
-        "answer": "800",
-        "answered_at": "2024-01-15T11:01:20Z"
-      },
-      {
-        "question_number": 4,
-        "question": "What is important to you in a PC?",
-        "answer": "reliability",
-        "answered_at": "2024-01-15T11:01:50Z"
-      }
-    ]
-  },
-  {
-    "session_id": "ghi789-content",
-    "country_code": "FR",
-    "country_name": "France",
-    "started_at": "2024-01-15T12:00:00Z",
-    "completed_at": "2024-01-15T12:05:00Z",
-    "questions_and_answers": [
-      {
-        "question_number": 1,
-        "question": "What is your primary use for the PC?",
-        "answer": "content",
-        "answered_at": "2024-01-15T12:00:15Z"
-      },
-      {
-        "question_number": 2,
-        "question": "What type of content do you create?",
-        "answer": "video",
-        "answered_at": "2024-01-15T12:00:45Z"
-      },
-      {
-        "question_number": 3,
-        "question": "What is your budget?",
-        "answer": "2000",
-        "answered_at": "2024-01-15T12:01:15Z"
-      },
-      {
-        "question_number": 4,
-        "question": "What is important to you in a PC?",
-        "answer": "multitasking",
-        "answered_at": "2024-01-15T12:01:45Z"
-      }
-    ]
-  }
-]`;
-                          navigator.clipboard.writeText(jsonExample);
+                          navigator.clipboard.writeText(demoJsonData);
                           toast.success("JSON copiado!");
                         }}
                       >
