@@ -1,13 +1,27 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Building2, Search, Globe, ExternalLink, Filter } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Building2, Search, Globe, ExternalLink, Filter, Plus, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";
+import { toast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const companySchema = z.object({
+  store_name: z.string().trim().min(1, "Nome da empresa é obrigatório").max(255),
+  country_name: z.string().trim().min(1, "Nome do país é obrigatório").max(255),
+  country_code: z.string().trim().length(2, "Código do país deve ter 2 caracteres").toUpperCase(),
+  store_url: z.string().trim().url("URL inválida").max(500),
+  status: z.boolean(),
+});
 
 interface StoreLink {
   id: string;
@@ -24,6 +38,18 @@ export const CRM = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<StoreLink | null>(null);
+  const [formData, setFormData] = useState({
+    store_name: "",
+    country_name: "",
+    country_code: "",
+    store_url: "",
+    status: true,
+  });
+
+  const queryClient = useQueryClient();
 
   const { data: companies, isLoading } = useQuery({
     queryKey: ["crm-companies"],
@@ -67,6 +93,104 @@ export const CRM = () => {
     return filteredCompanies?.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredCompanies, currentPage]);
 
+  const createCompanyMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof companySchema>) => {
+      const { error } = await supabase
+        .from("country_store_links")
+        .insert([{
+          store_name: data.store_name,
+          country_name: data.country_name,
+          country_code: data.country_code,
+          store_url: data.store_url,
+          status: data.status,
+        }]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-companies"] });
+      setIsDialogOpen(false);
+      resetForm();
+      toast({ title: "Empresa criada com sucesso" });
+    },
+    onError: (error) => {
+      toast({ title: "Erro ao criar empresa", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateCompanyMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: z.infer<typeof companySchema> }) => {
+      const { error } = await supabase
+        .from("country_store_links")
+        .update({
+          store_name: data.store_name,
+          country_name: data.country_name,
+          country_code: data.country_code,
+          store_url: data.store_url,
+          status: data.status,
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-companies"] });
+      setIsDialogOpen(false);
+      resetForm();
+      toast({ title: "Empresa atualizada com sucesso" });
+    },
+    onError: (error) => {
+      toast({ title: "Erro ao atualizar empresa", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      store_name: "",
+      country_name: "",
+      country_code: "",
+      store_url: "",
+      status: true,
+    });
+    setEditingCompany(null);
+  };
+
+  const handleOpenDialog = (company?: StoreLink) => {
+    if (company) {
+      setEditingCompany(company);
+      setFormData({
+        store_name: company.store_name,
+        country_name: company.country_name,
+        country_code: company.country_code,
+        store_url: company.store_url,
+        status: company.status,
+      });
+    } else {
+      resetForm();
+    }
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const validatedData = companySchema.parse(formData);
+      
+      if (editingCompany) {
+        updateCompanyMutation.mutate({ id: editingCompany.id, data: validatedData });
+      } else {
+        createCompanyMutation.mutate(validatedData);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Erro de validação",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -81,6 +205,100 @@ export const CRM = () => {
                 </CardDescription>
               </div>
             </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => handleOpenDialog()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Empresa
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <form onSubmit={handleSubmit}>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingCompany ? "Editar Empresa" : "Nova Empresa"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {editingCompany 
+                        ? "Atualize as informações da empresa" 
+                        : "Adicione uma nova empresa parceira do Selling"}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="store_name">Nome da Empresa *</Label>
+                      <Input
+                        id="store_name"
+                        value={formData.store_name}
+                        onChange={(e) => setFormData({ ...formData, store_name: e.target.value })}
+                        placeholder="Ex: Amazon Portugal"
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="country_name">País *</Label>
+                        <Input
+                          id="country_name"
+                          value={formData.country_name}
+                          onChange={(e) => setFormData({ ...formData, country_name: e.target.value })}
+                          placeholder="Ex: Portugal"
+                          required
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="country_code">Código *</Label>
+                        <Input
+                          id="country_code"
+                          value={formData.country_code}
+                          onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
+                          placeholder="PT"
+                          maxLength={2}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="store_url">URL da Loja *</Label>
+                      <Input
+                        id="store_url"
+                        type="url"
+                        value={formData.store_url}
+                        onChange={(e) => setFormData({ ...formData, store_url: e.target.value })}
+                        placeholder="https://www.amazon.pt"
+                        required
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="status">Status Ativo</Label>
+                      <Switch
+                        id="status"
+                        checked={formData.status}
+                        onCheckedChange={(checked) => setFormData({ ...formData, status: checked })}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsDialogOpen(false);
+                        resetForm();
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit"
+                      disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending}
+                    >
+                      {editingCompany ? "Atualizar" : "Criar"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -146,6 +364,7 @@ export const CRM = () => {
                     <TableHead>País</TableHead>
                     <TableHead>Website</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="w-[80px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -178,6 +397,15 @@ export const CRM = () => {
                         <Badge variant={company.status ? "default" : "secondary"}>
                           {company.status ? "Ativo" : "Inativo"}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog(company)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
