@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Building2, Search, Globe, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Building2, Search, Globe, ExternalLink, Filter } from "lucide-react";
+import { useState, useMemo } from "react";
 
 interface StoreLink {
   id: string;
@@ -18,6 +20,10 @@ interface StoreLink {
 
 export const CRM = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [countryFilter, setCountryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { data: companies, isLoading } = useQuery({
     queryKey: ["crm-companies"],
@@ -32,13 +38,34 @@ export const CRM = () => {
     },
   });
 
-  const filteredCompanies = companies?.filter((company) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      company.store_name.toLowerCase().includes(search) ||
-      company.country_name.toLowerCase().includes(search)
-    );
-  });
+  const uniqueCountries = useMemo(() => {
+    if (!companies) return [];
+    const countries = [...new Set(companies.map(c => c.country_name))];
+    return countries.sort();
+  }, [companies]);
+
+  const filteredCompanies = useMemo(() => {
+    return companies?.filter((company) => {
+      const search = searchTerm.toLowerCase();
+      const matchesSearch = 
+        company.store_name.toLowerCase().includes(search) ||
+        company.country_name.toLowerCase().includes(search) ||
+        company.store_url.toLowerCase().includes(search);
+      
+      const matchesCountry = countryFilter === "all" || company.country_name === countryFilter;
+      const matchesStatus = statusFilter === "all" || 
+        (statusFilter === "active" && company.status) ||
+        (statusFilter === "inactive" && !company.status);
+
+      return matchesSearch && matchesCountry && matchesStatus;
+    });
+  }, [companies, searchTerm, countryFilter, statusFilter]);
+
+  const totalPages = Math.ceil((filteredCompanies?.length || 0) / itemsPerPage);
+  const paginatedCompanies = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredCompanies?.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredCompanies, currentPage]);
 
   return (
     <div className="space-y-6">
@@ -57,15 +84,52 @@ export const CRM = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Pesquisar por empresa ou país..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Pesquisar por empresa, país ou URL..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={countryFilter} onValueChange={(value) => {
+                setCountryFilter(value);
+                setCurrentPage(1);
+              }}>
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="País" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os países</SelectItem>
+                  {uniqueCountries.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={(value) => {
+                setStatusFilter(value);
+                setCurrentPage(1);
+              }}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Companies Table */}
@@ -85,7 +149,7 @@ export const CRM = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCompanies?.map((company) => (
+                  {paginatedCompanies?.map((company) => (
                     <TableRow key={company.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -119,6 +183,42 @@ export const CRM = () => {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {filteredCompanies && filteredCompanies.length > itemsPerPage && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredCompanies.length)} de {filteredCompanies.length} empresas
+              </p>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </CardContent>
