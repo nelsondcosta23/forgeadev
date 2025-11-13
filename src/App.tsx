@@ -11,7 +11,6 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import SharedResults from "./pages/SharedResults";
 import Admin from "./pages/Admin";
 import CompanyDetails from "./pages/CompanyDetails";
-import CompanyForm from "./pages/CompanyForm";
 
 const queryClient = new QueryClient();
 
@@ -29,8 +28,6 @@ const App = () => (
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/company/:id" element={<CompanyDetails />} />
-            <Route path="/admin/company/new" element={<CompanyForm />} />
-            <Route path="/admin/company/edit/:id" element={<CompanyForm />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
