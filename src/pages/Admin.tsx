@@ -124,7 +124,8 @@ const Admin = () => {
     status: true,
   });
   const [showAllCountries, setShowAllCountries] = useState(false);
-  const [demoJsonData, setDemoJsonData] = useState<string>('[]');
+  const [demoQuizJson, setDemoQuizJson] = useState<string>('[]');
+  const [demoBuildJson, setDemoBuildJson] = useState<string>('[]');
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -211,7 +212,8 @@ const Admin = () => {
 
       if (sessionError) throw sessionError;
       if (!sessionData) {
-        setDemoJsonData('[]');
+        setDemoQuizJson('{}');
+        setDemoBuildJson('{}');
         return;
       }
 
@@ -224,56 +226,58 @@ const Admin = () => {
 
       if (responsesError) throw responsesError;
 
-      // Format the data with Best Value, Balanced, High Performance structure
-      const formattedData = {
-        session_info: {
-          session_id: sessionData.session_id,
-          country: sessionData.country_name,
-          country_code: sessionData.country_code,
-          total_score: sessionData.total_score,
-          completed_at: sessionData.completed_at,
-        },
-        recommendations: {
-          "Best Value": {
-            processor: "Intel Core i5-13400F / AMD Ryzen 5 7600",
-            graphics_card: "NVIDIA RTX 4060 / AMD RX 7600",
-            ram: "16GB DDR4",
-            storage: "512GB NVMe SSD",
-            power_supply: "550W 80+ Bronze",
-            estimated_price_range: "€700-900",
-            performance_tier: "Good for 1080p gaming",
-          },
-          "Balanced": {
-            processor: "Intel Core i7-13700F / AMD Ryzen 7 7800X3D",
-            graphics_card: "NVIDIA RTX 4070 / AMD RX 7800 XT",
-            ram: "32GB DDR5",
-            storage: "1TB NVMe Gen4 SSD",
-            power_supply: "750W 80+ Gold",
-            estimated_price_range: "€1200-1500",
-            performance_tier: "Excellent for 1440p gaming",
-          },
-          "High Performance": {
-            processor: "Intel Core i9-14900K / AMD Ryzen 9 7950X3D",
-            graphics_card: "NVIDIA RTX 4090 / AMD RX 7900 XTX",
-            ram: "64GB DDR5",
-            storage: "2TB NVMe Gen4 SSD + 2TB HDD",
-            power_supply: "1000W 80+ Platinum",
-            estimated_price_range: "€2500-3500",
-            performance_tier: "Best for 4K gaming and content creation",
-          },
-        },
-        user_responses: responsesData?.map((response) => ({
-          question_number: response.question_number,
-          question: response.question_text,
+      // Fetch AI recommendation for this session
+      const { data: aiData, error: aiError } = await supabase
+        .from("ai_recommendations")
+        .select("*")
+        .eq("session_id", sessionData.session_id)
+        .maybeSingle();
+
+      if (aiError) console.error("Error fetching AI recommendation:", aiError);
+
+      // Quiz JSON (input data)
+      const quizJson = {
+        session_id: sessionData.session_id,
+        answers: responsesData?.reduce((acc, response) => {
+          const questionKey = response.question_text.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          acc[questionKey] = response.selected_answer;
+          return acc;
+        }, {} as Record<string, string>) || {},
+        questions: responsesData?.map((response) => ({
+          number: response.question_number,
+          text: response.question_text,
           answer: response.selected_answer,
-          answered_at: response.answered_at,
         })) || [],
+        country_code: sessionData.country_code,
+        timestamp: sessionData.started_at,
       };
 
-      setDemoJsonData(JSON.stringify([formattedData], null, 2));
+      // Build JSON (output data)
+      const buildJson = {
+        recommendation: aiData?.recommendation_text ? 
+          (aiData.recommendation_text.startsWith('{') ? 
+            JSON.parse(aiData.recommendation_text) : 
+            aiData.recommendation_text) : 
+          "No recommendation available",
+        ai_report: {
+          budget_range: responsesData?.find(r => r.question_text.includes('budget'))?.selected_answer || 'Not specified',
+          primary_use: responsesData?.find(r => r.question_text.includes('purpose') || r.question_text.includes('use'))?.selected_answer || 'Not specified',
+          performance_level: `${responsesData?.find(r => r.question_text.includes('fps') || r.question_text.includes('FPS'))?.selected_answer || 'Standard'} @ ${responsesData?.find(r => r.question_text.includes('resolution'))?.selected_answer || '1080p'}`,
+          upgrade_priority: responsesData?.find(r => r.question_text.includes('upgrade'))?.selected_answer === 'yes' ? 'Upgrade Capable' : 'New Build',
+        },
+        metadata: {
+          model_used: aiData?.model_used || 'N/A',
+          tokens_used: aiData?.tokens_used || 0,
+          created_at: aiData?.created_at || sessionData.completed_at,
+        },
+      };
+
+      setDemoQuizJson(JSON.stringify(quizJson, null, 2));
+      setDemoBuildJson(JSON.stringify(buildJson, null, 2));
     } catch (error) {
       console.error("Error fetching demo JSON data:", error);
-      setDemoJsonData('[]');
+      setDemoQuizJson('{}');
+      setDemoBuildJson('{}');
     }
   };
 
@@ -1387,34 +1391,66 @@ const Admin = () => {
                   </CardContent>
                 </Card>
 
-                {/* JSON Example */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>JSON Format Example</CardTitle>
-                    <CardDescription>
-                      Example structure of exported quiz data
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="relative">
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs max-h-[500px]">
-{demoJsonData}
-                      </pre>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2"
-                        onClick={() => {
-                          navigator.clipboard.writeText(demoJsonData);
-                          toast.success("JSON copiado!");
-                        }}
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Copiar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* JSON Examples - Side by Side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Quiz JSON */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Quiz Input JSON</CardTitle>
+                      <CardDescription>
+                        Dados das respostas do quiz
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="relative">
+                        <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs max-h-[500px]">
+{demoQuizJson}
+                        </pre>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="absolute top-2 right-2"
+                          onClick={() => {
+                            navigator.clipboard.writeText(demoQuizJson);
+                            toast.success("JSON do Quiz copiado!");
+                          }}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Copiar
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Build Output JSON */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Build Output JSON</CardTitle>
+                      <CardDescription>
+                        Dados da recomendação gerada
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="relative">
+                        <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs max-h-[500px]">
+{demoBuildJson}
+                        </pre>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="absolute top-2 right-2"
+                          onClick={() => {
+                            navigator.clipboard.writeText(demoBuildJson);
+                            toast.success("JSON do Build copiado!");
+                          }}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Copiar
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
