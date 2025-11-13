@@ -10,6 +10,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import QRCode from "qrcode";
 import TrackableLink from "./TrackableLink";
+import { AIResultsView } from "./AIResultsView";
+import { BuildData } from "./BuildCard";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -132,6 +134,50 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
 };
 
 const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: ResultsProps) => {
+  // Try to parse AI recommendation as structured JSON
+  const parseAIRecommendation = (): { 
+    session_info: any; 
+    recommendations: { "Best Value": BuildData; "Balanced": BuildData; "High Performance": BuildData } 
+  } | null => {
+    if (!aiRecommendation) return null;
+    
+    try {
+      const parsed = JSON.parse(aiRecommendation);
+      
+      // Check if it has the expected structure
+      if (parsed.session_info && parsed.recommendations) {
+        const hasRequiredBuilds = 
+          parsed.recommendations["Best Value"] &&
+          parsed.recommendations["Balanced"] &&
+          parsed.recommendations["High Performance"];
+        
+        if (hasRequiredBuilds) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Not valid JSON, use markdown rendering
+      console.log("AI recommendation is not structured JSON, using markdown display");
+    }
+    
+    return null;
+  };
+
+  const structuredRecommendation = parseAIRecommendation();
+
+  // If we have structured AI recommendations, use the new AIResultsView
+  if (structuredRecommendation) {
+    return (
+      <AIResultsView
+        sessionInfo={structuredRecommendation.session_info}
+        recommendations={structuredRecommendation.recommendations}
+        onRestart={onRestart}
+        onBack={onBack}
+      />
+    );
+  }
+
+  // Otherwise, use the original layout
   const builds = generateBuilds(answers);
   const shareUrl = `${window.location.origin}/build/${sessionId}`;
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
