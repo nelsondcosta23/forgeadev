@@ -1303,24 +1303,19 @@ const Admin = () => {
                       </p>
                       <p className={cn(
                         "text-xs font-mono",
-                        promptText.length > 4000 ? "text-destructive font-semibold" : "text-muted-foreground"
+                        promptText.length > 5000 ? "text-destructive font-semibold" : "text-muted-foreground"
                       )}>
-                        {promptText.length} / 4000
-                        {promptText.length > 4000 && " (will be truncated)"}
+                        {promptText.length} / 5000
+                        {promptText.length > 5000 && " (will be truncated)"}
                       </p>
                     </div>
-                    <div className="space-y-2">
-                      <Textarea
-                        value={promptText}
-                        onChange={(e) => setPromptText(e.target.value)}
-                        placeholder="Type your prompt here... (supports markdown)"
-                        className="min-h-[300px] resize-none font-mono text-sm"
-                        maxLength={5000}
-                      />
-                      <p className="text-xs text-muted-foreground text-right">
-                        {promptText.length} / 5000 caracteres
-                      </p>
-                    </div>
+                    <Textarea
+                      value={promptText}
+                      onChange={(e) => setPromptText(e.target.value)}
+                      placeholder="Type your prompt here... (supports markdown)"
+                      className="min-h-[300px] resize-none font-mono text-sm"
+                      maxLength={5000}
+                    />
                     <div className="flex gap-2">
                       <Button
                         onClick={async () => {
