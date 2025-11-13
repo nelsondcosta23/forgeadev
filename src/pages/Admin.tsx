@@ -1219,10 +1219,17 @@ const Admin = () => {
                                   </a>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="flex items-center gap-1">
-                                    <span className="font-semibold">{completedCount}</span>
-                                    <span className="text-muted-foreground text-sm">
-                                      {countryStat ? `/ ${countryStat.count}` : ''}
+                                  <div className="flex items-center gap-1 text-sm">
+                                    <span className="font-semibold text-green-600 dark:text-green-400">
+                                      {completedCount}
+                                    </span>
+                                    <span className="text-muted-foreground">/</span>
+                                    <span className="font-semibold text-red-600 dark:text-red-400">
+                                      {countryStat ? countryStat.count - completedCount : 0}
+                                    </span>
+                                    <span className="text-muted-foreground">/</span>
+                                    <span className="font-semibold text-foreground">
+                                      {countryStat?.count || 0}
                                     </span>
                                   </div>
                                 </TableCell>
