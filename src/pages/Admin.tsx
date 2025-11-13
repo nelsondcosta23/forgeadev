@@ -1292,6 +1292,80 @@ const Admin = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* JSON Example */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>JSON Format Example</CardTitle>
+                    <CardDescription>
+                      Example structure of exported quiz data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="relative">
+                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs">
+{`[
+  {
+    "session_id": "abc123",
+    "country_code": "PT",
+    "country_name": "Portugal",
+    "started_at": "2024-01-15T10:30:00Z",
+    "completed_at": "2024-01-15T10:35:00Z",
+    "questions_and_answers": [
+      {
+        "question_number": 1,
+        "question": "What is your primary use for the PC?",
+        "answer": "gaming",
+        "answered_at": "2024-01-15T10:30:15Z"
+      },
+      {
+        "question_number": 2,
+        "question": "What type of games do you play?",
+        "answer": "aaa",
+        "answered_at": "2024-01-15T10:30:45Z"
+      }
+    ]
+  }
+]`}
+                      </pre>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          const jsonExample = `[
+  {
+    "session_id": "abc123",
+    "country_code": "PT",
+    "country_name": "Portugal",
+    "started_at": "2024-01-15T10:30:00Z",
+    "completed_at": "2024-01-15T10:35:00Z",
+    "questions_and_answers": [
+      {
+        "question_number": 1,
+        "question": "What is your primary use for the PC?",
+        "answer": "gaming",
+        "answered_at": "2024-01-15T10:30:15Z"
+      },
+      {
+        "question_number": 2,
+        "question": "What type of games do you play?",
+        "answer": "aaa",
+        "answered_at": "2024-01-15T10:30:45Z"
+      }
+    ]
+  }
+]`;
+                          navigator.clipboard.writeText(jsonExample);
+                          toast.success("JSON copiado!");
+                        }}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Copiar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
           </Tabs>
