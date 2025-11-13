@@ -1315,24 +1315,36 @@ const Admin = () => {
                       placeholder="Type your prompt here... (supports markdown)"
                       className="min-h-[300px] resize-none font-mono text-sm"
                     />
-                    <Button
-                      onClick={async () => {
-                        try {
-                          const { error } = await supabase
-                            .from("admin_prompts")
-                            .insert({ prompt_text: promptText });
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const { error } = await supabase
+                              .from("admin_prompts")
+                              .insert({ prompt_text: promptText });
 
-                          if (error) throw error;
+                            if (error) throw error;
 
-                          toast.success("Prompt saved successfully!");
-                        } catch (error) {
-                          console.error("Error saving prompt:", error);
-                          toast.error("Error saving prompt");
-                        }
-                      }}
-                    >
-                      Save Prompt
-                    </Button>
+                            toast.success("Prompt saved successfully!");
+                          } catch (error) {
+                            console.error("Error saving prompt:", error);
+                            toast.error("Error saving prompt");
+                          }
+                        }}
+                      >
+                        Save Prompt
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(promptText);
+                          toast.success("Prompt copiado!");
+                        }}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Copiar
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 
