@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Share2, Download } from "lucide-react";
+import { ArrowLeft, Share2, Download, Copy, Link2 } from "lucide-react";
 import { BuildCard, BuildData } from "./BuildCard";
 import { ShareDialog } from "./ShareDialog";
 import { useState } from "react";
@@ -31,8 +31,15 @@ export const AIResultsView = ({
 }: AIResultsViewProps) => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
+  const shareUrl = `${window.location.origin}/build/${sessionInfo.session_id}`;
+
   const handleDownload = () => {
     toast.info("PDF download feature coming soon!");
+  };
+
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(shareUrl);
+    toast.success("URL copied to clipboard!");
   };
 
   return (
@@ -78,7 +85,7 @@ export const AIResultsView = ({
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Hero Section */}
-        <div className="text-center mb-12 space-y-4">
+        <div className="text-center mb-8 space-y-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
             Your PC Build Recommendations
           </h1>
@@ -86,6 +93,32 @@ export const AIResultsView = ({
             Personalized builds for {sessionInfo.country}, crafted by AI based on your preferences
           </p>
         </div>
+
+        {/* Shareable URL Section */}
+        <Card className="mb-8 p-6 bg-gradient-to-br from-card to-card/80 border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Link2 className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Your Unique Build URL</h2>
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1 bg-muted/30 rounded-md px-4 py-3 border border-border/50">
+              <code className="text-sm text-primary font-mono break-all">
+                {shareUrl}
+              </code>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyUrl}
+              className="shrink-0"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-3">
+            Save or share this unique link to access your custom PC build recommendations anytime.
+          </p>
+        </Card>
 
         {/* Session Info Card */}
         <Card className="mb-8 p-6 bg-gradient-to-br from-muted/30 to-muted/10 border-muted">
@@ -145,7 +178,7 @@ export const AIResultsView = ({
       <ShareDialog 
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
-        shareUrl={`${window.location.origin}/shared/${sessionInfo.session_id}`}
+        shareUrl={shareUrl}
       />
     </div>
   );
