@@ -354,7 +354,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     const userPrompt = `Based on these quiz responses, provide comprehensive PC build recommendations:\n\n${JSON.stringify(quizData, null, 2)}`;
 
     // Call AI with retry logic
-    const callAIWithRetry = async (model: string, maxRetries = 3): Promise<string> => {
+    const callAIWithRetry = async (model: string, maxRetries = 3): Promise<{ content: string; aiReport: any }> => {
       const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
       
       if (!openaiApiKey) {
@@ -386,6 +386,48 @@ Remember: This recommendation will directly impact their purchasing decisions. B
               max_tokens: 2000,
               temperature: 0.7,
               stream: false,
+              tools: [
+                {
+                  type: "function",
+                  function: {
+                    name: "generate_pc_build_report",
+                    description: "Generate a comprehensive PC build recommendation with AI analysis report",
+                    parameters: {
+                      type: "object",
+                      properties: {
+                        recommendation: {
+                          type: "string",
+                          description: "The full PC build recommendation in markdown format with all component details, prices, and shopping guide"
+                        },
+                        ai_report: {
+                          type: "object",
+                          properties: {
+                            budget_range: {
+                              type: "string",
+                              description: "Concise budget range description based on analysis (e.g., 'Entry-level Budget', 'Mid-range Gaming', 'High-end Workstation')"
+                            },
+                            primary_use: {
+                              type: "string",
+                              description: "Primary use case identified (e.g., 'Gaming & Streaming', 'Content Creation', 'Office Work', 'Video Editing')"
+                            },
+                            performance_level: {
+                              type: "string",
+                              description: "Expected performance level (e.g., '1080p 60fps Gaming', '4K Video Editing', 'Competitive Gaming 240fps')"
+                            },
+                            upgrade_priority: {
+                              type: "string",
+                              description: "Upgrade path or build priority (e.g., 'GPU-focused Build', 'Balanced All-rounder', 'Future-proof Investment')"
+                            }
+                          },
+                          required: ["budget_range", "primary_use", "performance_level", "upgrade_priority"]
+                        }
+                      },
+                      required: ["recommendation", "ai_report"]
+                    }
+                  }
+                }
+              ],
+              tool_choice: { type: "function", function: { name: "generate_pc_build_report" } }
             }),
           });
           
@@ -410,17 +452,28 @@ Remember: This recommendation will directly impact their purchasing decisions. B
           }
 
           let aiContent = '';
+          let extractedAiReport: any = null;
           
           // Try parsing as JSON first
           try {
             const aiResponse = await response.json();
             
-            if (!aiResponse.choices?.[0]?.message?.content) {
+            // Check for tool call response
+            if (aiResponse.choices?.[0]?.message?.tool_calls?.[0]) {
+              const toolCall = aiResponse.choices[0].message.tool_calls[0];
+              if (toolCall.function?.name === 'generate_pc_build_report') {
+                const functionArgs = JSON.parse(toolCall.function.arguments);
+                aiContent = functionArgs.recommendation || '';
+                extractedAiReport = functionArgs.ai_report || null;
+                console.log('Extracted AI report from tool call:', extractedAiReport);
+              }
+            } else if (aiResponse.choices?.[0]?.message?.content) {
+              // Fallback to content if no tool call
+              aiContent = aiResponse.choices[0].message.content;
+            } else {
               console.error('Invalid JSON structure:', JSON.stringify(aiResponse).substring(0, 300));
               throw new Error('Invalid response structure');
             }
-            
-            aiContent = aiResponse.choices[0].message.content;
           } catch (jsonError) {
             console.log('JSON parse failed, trying SSE format...');
             
@@ -477,7 +530,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
           }
           
           console.log('AI analysis successful, content length:', aiContent.length);
-          return aiContent;
+          return { content: aiContent, aiReport: extractedAiReport };
 
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -512,9 +565,12 @@ Remember: This recommendation will directly impact their purchasing decisions. B
 
     // Try main model first
     let recommendation = '';
+    let aiReport: any = null;
     let usedModel = 'gpt-4o-mini';
     try {
-      recommendation = await callAIWithRetry('gpt-4o-mini');
+      const result = await callAIWithRetry('gpt-4o-mini');
+      recommendation = result.content;
+      aiReport = result.aiReport;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Primary model failed:', errorMessage);
@@ -526,7 +582,9 @@ Remember: This recommendation will directly impact their purchasing decisions. B
           errorMessage === 'CONTENT_TOO_SHORT') {
         console.log('Attempting fallback retry with gpt-4o-mini...');
         try {
-          recommendation = await callAIWithRetry('gpt-4o-mini', 2);
+          const result = await callAIWithRetry('gpt-4o-mini', 2);
+          recommendation = result.content;
+          aiReport = result.aiReport;
         } catch (fallbackError) {
           const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
           console.error('Fallback retry failed:', fallbackMessage);
@@ -793,8 +851,8 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       processedRecommendation = recommendation;
     }
 
-    // Extract ai_report from answers for structured data
-    const aiReport = {
+    // Use AI-generated report or create fallback from answers
+    const finalAiReport = aiReport || {
       budget_range: answers.budget || 'Not specified',
       primary_use: answers.purpose || 'Not specified',
       performance_level: answers.fps ? `${answers.fps} FPS @ ${answers.resolution || '1080p'}` : 'Standard',
@@ -846,7 +904,7 @@ Remember: This recommendation will directly impact their purchasing decisions. B
         },
         build_data: {
           recommendation: processedRecommendation,
-          ai_report: aiReport
+          ai_report: finalAiReport
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
