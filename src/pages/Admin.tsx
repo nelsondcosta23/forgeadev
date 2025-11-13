@@ -123,6 +123,7 @@ const Admin = () => {
     store_url: "",
     status: true,
   });
+  const [showAllCountries, setShowAllCountries] = useState(false);
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -710,26 +711,38 @@ const Admin = () => {
               ) : countryStats.length === 0 ? (
                 <p className="text-muted-foreground">No data available</p>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {countryStats.map((stat, i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col p-3 rounded-lg bg-background/50 border border-border hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Globe className="w-4 h-4 text-primary" />
-                        <p className="font-medium text-sm truncate">{stat.country_name}</p>
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <div className="text-2xl font-bold">{stat.count}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {totalQuizzes > 0
-                            ? `${Math.round((stat.count / totalQuizzes) * 100)}%`
-                            : "0%"}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {(showAllCountries ? countryStats : countryStats.slice(0, 8)).map((stat, i) => (
+                      <div
+                        key={i}
+                        className="flex flex-col p-3 rounded-lg bg-background/50 border border-border hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Globe className="w-4 h-4 text-primary" />
+                          <p className="font-medium text-sm truncate">{stat.country_name}</p>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <div className="text-2xl font-bold">{stat.count}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {totalQuizzes > 0
+                              ? `${Math.round((stat.count / totalQuizzes) * 100)}%`
+                              : "0%"}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  {countryStats.length > 8 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAllCountries(!showAllCountries)}
+                      className="w-full text-muted-foreground hover:text-foreground"
+                    >
+                      {showAllCountries ? "Show less" : `Show more... (${countryStats.length - 8} more countries)`}
+                    </Button>
+                  )}
                 </div>
               )}
             </CardContent>
