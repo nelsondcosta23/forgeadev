@@ -1069,17 +1069,41 @@ const Admin = () => {
                       Previous
                     </Button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          className="w-10"
-                        >
-                          {page}
-                        </Button>
-                      ))}
+                      {(() => {
+                        const maxVisiblePages = 10;
+                        let startPage = 1;
+                        let endPage = totalPages;
+
+                        if (totalPages > maxVisiblePages) {
+                          if (currentPage <= 6) {
+                            startPage = 1;
+                            endPage = maxVisiblePages;
+                          } else if (currentPage >= totalPages - 5) {
+                            startPage = totalPages - maxVisiblePages + 1;
+                            endPage = totalPages;
+                          } else {
+                            startPage = currentPage - 5;
+                            endPage = currentPage + 4;
+                          }
+                        }
+
+                        const pages = Array.from(
+                          { length: endPage - startPage + 1 },
+                          (_, i) => startPage + i
+                        );
+
+                        return pages.map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-10"
+                          >
+                            {page}
+                          </Button>
+                        ));
+                      })()}
                     </div>
                     <Button
                       variant="outline"
