@@ -30,19 +30,11 @@ export const CompanyClicksTab = ({ companyId }: CompanyClicksTabProps) => {
   const { data: clicks, isLoading } = useQuery({
     queryKey: ["company-clicks", companyId],
     queryFn: async () => {
-      // First get store links for this company
-      const { data: storeLinks } = await supabase
-        .from("country_store_links")
-        .select("id")
-        .eq("id", companyId)
-        .single();
-
-      if (!storeLinks) return [];
-
-      // Get all clicks related to quiz sessions
+      // Get clicks for this specific company that have completed quiz sessions
       const { data: clicksData, error } = await supabase
         .from("clicks")
         .select("*")
+        .eq("company_id", companyId)
         .order("clicked_at", { ascending: false });
 
       if (error) throw error;
