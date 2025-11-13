@@ -10,7 +10,6 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import SharedResults from "./pages/SharedResults";
 import Admin from "./pages/Admin";
-import Demo from "./pages/Demo";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +22,6 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/demo" element={<Demo />} />
             <Route path="/build/:sessionId" element={<SharedResults />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsAndConditions />} />
