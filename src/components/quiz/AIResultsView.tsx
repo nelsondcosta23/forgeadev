@@ -19,13 +19,15 @@ interface AIResultsViewProps {
     "Balanced": BuildData;
     "High Performance": BuildData;
   };
+  explanation?: string;
   onRestart: () => void;
   onBack: () => void;
 }
 
 export const AIResultsView = ({ 
   sessionInfo, 
-  recommendations, 
+  recommendations,
+  explanation,
   onRestart, 
   onBack 
 }: AIResultsViewProps) => {
@@ -163,6 +165,40 @@ export const AIResultsView = ({
             variant="premium"
           />
         </div>
+
+        {/* AI Explanation Section */}
+        {explanation && (
+          <Card className="mt-12 p-8 bg-gradient-to-br from-primary/5 via-card to-card border-primary/20">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                <svg
+                  className="h-6 w-6 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-2">AI Recommendation Explanation</h2>
+                <p className="text-sm text-muted-foreground">
+                  Why these specific configurations were chosen for your needs
+                </p>
+              </div>
+            </div>
+            <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert">
+              <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                {explanation}
+              </p>
+            </div>
+          </Card>
+        )}
 
         {/* Footer Note */}
         <div className="mt-12 text-center">

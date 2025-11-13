@@ -137,7 +137,8 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
   // Try to parse AI recommendation as structured JSON
   const parseAIRecommendation = (): { 
     session_info: any; 
-    recommendations: { "Best Value": BuildData; "Balanced": BuildData; "High Performance": BuildData } 
+    recommendations: { "Best Value": BuildData; "Balanced": BuildData; "High Performance": BuildData };
+    explanation?: string;
   } | null => {
     if (!aiRecommendation) return null;
     
@@ -171,6 +172,7 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
       <AIResultsView
         sessionInfo={structuredRecommendation.session_info}
         recommendations={structuredRecommendation.recommendations}
+        explanation={structuredRecommendation.explanation}
         onRestart={onRestart}
         onBack={onBack}
       />
