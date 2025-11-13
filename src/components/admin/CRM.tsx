@@ -10,10 +10,13 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Building2, Search, Globe, ExternalLink, Filter, Plus, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { CompanyClicksTab } from "./CompanyClicksTab";
 
 const companySchema = z.object({
   store_name: z.string().trim().min(1, "Nome da empresa é obrigatório").max(255),
@@ -21,6 +24,11 @@ const companySchema = z.object({
   country_code: z.string().trim().length(2, "Código do país deve ter 2 caracteres").toUpperCase(),
   store_url: z.string().trim().url("URL inválida").max(500),
   status: z.boolean(),
+  contact_person: z.string().trim().max(255).optional(),
+  contact_email: z.string().trim().email("Email inválido").max(255).optional().or(z.literal("")),
+  contact_phone: z.string().trim().max(50).optional(),
+  vat_number: z.string().trim().max(100).optional(),
+  notes: z.string().trim().optional(),
 });
 
 interface StoreLink {
@@ -30,6 +38,11 @@ interface StoreLink {
   store_name: string;
   store_url: string;
   status: boolean;
+  contact_person?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  vat_number?: string;
+  notes?: string;
 }
 
 export const CRM = () => {
@@ -47,6 +60,11 @@ export const CRM = () => {
     country_code: "",
     store_url: "",
     status: true,
+    contact_person: "",
+    contact_email: "",
+    contact_phone: "",
+    vat_number: "",
+    notes: "",
   });
 
   const queryClient = useQueryClient();
@@ -103,6 +121,11 @@ export const CRM = () => {
           country_code: data.country_code,
           store_url: data.store_url,
           status: data.status,
+          contact_person: data.contact_person || null,
+          contact_email: data.contact_email || null,
+          contact_phone: data.contact_phone || null,
+          vat_number: data.vat_number || null,
+          notes: data.notes || null,
         }]);
       if (error) throw error;
     },
@@ -127,6 +150,11 @@ export const CRM = () => {
           country_code: data.country_code,
           store_url: data.store_url,
           status: data.status,
+          contact_person: data.contact_person || null,
+          contact_email: data.contact_email || null,
+          contact_phone: data.contact_phone || null,
+          vat_number: data.vat_number || null,
+          notes: data.notes || null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -149,6 +177,11 @@ export const CRM = () => {
       country_code: "",
       store_url: "",
       status: true,
+      contact_person: "",
+      contact_email: "",
+      contact_phone: "",
+      vat_number: "",
+      notes: "",
     });
     setEditingCompany(null);
   };
@@ -162,6 +195,11 @@ export const CRM = () => {
         country_code: company.country_code,
         store_url: company.store_url,
         status: company.status,
+        contact_person: company.contact_person || "",
+        contact_email: company.contact_email || "",
+        contact_phone: company.contact_phone || "",
+        vat_number: company.vat_number || "",
+        notes: company.notes || "",
       });
     } else {
       resetForm();
@@ -212,7 +250,7 @@ export const CRM = () => {
                   Nova Empresa
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
+              <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
                 <form onSubmit={handleSubmit}>
                   <DialogHeader>
                     <DialogTitle>
@@ -224,61 +262,143 @@ export const CRM = () => {
                         : "Adicione uma nova empresa parceira do Selling"}
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="store_name">Nome da Empresa *</Label>
-                      <Input
-                        id="store_name"
-                        value={formData.store_name}
-                        onChange={(e) => setFormData({ ...formData, store_name: e.target.value })}
-                        placeholder="Ex: Amazon Portugal"
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="country_name">País *</Label>
-                        <Input
-                          id="country_name"
-                          value={formData.country_name}
-                          onChange={(e) => setFormData({ ...formData, country_name: e.target.value })}
-                          placeholder="Ex: Portugal"
-                          required
-                        />
+                  
+                  <Tabs defaultValue="dados" className="mt-4">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
+                      <TabsTrigger value="clicks" disabled={!editingCompany}>Clicks</TabsTrigger>
+                      <TabsTrigger value="billing" disabled={!editingCompany}>Billing</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="dados" className="space-y-4 mt-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="store_name">Nome da Empresa *</Label>
+                          <Input
+                            id="store_name"
+                            value={formData.store_name}
+                            onChange={(e) => setFormData({ ...formData, store_name: e.target.value })}
+                            placeholder="Ex: Amazon Portugal"
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="country_name">País *</Label>
+                            <Input
+                              id="country_name"
+                              value={formData.country_name}
+                              onChange={(e) => setFormData({ ...formData, country_name: e.target.value })}
+                              placeholder="Ex: Portugal"
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="country_code">Código *</Label>
+                            <Input
+                              id="country_code"
+                              value={formData.country_code}
+                              onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
+                              placeholder="PT"
+                              maxLength={2}
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="store_url">URL da Loja *</Label>
+                          <Input
+                            id="store_url"
+                            type="url"
+                            value={formData.store_url}
+                            onChange={(e) => setFormData({ ...formData, store_url: e.target.value })}
+                            placeholder="https://www.amazon.pt"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="border-t pt-4 mt-4">
+                          <h4 className="font-medium mb-3">Informações de Contato</h4>
+                          <div className="grid gap-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="contact_person">Pessoa de Contato</Label>
+                              <Input
+                                id="contact_person"
+                                value={formData.contact_person}
+                                onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
+                                placeholder="Nome do responsável"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="grid gap-2">
+                                <Label htmlFor="contact_email">Email de Contato</Label>
+                                <Input
+                                  id="contact_email"
+                                  type="email"
+                                  value={formData.contact_email}
+                                  onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                                  placeholder="contato@empresa.com"
+                                />
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor="contact_phone">Telefone</Label>
+                                <Input
+                                  id="contact_phone"
+                                  value={formData.contact_phone}
+                                  onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                                  placeholder="+351 123 456 789"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="vat_number">NIF / VAT Number</Label>
+                              <Input
+                                id="vat_number"
+                                value={formData.vat_number}
+                                onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
+                                placeholder="123456789"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="notes">Notas</Label>
+                              <Textarea
+                                id="notes"
+                                value={formData.notes}
+                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                placeholder="Notas adicionais sobre a empresa..."
+                                rows={4}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between border-t pt-4">
+                          <Label htmlFor="status">Status Ativo</Label>
+                          <Switch
+                            id="status"
+                            checked={formData.status}
+                            onCheckedChange={(checked) => setFormData({ ...formData, status: checked })}
+                          />
+                        </div>
                       </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="country_code">Código *</Label>
-                        <Input
-                          id="country_code"
-                          value={formData.country_code}
-                          onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
-                          placeholder="PT"
-                          maxLength={2}
-                          required
-                        />
+                    </TabsContent>
+                    
+                    <TabsContent value="clicks" className="mt-4">
+                      {editingCompany && <CompanyClicksTab companyId={editingCompany.id} />}
+                    </TabsContent>
+                    
+                    <TabsContent value="billing" className="mt-4">
+                      <div className="text-center py-12">
+                        <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Em Construção</h3>
+                        <p className="text-sm text-muted-foreground">
+                          A área de faturação estará disponível em breve
+                        </p>
                       </div>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="store_url">URL da Loja *</Label>
-                      <Input
-                        id="store_url"
-                        type="url"
-                        value={formData.store_url}
-                        onChange={(e) => setFormData({ ...formData, store_url: e.target.value })}
-                        placeholder="https://www.amazon.pt"
-                        required
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="status">Status Ativo</Label>
-                      <Switch
-                        id="status"
-                        checked={formData.status}
-                        onCheckedChange={(checked) => setFormData({ ...formData, status: checked })}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
+                    </TabsContent>
+                  </Tabs>
+                  
+                  <DialogFooter className="mt-4">
                     <Button
                       type="button"
                       variant="outline"
