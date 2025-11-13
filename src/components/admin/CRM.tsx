@@ -16,7 +16,7 @@ import { Building2, Search, Globe, ExternalLink, Filter, Plus, Pencil } from "lu
 import { useState, useMemo } from "react";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { CompanyClicksTab } from "./CompanyClicksTab";
+
 
 const companySchema = z.object({
   store_name: z.string().trim().min(1, "Nome da empresa é obrigatório").max(255),
@@ -229,9 +229,8 @@ export const CRM = () => {
                   </DialogHeader>
                   
                   <Tabs defaultValue="dados" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
-                      <TabsTrigger value="clicks" disabled={!editingCompany}>Clicks</TabsTrigger>
                       <TabsTrigger value="billing" disabled={!editingCompany}>Billing</TabsTrigger>
                     </TabsList>
                     
@@ -291,10 +290,6 @@ export const CRM = () => {
                           />
                         </div>
                       </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="clicks" className="mt-4">
-                      {editingCompany && <CompanyClicksTab companyId={editingCompany.id} />}
                     </TabsContent>
                     
                     <TabsContent value="billing" className="mt-4">
