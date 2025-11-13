@@ -268,12 +268,25 @@ const Quiz = ({ onBack }: QuizProps) => {
         }
         setIsAnalyzing(false);
         return;
+      } else if (data?.session_info && data?.recommendations) {
+        console.log('AI analysis received with structured data');
+        console.log('Session info:', data.session_info);
+        console.log('Recommendations:', data.recommendations);
+        console.log('Metadata:', data.metadata);
+        
+        // Store the explanation/recommendation text
+        setAiRecommendation(data.explanation || '');
+        
+        // Store the full response for Results component (including builds)
+        setAiRecommendation(JSON.stringify({
+          builds: data.recommendations,
+          explanation: data.explanation
+        }));
       } else if (data?.success && data?.build_data) {
+        // Fallback for old format
         console.log('AI analysis received with build_data:', data.build_data);
-        // Store the recommendation text from build_data
         setAiRecommendation(data.build_data.recommendation);
         
-        // You can also access quiz_data if needed
         console.log('Quiz data:', data.quiz_data);
         console.log('AI Report:', data.build_data.ai_report);
       } else {
