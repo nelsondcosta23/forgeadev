@@ -24,11 +24,6 @@ const companySchema = z.object({
   country_code: z.string().trim().length(2, "Código do país deve ter 2 caracteres").toUpperCase(),
   store_url: z.string().trim().url("URL inválida").max(500),
   status: z.boolean(),
-  contact_person: z.string().trim().max(255).optional(),
-  contact_email: z.string().trim().email("Email inválido").max(255).optional().or(z.literal("")),
-  contact_phone: z.string().trim().max(50).optional(),
-  vat_number: z.string().trim().max(100).optional(),
-  notes: z.string().trim().optional(),
 });
 
 interface StoreLink {
@@ -38,11 +33,6 @@ interface StoreLink {
   store_name: string;
   store_url: string;
   status: boolean;
-  contact_person?: string;
-  contact_email?: string;
-  contact_phone?: string;
-  vat_number?: string;
-  notes?: string;
 }
 
 export const CRM = () => {
@@ -60,11 +50,6 @@ export const CRM = () => {
     country_code: "",
     store_url: "",
     status: true,
-    contact_person: "",
-    contact_email: "",
-    contact_phone: "",
-    vat_number: "",
-    notes: "",
   });
 
   const queryClient = useQueryClient();
@@ -121,11 +106,6 @@ export const CRM = () => {
           country_code: data.country_code,
           store_url: data.store_url,
           status: data.status,
-          contact_person: data.contact_person || null,
-          contact_email: data.contact_email || null,
-          contact_phone: data.contact_phone || null,
-          vat_number: data.vat_number || null,
-          notes: data.notes || null,
         }]);
       if (error) throw error;
     },
@@ -150,11 +130,6 @@ export const CRM = () => {
           country_code: data.country_code,
           store_url: data.store_url,
           status: data.status,
-          contact_person: data.contact_person || null,
-          contact_email: data.contact_email || null,
-          contact_phone: data.contact_phone || null,
-          vat_number: data.vat_number || null,
-          notes: data.notes || null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -177,11 +152,6 @@ export const CRM = () => {
       country_code: "",
       store_url: "",
       status: true,
-      contact_person: "",
-      contact_email: "",
-      contact_phone: "",
-      vat_number: "",
-      notes: "",
     });
     setEditingCompany(null);
   };
@@ -195,11 +165,6 @@ export const CRM = () => {
         country_code: company.country_code,
         store_url: company.store_url,
         status: company.status,
-        contact_person: company.contact_person || "",
-        contact_email: company.contact_email || "",
-        contact_phone: company.contact_phone || "",
-        vat_number: company.vat_number || "",
-        notes: company.notes || "",
       });
     } else {
       resetForm();
@@ -315,61 +280,6 @@ export const CRM = () => {
                             placeholder="https://www.amazon.pt"
                             required
                           />
-                        </div>
-                        
-                        <div className="border-t pt-4 mt-4">
-                          <h4 className="font-medium mb-3">Informações de Contato</h4>
-                          <div className="grid gap-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="contact_person">Pessoa de Contato</Label>
-                              <Input
-                                id="contact_person"
-                                value={formData.contact_person}
-                                onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                                placeholder="Nome do responsável"
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="grid gap-2">
-                                <Label htmlFor="contact_email">Email de Contato</Label>
-                                <Input
-                                  id="contact_email"
-                                  type="email"
-                                  value={formData.contact_email}
-                                  onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                                  placeholder="contato@empresa.com"
-                                />
-                              </div>
-                              <div className="grid gap-2">
-                                <Label htmlFor="contact_phone">Telefone</Label>
-                                <Input
-                                  id="contact_phone"
-                                  value={formData.contact_phone}
-                                  onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                                  placeholder="+351 123 456 789"
-                                />
-                              </div>
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="vat_number">NIF / VAT Number</Label>
-                              <Input
-                                id="vat_number"
-                                value={formData.vat_number}
-                                onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
-                                placeholder="123456789"
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="notes">Notas</Label>
-                              <Textarea
-                                id="notes"
-                                value={formData.notes}
-                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                placeholder="Notas adicionais sobre a empresa..."
-                                rows={4}
-                              />
-                            </div>
-                          </div>
                         </div>
                         
                         <div className="flex items-center justify-between border-t pt-4">
