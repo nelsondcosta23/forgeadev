@@ -793,6 +793,14 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       processedRecommendation = recommendation;
     }
 
+    // Extract ai_report from answers for structured data
+    const aiReport = {
+      budget_range: answers.budget || 'Not specified',
+      primary_use: answers.purpose || 'Not specified',
+      performance_level: answers.fps ? `${answers.fps} FPS @ ${answers.resolution || '1080p'}` : 'Standard',
+      upgrade_priority: answers.upgradeExisting ? 'Upgrade' : 'New Build',
+    };
+
     // Save to database
     const { error: insertError } = await supabase
       .from('ai_recommendations')
@@ -825,10 +833,21 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       // Don't fail the request, recommendation was saved successfully
     }
 
+    // Return two separate JSON objects
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        recommendation: processedRecommendation 
+        success: true,
+        quiz_data: {
+          session_id: sessionId,
+          answers: answers,
+          questions: questions,
+          country_code: userCountryCode,
+          timestamp: new Date().toISOString()
+        },
+        build_data: {
+          recommendation: processedRecommendation,
+          ai_report: aiReport
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
