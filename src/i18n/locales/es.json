@@ -36,47 +36,121 @@
     },
     "purpose": {
       "question": "¿Para qué necesitas el PC?",
+      "description": "Selecciona el uso principal de tu ordenador",
       "gaming": "Juegos",
       "professional": "Trabajo Profesional",
-      "content": "Creación de Contenido"
+      "content": "Creación de Contenido",
+      "mixed": "Uso Mixto"
     },
     "games": {
-      "question": "¿Qué tipos de juegos vas a jugar?",
-      "competitive": "Competitivo/Esports (FPS Alto)",
-      "aaa": "Títulos AAA (Gráficos Elevados)",
-      "casual": "Juegos Casuales"
+      "question": "¿Qué juegos o géneros juegas más?",
+      "fps": "FPS Competitivo",
+      "fpsDesc": "CS2, Valorant, Apex",
+      "aaa": "AAA Moderno",
+      "aaaDesc": "Cyberpunk, RDR2, Starfield",
+      "moba": "MOBA/Estrategia",
+      "mobaDesc": "LoL, Dota 2, Civilization",
+      "vr": "Juegos VR",
+      "vrDesc": "Half-Life: Alyx, Beat Saber"
     },
-    "profession": {
-      "question": "¿Qué tipo de trabajo profesional?",
-      "programming": "Programación/Desarrollo",
+    "resolution": {
+      "question": "¿En qué resolución quieres jugar?",
+      "1080p": "1080p (Full HD)",
+      "1080pDesc": "Mejor rendimiento",
+      "1440p": "1440p (2K)",
+      "1440pDesc": "Equilibrio ideal",
+      "4k": "4K (Ultra HD)",
+      "4kDesc": "Calidad máxima"
+    },
+    "fps": {
+      "question": "¿Cuántos FPS quieres alcanzar?",
+      "60": "60 FPS",
+      "60Desc": "Experiencia fluida",
+      "120": "120 FPS",
+      "120Desc": "Gaming competitivo",
+      "144": "144+ FPS",
+      "144Desc": "Rendimiento extremo"
+    },
+    "streaming": {
+      "question": "¿Planeas hacer streaming o grabar?",
+      "yes": "Sí",
+      "yesDesc": "Necesito un codificador fuerte",
+      "no": "No",
+      "noDesc": "Solo gaming"
+    },
+    "software": {
+      "question": "¿Qué tipo de software utilizas?",
+      "office": "Office & Web",
+      "officeDesc": "Word, Excel, navegación",
+      "cad": "CAD/Ingeniería",
+      "cadDesc": "AutoCAD, SolidWorks",
       "design": "Diseño Gráfico",
-      "data": "Análisis de Datos",
-      "office": "Trabajo de Oficina"
+      "designDesc": "Photoshop, Illustrator",
+      "dev": "Programación",
+      "devDesc": "IDEs, VMs, Docker"
     },
-    "contentType": {
-      "question": "¿Qué tipo de contenido vas a crear?",
-      "video": "Edición de Video",
-      "photo": "Edición de Fotografía",
-      "3d": "Modelado/Renderizado 3D",
-      "streaming": "Streaming"
+    "multitask": {
+      "question": "¿Necesitas ejecutar varias aplicaciones simultáneamente?",
+      "light": "Uso Ligero",
+      "lightDesc": "2-3 programas",
+      "moderate": "Uso Moderado",
+      "moderateDesc": "5-10 programas",
+      "heavy": "Uso Pesado",
+      "heavyDesc": "10+ programas, VMs"
     },
-    "budget": {
-      "question": "¿Cuál es tu presupuesto?",
-      "value": "Build Económica (€600-€1000)",
-      "balanced": "Build Equilibrada (€1000-€1500)",
-      "highEnd": "Build High-End (€1500+)"
+    "contentSoftware": {
+      "question": "¿Qué programas usas para crear contenido?",
+      "video": "Edición de Vídeo",
+      "videoDesc": "Premiere, DaVinci",
+      "3d": "Modelado 3D",
+      "3dDesc": "Blender, Maya",
+      "photo": "Fotografía",
+      "photoDesc": "Lightroom, Capture One",
+      "music": "Producción Musical",
+      "musicDesc": "Ableton, FL Studio"
     },
-    "aesthetics": {
-      "question": "¿Quieres iluminación RGB y estética?",
-      "yes": "Sí, me encanta RGB",
-      "minimal": "Visual Minimalista/Limpio",
-      "no": "No, solo rendimiento"
+    "render4k": {
+      "question": "¿Renderizas vídeo en 4K o superior?",
+      "yes": "Sí",
+      "yesDesc": "Necesito mucha RAM y CPU",
+      "no": "No",
+      "noDesc": "1080p es suficiente"
     },
-    "futureProof": {
-      "question": "¿Qué tan importante es estar preparado para el futuro?",
-      "veryImportant": "Muy Importante",
-      "somewhat": "Algo Importante",
-      "notImportant": "No es Importante"
+    "gpuAcceleration": {
+      "question": "¿Necesitas acelerar renderización con GPU?",
+      "yes": "Sí",
+      "yesDesc": "CUDA/OpenCL esencial",
+      "no": "No",
+      "noDesc": "CPU es suficiente"
+    },
+    "casePreference": {
+      "question": "¿Tienes preferencia por estética o tamaño?",
+      "compact": "Compacto (Mini-ITX)",
+      "compactDesc": "Pequeño y portátil",
+      "standard": "Standard (Mid Tower)",
+      "standardDesc": "Equilibrio perfecto",
+      "full": "Full Tower",
+      "fullDesc": "Expansión máxima",
+      "rgb": "RGB & Estética",
+      "rgbDesc": "Visuales deslumbrantes"
+    },
+    "peripherals": {
+      "question": "¿Necesitas monitor, teclado o ratón?",
+      "none": "No",
+      "noneDesc": "Solo el PC",
+      "monitor": "Monitor",
+      "monitorDesc": "Incluir monitor",
+      "keyboard": "Teclado & Ratón",
+      "keyboardDesc": "Periféricos básicos",
+      "all": "Setup Completo",
+      "allDesc": "Monitor + periféricos"
+    },
+    "upgradability": {
+      "question": "¿Quieres capacidad de upgrade futuro?",
+      "yes": "Sí",
+      "yesDesc": "Plataforma expansible",
+      "no": "No",
+      "noDesc": "Configuración fija"
     }
   },
   "results": {

@@ -36,47 +36,121 @@
     },
     "purpose": {
       "question": "What do you need the PC for?",
+      "description": "Select the main use of your computer",
       "gaming": "Gaming",
       "professional": "Professional Work",
-      "content": "Content Creation"
+      "content": "Content Creation",
+      "mixed": "Mixed Use"
     },
     "games": {
-      "question": "What types of games will you be playing?",
-      "competitive": "Competitive/Esports (High FPS)",
-      "aaa": "AAA Titles (High Graphics)",
-      "casual": "Casual Gaming"
+      "question": "What games or genres do you play the most?",
+      "fps": "Competitive FPS",
+      "fpsDesc": "CS2, Valorant, Apex",
+      "aaa": "Modern AAA",
+      "aaaDesc": "Cyberpunk, RDR2, Starfield",
+      "moba": "MOBA/Strategy",
+      "mobaDesc": "LoL, Dota 2, Civilization",
+      "vr": "VR Gaming",
+      "vrDesc": "Half-Life: Alyx, Beat Saber"
     },
-    "profession": {
-      "question": "What type of professional work?",
-      "programming": "Programming/Development",
+    "resolution": {
+      "question": "What resolution do you want to play at?",
+      "1080p": "1080p (Full HD)",
+      "1080pDesc": "Best performance",
+      "1440p": "1440p (2K)",
+      "1440pDesc": "Ideal balance",
+      "4k": "4K (Ultra HD)",
+      "4kDesc": "Maximum quality"
+    },
+    "fps": {
+      "question": "How many FPS do you want to achieve?",
+      "60": "60 FPS",
+      "60Desc": "Smooth experience",
+      "120": "120 FPS",
+      "120Desc": "Competitive gaming",
+      "144": "144+ FPS",
+      "144Desc": "Extreme performance"
+    },
+    "streaming": {
+      "question": "Do you plan to stream or record?",
+      "yes": "Yes",
+      "yesDesc": "I need a strong encoder",
+      "no": "No",
+      "noDesc": "Just gaming"
+    },
+    "software": {
+      "question": "What type of software do you use?",
+      "office": "Office & Web",
+      "officeDesc": "Word, Excel, browsing",
+      "cad": "CAD/Engineering",
+      "cadDesc": "AutoCAD, SolidWorks",
       "design": "Graphic Design",
-      "data": "Data Analysis",
-      "office": "Office Work"
+      "designDesc": "Photoshop, Illustrator",
+      "dev": "Programming",
+      "devDesc": "IDEs, VMs, Docker"
     },
-    "contentType": {
-      "question": "What type of content will you create?",
+    "multitask": {
+      "question": "Do you need to run multiple applications simultaneously?",
+      "light": "Light Use",
+      "lightDesc": "2-3 programs",
+      "moderate": "Moderate Use",
+      "moderateDesc": "5-10 programs",
+      "heavy": "Heavy Use",
+      "heavyDesc": "10+ programs, VMs"
+    },
+    "contentSoftware": {
+      "question": "What programs do you use to create content?",
       "video": "Video Editing",
-      "photo": "Photo Editing",
-      "3d": "3D Modeling/Rendering",
-      "streaming": "Streaming"
+      "videoDesc": "Premiere, DaVinci",
+      "3d": "3D Modeling",
+      "3dDesc": "Blender, Maya",
+      "photo": "Photography",
+      "photoDesc": "Lightroom, Capture One",
+      "music": "Music Production",
+      "musicDesc": "Ableton, FL Studio"
     },
-    "budget": {
-      "question": "What's your budget?",
-      "value": "Value Build ($600-$1000)",
-      "balanced": "Balanced Build ($1000-$1500)",
-      "highEnd": "High-End Build ($1500+)"
+    "render4k": {
+      "question": "Do you render video in 4K or higher?",
+      "yes": "Yes",
+      "yesDesc": "I need lots of RAM and CPU",
+      "no": "No",
+      "noDesc": "1080p is enough"
     },
-    "aesthetics": {
-      "question": "Do you want RGB lighting and aesthetics?",
-      "yes": "Yes, I love RGB",
-      "minimal": "Minimal/Clean Look",
-      "no": "No, performance only"
+    "gpuAcceleration": {
+      "question": "Do you need to accelerate rendering with GPU?",
+      "yes": "Yes",
+      "yesDesc": "CUDA/OpenCL essential",
+      "no": "No",
+      "noDesc": "CPU is enough"
     },
-    "futureProof": {
-      "question": "How important is future-proofing?",
-      "veryImportant": "Very Important",
-      "somewhat": "Somewhat Important",
-      "notImportant": "Not Important"
+    "casePreference": {
+      "question": "Do you have a preference for aesthetics or size?",
+      "compact": "Compact (Mini-ITX)",
+      "compactDesc": "Small and portable",
+      "standard": "Standard (Mid Tower)",
+      "standardDesc": "Perfect balance",
+      "full": "Full Tower",
+      "fullDesc": "Maximum expansion",
+      "rgb": "RGB & Aesthetics",
+      "rgbDesc": "Stunning visuals"
+    },
+    "peripherals": {
+      "question": "Do you need a monitor, keyboard or mouse?",
+      "none": "No",
+      "noneDesc": "Just the PC",
+      "monitor": "Monitor",
+      "monitorDesc": "Include monitor",
+      "keyboard": "Keyboard & Mouse",
+      "keyboardDesc": "Basic peripherals",
+      "all": "Complete Setup",
+      "allDesc": "Monitor + peripherals"
+    },
+    "upgradability": {
+      "question": "Do you want future upgrade capability?",
+      "yes": "Yes",
+      "yesDesc": "Expandable platform",
+      "no": "No",
+      "noDesc": "Fixed configuration"
     }
   },
   "results": {
