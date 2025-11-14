@@ -40,6 +40,7 @@ export type Database = {
           created_at: string
           id: string
           priority: string
+          status: string
           title: string
           updated_at: string
         }
@@ -47,6 +48,7 @@ export type Database = {
           created_at?: string
           id?: string
           priority: string
+          status?: string
           title: string
           updated_at?: string
         }
@@ -54,6 +56,7 @@ export type Database = {
           created_at?: string
           id?: string
           priority?: string
+          status?: string
           title?: string
           updated_at?: string
         }
@@ -86,135 +89,6 @@ export type Database = {
           recommendation_text?: string
           session_id?: string
           tokens_used?: number | null
-        }
-        Relationships: []
-      }
-      clicks: {
-        Row: {
-          clicked_at: string
-          company_id: string | null
-          cost: number | null
-          country_code: string | null
-          country_name: string | null
-          created_at: string
-          fingerprint: string | null
-          id: string
-          invalid_reason: string | null
-          ip_address: string | null
-          is_valid: boolean
-          link_id: string
-          referer: string | null
-          session_id: string | null
-          source: string | null
-          user_agent: string | null
-        }
-        Insert: {
-          clicked_at?: string
-          company_id?: string | null
-          cost?: number | null
-          country_code?: string | null
-          country_name?: string | null
-          created_at?: string
-          fingerprint?: string | null
-          id?: string
-          invalid_reason?: string | null
-          ip_address?: string | null
-          is_valid?: boolean
-          link_id: string
-          referer?: string | null
-          session_id?: string | null
-          source?: string | null
-          user_agent?: string | null
-        }
-        Update: {
-          clicked_at?: string
-          company_id?: string | null
-          cost?: number | null
-          country_code?: string | null
-          country_name?: string | null
-          created_at?: string
-          fingerprint?: string | null
-          id?: string
-          invalid_reason?: string | null
-          ip_address?: string | null
-          is_valid?: boolean
-          link_id?: string
-          referer?: string | null
-          session_id?: string | null
-          source?: string | null
-          user_agent?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clicks_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "clicks_link_id_fkey"
-            columns: ["link_id"]
-            isOneToOne: false
-            referencedRelation: "tracked_links"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      companies: {
-        Row: {
-          billing_address: string | null
-          billing_email: string
-          country_code: string
-          country_name: string
-          cpc_default: number
-          created_at: string
-          credits: number
-          credits_used: number
-          daily_limit: number | null
-          id: string
-          low_balance_threshold: number | null
-          name: string
-          status: boolean
-          tax_id: string | null
-          updated_at: string
-          website: string
-        }
-        Insert: {
-          billing_address?: string | null
-          billing_email: string
-          country_code: string
-          country_name: string
-          cpc_default?: number
-          created_at?: string
-          credits?: number
-          credits_used?: number
-          daily_limit?: number | null
-          id?: string
-          low_balance_threshold?: number | null
-          name: string
-          status?: boolean
-          tax_id?: string | null
-          updated_at?: string
-          website: string
-        }
-        Update: {
-          billing_address?: string | null
-          billing_email?: string
-          country_code?: string
-          country_name?: string
-          cpc_default?: number
-          created_at?: string
-          credits?: number
-          credits_used?: number
-          daily_limit?: number | null
-          id?: string
-          low_balance_threshold?: number | null
-          name?: string
-          status?: boolean
-          tax_id?: string | null
-          updated_at?: string
-          website?: string
         }
         Relationships: []
       }
@@ -282,15 +156,7 @@ export type Database = {
           reference_id?: string | null
           type?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "credit_transactions_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       quiz_responses: {
         Row: {
@@ -357,50 +223,6 @@ export type Database = {
         }
         Relationships: []
       }
-      store_billing: {
-        Row: {
-          billing_email: string | null
-          created_at: string
-          credits: number
-          credits_used: number
-          id: string
-          last_credit_update: string
-          notes: string | null
-          store_link_id: string
-          updated_at: string
-        }
-        Insert: {
-          billing_email?: string | null
-          created_at?: string
-          credits?: number
-          credits_used?: number
-          id?: string
-          last_credit_update?: string
-          notes?: string | null
-          store_link_id: string
-          updated_at?: string
-        }
-        Update: {
-          billing_email?: string | null
-          created_at?: string
-          credits?: number
-          credits_used?: number
-          id?: string
-          last_credit_update?: string
-          notes?: string | null
-          store_link_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "store_billing_store_link_id_fkey"
-            columns: ["store_link_id"]
-            isOneToOne: false
-            referencedRelation: "country_store_links"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tracked_links: {
         Row: {
           company_id: string | null
@@ -450,15 +272,7 @@ export type Database = {
           updated_at?: string
           valid_clicks?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "tracked_links_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -483,20 +297,7 @@ export type Database = {
       }
     }
     Views: {
-      ai_link_analytics: {
-        Row: {
-          country_name: string | null
-          destination_url: string | null
-          product: string | null
-          short_code: string | null
-          source: string | null
-          total_clicks: number | null
-          unique_sessions: number | null
-          valid_clicks: number | null
-          valid_rate: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
