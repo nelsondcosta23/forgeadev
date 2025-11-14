@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Cpu, MonitorPlay, MemoryStick, HardDrive, Zap, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface ComponentDetail {
+export interface ComponentDetail {
   model: string;
   where_to_buy?: string[];
   video_link?: string;
