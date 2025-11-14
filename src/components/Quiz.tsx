@@ -10,6 +10,7 @@ import { questions, QuizAnswers } from "./quiz/questions";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { mapCountryToLanguage } from "@/i18n/config";
 
 const quizResponseSchema = z.object({
   session_id: z.string().min(1).max(100),
@@ -23,7 +24,7 @@ interface QuizProps {
 }
 
 const Quiz = ({ onBack }: QuizProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [showResults, setShowResults] = useState(false);
@@ -154,6 +155,15 @@ const Quiz = ({ onBack }: QuizProps) => {
   const handleAnswer = async (answer: string | number) => {
     const newAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(newAnswers);
+
+    // If this is the country question, change language based on country selection
+    if (currentQuestion.id === 'country') {
+      const selectedCountryCode = String(answer);
+      const newLanguage = mapCountryToLanguage(selectedCountryCode);
+      if (i18n.language !== newLanguage) {
+        await i18n.changeLanguage(newLanguage);
+      }
+    }
 
     // Save the response to database with validation
     if (sessionId) {
