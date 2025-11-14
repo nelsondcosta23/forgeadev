@@ -45,18 +45,39 @@
     },
     "games": {
       "question": "Que jogos ou géneros joga mais?",
-      "competitive": "Competitivo/Esports",
-      "competitiveDesc": "FPS elevado, tempo de resposta rápido",
-      "aaa": "Títulos AAA",
-      "aaaDesc": "Jogos mais recentes, gráficos elevados",
-      "indie": "Jogos Indie/Casuais",
-      "indieDesc": "Requisitos leves a moderados"
+      "fps": "FPS Competitivo",
+      "fpsDesc": "CS2, Valorant, Apex",
+      "aaa": "AAA Moderno",
+      "aaaDesc": "Cyberpunk, RDR2, Starfield",
+      "moba": "MOBA/Estratégia",
+      "mobaDesc": "LoL, Dota 2, Civilization",
+      "vr": "Jogos VR",
+      "vrDesc": "Half-Life: Alyx, Beat Saber"
     },
     "resolution": {
       "question": "Em que resolução quer jogar?",
       "1080p": "1080p (Full HD)",
+      "1080pDesc": "Melhor desempenho",
       "1440p": "1440p (2K)",
-      "4k": "4K (Ultra HD)"
+      "1440pDesc": "Equilíbrio ideal",
+      "4k": "4K (Ultra HD)",
+      "4kDesc": "Qualidade máxima"
+    },
+    "fps": {
+      "question": "Quantos FPS quer atingir?",
+      "60": "60 FPS",
+      "60Desc": "Experiência suave",
+      "120": "120 FPS",
+      "120Desc": "Gaming competitivo",
+      "144": "144+ FPS",
+      "144Desc": "Desempenho extremo"
+    },
+    "streaming": {
+      "question": "Planeia fazer streaming ou gravar?",
+      "yes": "Sim",
+      "yesDesc": "Preciso de um codificador forte",
+      "no": "Não",
+      "noDesc": "Apenas gaming"
     },
     "profession": {
       "question": "Que tipo de trabalho profissional?",
@@ -66,11 +87,78 @@
       "office": "Trabalho de Escritório"
     },
     "software": {
-      "question": "Que software profissional utiliza?",
-      "basic": "Pacote Office Básico",
-      "adobe": "Adobe Creative Suite",
-      "3d": "Software 3D (Blender, Maya)",
-      "cad": "Software CAD/Engenharia"
+      "question": "Que tipo de software utiliza?",
+      "office": "Office & Web",
+      "officeDesc": "Word, Excel, navegação",
+      "cad": "CAD/Engenharia",
+      "cadDesc": "AutoCAD, SolidWorks",
+      "design": "Design Gráfico",
+      "designDesc": "Photoshop, Illustrator",
+      "dev": "Programação",
+      "devDesc": "IDEs, VMs, Docker"
+    },
+    "multitask": {
+      "question": "Precisa de executar várias aplicações simultaneamente?",
+      "light": "Uso Leve",
+      "lightDesc": "2-3 programas",
+      "moderate": "Uso Moderado",
+      "moderateDesc": "5-10 programas",
+      "heavy": "Uso Pesado",
+      "heavyDesc": "10+ programas, VMs"
+    },
+    "contentSoftware": {
+      "question": "Que programas usa para criar conteúdo?",
+      "video": "Edição de Vídeo",
+      "videoDesc": "Premiere, DaVinci",
+      "3d": "Modelação 3D",
+      "3dDesc": "Blender, Maya",
+      "photo": "Fotografia",
+      "photoDesc": "Lightroom, Capture One",
+      "music": "Produção Musical",
+      "musicDesc": "Ableton, FL Studio"
+    },
+    "render4k": {
+      "question": "Renderiza vídeo em 4K ou superior?",
+      "yes": "Sim",
+      "yesDesc": "Preciso de muita RAM e CPU",
+      "no": "Não",
+      "noDesc": "1080p é suficiente"
+    },
+    "gpuAcceleration": {
+      "question": "Precisa de acelerar renderização com GPU?",
+      "yes": "Sim",
+      "yesDesc": "CUDA/OpenCL essencial",
+      "no": "Não",
+      "noDesc": "CPU é suficiente"
+    },
+    "casePreference": {
+      "question": "Tem preferência por estética ou tamanho?",
+      "compact": "Compacto (Mini-ITX)",
+      "compactDesc": "Pequeno e portátil",
+      "standard": "Standard (Mid Tower)",
+      "standardDesc": "Equilíbrio perfeito",
+      "full": "Full Tower",
+      "fullDesc": "Expansão máxima",
+      "rgb": "RGB & Estética",
+      "rgbDesc": "Visuais deslumbrantes"
+    },
+    "peripherals": {
+      "question": "Precisa de monitor, teclado ou rato?",
+      "none": "Não",
+      "noneDesc": "Apenas o PC",
+      "monitor": "Monitor",
+      "monitorDesc": "Incluir monitor",
+      "keyboard": "Teclado & Rato",
+      "keyboardDesc": "Periféricos básicos",
+      "all": "Setup Completo",
+      "allDesc": "Monitor + periféricos"
+    },
+    "upgradability": {
+      "question": "Quer capacidade de upgrade futuro?",
+      "yes": "Sim",
+      "yesDesc": "Plataforma expansível",
+      "no": "Não",
+      "noDesc": "Configuração fixa"
     },
     "contentType": {
       "question": "Que tipo de conteúdo vai criar?",
@@ -80,8 +168,8 @@
       "streaming": "Streaming"
     },
     "budget": {
-      "question": "Qual é o seu orçamento?",
-      "description": "Em USD ($)"
+      "question": "Qual é o seu orçamento máximo?",
+      "description": "Em dólares ($)"
     },
     "aesthetics": {
       "question": "Quer iluminação RGB e estética?",

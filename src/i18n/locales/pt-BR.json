@@ -4,6 +4,7 @@
     "title": "Encontre o Seu PC Perfeito",
     "subtitle": "Responda algumas perguntas simples e receba recomendações personalizadas de PC adaptadas às suas necessidades e orçamento.",
     "startQuiz": "Iniciar Quiz",
+    "privacyNotice": "🔒 Seus dados são processados de forma segura e não são compartilhados com terceiros. Apenas guardamos suas respostas anonimamente para melhorar as recomendações.",
     "howItWorksTitle": "Como Funciona",
     "step1Title": "Responder",
     "step1Desc": "Conte-nos sobre suas necessidades, orçamento e preferências",
@@ -36,15 +37,47 @@
     },
     "purpose": {
       "question": "Para que você precisa do PC?",
+      "description": "Selecione o uso principal do seu computador",
       "gaming": "Jogos",
-      "professional": "Trabalho Profissional",
-      "content": "Criação de Conteúdo"
+      "professional": "Uso Profissional/Escritório",
+      "content": "Criação de Conteúdo",
+      "mixed": "Uso Misto"
     },
     "games": {
-      "question": "Que tipos de jogos você vai jogar?",
-      "competitive": "Competitivo/Esports (FPS Alto)",
-      "aaa": "Títulos AAA (Gráficos Elevados)",
-      "casual": "Jogos Casuais"
+      "question": "Que jogos ou gêneros você joga mais?",
+      "fps": "FPS Competitivo",
+      "fpsDesc": "CS2, Valorant, Apex",
+      "aaa": "AAA Moderno",
+      "aaaDesc": "Cyberpunk, RDR2, Starfield",
+      "moba": "MOBA/Estratégia",
+      "mobaDesc": "LoL, Dota 2, Civilization",
+      "vr": "Jogos VR",
+      "vrDesc": "Half-Life: Alyx, Beat Saber"
+    },
+    "resolution": {
+      "question": "Em que resolução você quer jogar?",
+      "1080p": "1080p (Full HD)",
+      "1080pDesc": "Melhor desempenho",
+      "1440p": "1440p (2K)",
+      "1440pDesc": "Equilíbrio ideal",
+      "4k": "4K (Ultra HD)",
+      "4kDesc": "Qualidade máxima"
+    },
+    "fps": {
+      "question": "Quantos FPS você quer atingir?",
+      "60": "60 FPS",
+      "60Desc": "Experiência suave",
+      "120": "120 FPS",
+      "120Desc": "Gaming competitivo",
+      "144": "144+ FPS",
+      "144Desc": "Desempenho extremo"
+    },
+    "streaming": {
+      "question": "Você planeja fazer streaming ou gravar?",
+      "yes": "Sim",
+      "yesDesc": "Preciso de um codificador forte",
+      "no": "Não",
+      "noDesc": "Apenas gaming"
     },
     "profession": {
       "question": "Que tipo de trabalho profissional?",
@@ -53,6 +86,26 @@
       "data": "Análise de Dados",
       "office": "Trabalho de Escritório"
     },
+    "software": {
+      "question": "Que tipo de software você utiliza?",
+      "office": "Office & Web",
+      "officeDesc": "Word, Excel, navegação",
+      "cad": "CAD/Engenharia",
+      "cadDesc": "AutoCAD, SolidWorks",
+      "design": "Design Gráfico",
+      "designDesc": "Photoshop, Illustrator",
+      "dev": "Programação",
+      "devDesc": "IDEs, VMs, Docker"
+    },
+    "multitask": {
+      "question": "Você precisa executar várias aplicações simultaneamente?",
+      "light": "Uso Leve",
+      "lightDesc": "2-3 programas",
+      "moderate": "Uso Moderado",
+      "moderateDesc": "5-10 programas",
+      "heavy": "Uso Pesado",
+      "heavyDesc": "10+ programas, VMs"
+    },
     "contentType": {
       "question": "Que tipo de conteúdo você vai criar?",
       "video": "Edição de Vídeo",
@@ -60,23 +113,78 @@
       "3d": "Modelagem/Renderização 3D",
       "streaming": "Streaming"
     },
+    "contentSoftware": {
+      "question": "Que programas você usa para criar conteúdo?",
+      "video": "Edição de Vídeo",
+      "videoDesc": "Premiere, DaVinci",
+      "3d": "Modelagem 3D",
+      "3dDesc": "Blender, Maya",
+      "photo": "Fotografia",
+      "photoDesc": "Lightroom, Capture One",
+      "music": "Produção Musical",
+      "musicDesc": "Ableton, FL Studio"
+    },
+    "render4k": {
+      "question": "Você renderiza vídeo em 4K ou superior?",
+      "yes": "Sim",
+      "yesDesc": "Preciso de muita RAM e CPU",
+      "no": "Não",
+      "noDesc": "1080p é suficiente"
+    },
+    "gpuAcceleration": {
+      "question": "Você precisa acelerar renderização com GPU?",
+      "yes": "Sim",
+      "yesDesc": "CUDA/OpenCL essencial",
+      "no": "Não",
+      "noDesc": "CPU é suficiente"
+    },
+    "casePreference": {
+      "question": "Você tem preferência por estética ou tamanho?",
+      "compact": "Compacto (Mini-ITX)",
+      "compactDesc": "Pequeno e portátil",
+      "standard": "Standard (Mid Tower)",
+      "standardDesc": "Equilíbrio perfeito",
+      "full": "Full Tower",
+      "fullDesc": "Expansão máxima",
+      "rgb": "RGB & Estética",
+      "rgbDesc": "Visuais deslumbrantes"
+    },
+    "peripherals": {
+      "question": "Você precisa de monitor, teclado ou mouse?",
+      "none": "Não",
+      "noneDesc": "Apenas o PC",
+      "monitor": "Monitor",
+      "monitorDesc": "Incluir monitor",
+      "keyboard": "Teclado & Mouse",
+      "keyboardDesc": "Periféricos básicos",
+      "all": "Setup Completo",
+      "allDesc": "Monitor + periféricos"
+    },
+    "upgradability": {
+      "question": "Você quer capacidade de upgrade futuro?",
+      "yes": "Sim",
+      "yesDesc": "Plataforma expansível",
+      "no": "Não",
+      "noDesc": "Configuração fixa"
+    },
     "budget": {
-      "question": "Qual é o seu orçamento?",
-      "value": "Build Econômica (R$3.500-R$5.500)",
-      "balanced": "Build Equilibrada (R$5.500-R$8.500)",
-      "highEnd": "Build High-End (R$8.500+)"
+      "question": "Qual é o seu orçamento máximo?",
+      "description": "Em dólares ($)"
     },
     "aesthetics": {
       "question": "Você quer iluminação RGB e estética?",
-      "yes": "Sim, adoro RGB",
+      "rgb": "Sim, RGB ao máximo",
       "minimal": "Visual Minimalista/Limpo",
-      "no": "Não, apenas desempenho"
+      "performance": "Não, apenas desempenho"
     },
     "futureProof": {
       "question": "Quão importante é estar preparado para o futuro?",
-      "veryImportant": "Muito Importante",
+      "very": "Muito Importante",
+      "veryDesc": "Quero usá-lo por 5+ anos",
       "somewhat": "Algo Importante",
-      "notImportant": "Não é Importante"
+      "somewhatDesc": "3-4 anos é bom",
+      "not": "Não é Importante",
+      "notDesc": "Faço upgrade regularmente"
     }
   },
   "results": {
