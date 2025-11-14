@@ -34,7 +34,7 @@ const Quiz = ({ onBack }: QuizProps) => {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [isSessionReady, setIsSessionReady] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<string>("");
-  const [fixedTotalQuestions, setFixedTotalQuestions] = useState<number | null>(null);
+  const [fixedTotalQuestions, setFixedTotalQuestions] = useState<number>(10);
   const { toast } = useToast();
 
   // Create a quiz session when component mounts
@@ -150,8 +150,8 @@ const Quiz = ({ onBack }: QuizProps) => {
     return q;
   });
 
-  // Calculate total questions based on current path; lock if fixedTotalQuestions set
-  const totalQuestions = fixedTotalQuestions ?? currentQuestions.length;
+  // Use fixed total of 10 questions
+  const totalQuestions = fixedTotalQuestions;
 
   const currentQuestion = currentQuestions[currentStep];
   const progress = ((currentStep + 1) / totalQuestions) * 100;
@@ -159,12 +159,6 @@ const Quiz = ({ onBack }: QuizProps) => {
   const handleAnswer = async (answer: string | number) => {
     const newAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(newAnswers);
-
-    // If purpose is answered, lock the total number of questions for this path
-    if (currentQuestion.id === 'purpose') {
-      const computedTotal = questions.filter(q => !q.condition || q.condition(newAnswers)).length;
-      setFixedTotalQuestions(computedTotal);
-    }
 
     // If this is the country question, change language based on country selection
     if (currentQuestion.id === 'country') {
@@ -410,7 +404,7 @@ const Quiz = ({ onBack }: QuizProps) => {
       setAiRecommendation("");
       setIsAnalyzing(false);
       setIsSessionReady(false);
-      setFixedTotalQuestions(null);
+      setFixedTotalQuestions(10);
       
       // Create new session for restart
       const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -475,7 +469,7 @@ const Quiz = ({ onBack }: QuizProps) => {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm text-muted-foreground">
-              <span>{fixedTotalQuestions ? `Question ${currentStep + 1} of ${totalQuestions}` : `Question ${currentStep + 1}`}</span>
+              <span>Question {currentStep + 1} of {totalQuestions}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
