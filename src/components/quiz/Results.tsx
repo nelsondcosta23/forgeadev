@@ -794,7 +794,20 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
               // Try to parse as JSON
               const parsedData = JSON.parse(aiRecommendation);
               
-              // Check if we have full report format (recommendation, ai_report, metadata)
+              // Check if we have new session_info format
+              if (parsedData?.session_info && parsedData?.recommendations) {
+                return (
+                  <BuildReport
+                    recommendation={parsedData.session_info.recommendation}
+                    ai_report={parsedData.session_info.ai_report}
+                    metadata={parsedData.session_info.metadata}
+                    sessionId={sessionId}
+                    recommendations={parsedData.recommendations}
+                  />
+                );
+              }
+              
+              // Check if we have old full report format (recommendation, ai_report, metadata)
               if (parsedData?.recommendation && parsedData?.ai_report && parsedData?.metadata) {
                 return (
                   <BuildReport
