@@ -1446,6 +1446,119 @@ const Admin = () => {
                   </CardContent>
                 </Card>
 
+                {/* System Flow Diagram */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Sistema - Fluxo Completo</CardTitle>
+                    <CardDescription>
+                      Diagrama detalhado de todas as etapas desde o início do quiz até à apresentação dos resultados
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-muted/30 p-6 rounded-lg overflow-x-auto">
+                      <div className="mermaid-diagram" style={{ minWidth: '800px' }}>
+                        <pre className="text-xs">
+{`graph TB
+    Start([👤 Utilizador Inicia Quiz]) --> CreateSession
+    
+    subgraph "1️⃣ INICIALIZAÇÃO"
+        CreateSession[📝 Criar Sessão de Quiz] --> DetectCountry[🌍 Detetar País do Utilizador]
+        DetectCountry --> SaveSession[(💾 Guardar em quiz_sessions)]
+        SaveSession --> |session_id<br/>country_code<br/>country_name<br/>started_at| SessionReady[✅ Sessão Pronta]
+    end
+    
+    SessionReady --> ShowQuestions
+    
+    subgraph "2️⃣ PERGUNTAS & RESPOSTAS"
+        ShowQuestions[❓ Mostrar Pergunta] --> UserAnswer{Utilizador Responde}
+        UserAnswer --> SaveResponse[(💾 Guardar em quiz_responses)]
+        SaveResponse --> |session_id<br/>question_number<br/>question_text<br/>selected_answer<br/>answered_at| NextQuestion{Última Pergunta?}
+        NextQuestion -->|Não| ShowQuestions
+        NextQuestion -->|Sim| PrepareAnalysis
+    end
+    
+    PrepareAnalysis --> CallEdgeFunction
+    
+    subgraph "3️⃣ PREPARAÇÃO PARA AI"
+        CallEdgeFunction[🚀 Chamar analyze-quiz Function] --> FetchData
+        FetchData[📊 Buscar Dados] --> GetSession[(🔍 quiz_sessions)]
+        GetSession --> GetResponses[(🔍 quiz_responses)]
+        GetResponses --> GetStores[(🔍 country_store_links)]
+        GetStores --> GetPrompt[(🔍 admin_prompts)]
+        GetPrompt --> PreparePayload[📦 Preparar Payload]
+    end
+    
+    PreparePayload --> AICall
+    
+    subgraph "4️⃣ CHAMADA À AI OpenAI"
+        AICall[🤖 Chamar OpenAI API] --> AIPayload
+        AIPayload[📤 Enviar para AI:<br/>- System Prompt com placeholders<br/>- User answers JSON<br/>- Country/Currency info<br/>- Store URLs] 
+        AIPayload --> AIProcessing[⚙️ AI Processing<br/>Model: gpt-4o-mini]
+        AIProcessing --> AIResponse[📥 AI Responde]
+    end
+    
+    AIResponse --> ParseResponse
+    
+    subgraph "5️⃣ PROCESSAR RESPOSTA DA AI"
+        ParseResponse[🔧 Parse Tool Call Response] --> ExtractData
+        ExtractData[📋 Extrair:<br/>- recommendation texto<br/>- builds 3 cards<br/>- ai_report] 
+        ExtractData --> ProcessLinks[🔗 Processar Links]
+        ProcessLinks --> CreateTrackedLinks[(💾 Criar tracked_links)]
+        CreateTrackedLinks --> InjectLinks[✏️ Injetar Links no Texto]
+    end
+    
+    InjectLinks --> SaveResults
+    
+    subgraph "6️⃣ GUARDAR RESULTADOS"
+        SaveResults[💾 Guardar Recomendação] --> SaveToAI[(📝 ai_recommendations)]
+        SaveToAI --> |session_id<br/>recommendation_text<br/>prompt_used<br/>model_used| UpdateSession[(🔄 Atualizar quiz_sessions)]
+        UpdateSession --> |completed_at| PrepareJSON
+    end
+    
+    PrepareJSON --> ReturnToClient
+    
+    subgraph "7️⃣ RESPOSTA AO CLIENTE"
+        ReturnToClient[📤 Retornar JSON] --> JSONStructure
+        JSONStructure[📋 Estrutura:<br/><b>session_info</b><br/>- session_id, country<br/>- ai_report<br/><b>recommendations</b><br/>- Best Value<br/>- Balanced<br/>- High Performance<br/><b>explanation</b><br/>- Markdown texto<br/><b>metadata</b><br/>- model_used, created_at]
+    end
+    
+    JSONStructure --> DisplayResults
+    
+    subgraph "8️⃣ APRESENTAÇÃO"
+        DisplayResults[🖥️ Mostrar no Frontend] --> ParseBuilds[🎴 Parse Builds JSON]
+        ParseBuilds --> ShowCards[📇 Mostrar 3 Cards]
+        ShowCards --> ShowExplanation[📝 Mostrar Explicação Markdown]
+        ShowExplanation --> TrackClicks[👆 Track Clicks em Links]
+    end
+    
+    TrackClicks --> End([✅ Fim])
+    
+    style Start fill:#4ade80,stroke:#22c55e,stroke-width:3px
+    style End fill:#4ade80,stroke:#22c55e,stroke-width:3px
+    style AICall fill:#f59e0b,stroke:#d97706,stroke-width:2px
+    style AIProcessing fill:#f59e0b,stroke:#d97706,stroke-width:2px
+    style SaveSession fill:#3b82f6,stroke:#2563eb,stroke-width:2px
+    style SaveResponse fill:#3b82f6,stroke:#2563eb,stroke-width:2px
+    style SaveToAI fill:#3b82f6,stroke:#2563eb,stroke-width:2px
+    style CreateTrackedLinks fill:#3b82f6,stroke:#2563eb,stroke-width:2px
+    style UpdateSession fill:#3b82f6,stroke:#2563eb,stroke-width:2px`}
+                        </pre>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-sm text-muted-foreground space-y-2">
+                      <p><strong>Tabelas Envolvidas:</strong></p>
+                      <ul className="list-disc list-inside space-y-1 ml-4">
+                        <li><code>quiz_sessions</code> - Armazena cada sessão de quiz iniciada</li>
+                        <li><code>quiz_responses</code> - Guarda todas as respostas individuais</li>
+                        <li><code>country_store_links</code> - Links de lojas por país</li>
+                        <li><code>admin_prompts</code> - Prompt configurável para a AI</li>
+                        <li><code>ai_recommendations</code> - Recomendações geradas pela AI</li>
+                        <li><code>tracked_links</code> - Links com tracking de clicks</li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* JSON Examples - Side by Side */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Quiz JSON */}
