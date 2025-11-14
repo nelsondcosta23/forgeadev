@@ -3,12 +3,19 @@ import { Badge } from "@/components/ui/badge";
 import { Cpu, MonitorPlay, MemoryStick, HardDrive, Zap, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface ComponentDetail {
+  model: string;
+  where_to_buy?: string[];
+  video_link?: string;
+  recommended_price?: string;
+}
+
 export interface BuildData {
-  processor: string;
-  graphics_card: string;
-  ram: string;
-  storage: string;
-  power_supply: string;
+  processor: string | ComponentDetail;
+  graphics_card: string | ComponentDetail;
+  ram: string | ComponentDetail;
+  storage: string | ComponentDetail;
+  power_supply: string | ComponentDetail;
   estimated_price_range: string;
   performance_tier: string;
 }
@@ -44,12 +51,18 @@ const variantStyles = {
 export const BuildCard = ({ title, build, variant = "balanced", featured = false }: BuildCardProps) => {
   const styles = variantStyles[variant];
 
+  // Helper to extract string value from component (handles both string and object formats)
+  const getComponentValue = (component: string | ComponentDetail): string => {
+    if (typeof component === 'string') return component;
+    return component.model;
+  };
+
   const components = [
-    { icon: Cpu, label: "Processor", value: build.processor },
-    { icon: MonitorPlay, label: "Graphics Card", value: build.graphics_card },
-    { icon: MemoryStick, label: "RAM", value: build.ram },
-    { icon: HardDrive, label: "Storage", value: build.storage },
-    { icon: Zap, label: "Power Supply", value: build.power_supply },
+    { icon: Cpu, label: "Processor", value: getComponentValue(build.processor) },
+    { icon: MonitorPlay, label: "Graphics Card", value: getComponentValue(build.graphics_card) },
+    { icon: MemoryStick, label: "RAM", value: getComponentValue(build.ram) },
+    { icon: HardDrive, label: "Storage", value: getComponentValue(build.storage) },
+    { icon: Zap, label: "Power Supply", value: getComponentValue(build.power_supply) },
   ];
 
   return (
