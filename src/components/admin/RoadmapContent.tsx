@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import {
@@ -23,6 +24,7 @@ interface RoadmapItem {
   id: string;
   priority: "High" | "Medium" | "Low";
   title: string;
+  status: "todo" | "in_progress" | "completed";
   created_at: string;
 }
 
@@ -36,6 +38,7 @@ export function RoadmapContent() {
   const [formData, setFormData] = useState({
     priority: "Medium" as "High" | "Medium" | "Low",
     title: "",
+    status: "todo" as "todo" | "in_progress" | "completed",
   });
 
   useEffect(() => {
@@ -91,7 +94,7 @@ export function RoadmapContent() {
       toast.success("Item created successfully");
     }
 
-    setFormData({ priority: "Medium", title: "" });
+    setFormData({ priority: "Medium", title: "", status: "todo" });
     setIsAddingNew(false);
     setEditingId(null);
     fetchRoadmap();
@@ -126,13 +129,14 @@ export function RoadmapContent() {
     setFormData({
       priority: item.priority,
       title: item.title,
+      status: item.status,
     });
     setEditingId(item.id);
     setIsAddingNew(true);
   };
 
   const handleCancel = () => {
-    setFormData({ priority: "Medium", title: "" });
+    setFormData({ priority: "Medium", title: "", status: "todo" });
     setIsAddingNew(false);
     setEditingId(null);
   };
@@ -145,6 +149,12 @@ export function RoadmapContent() {
     High: "text-red-500 border-red-500/30 bg-red-500/10",
     Medium: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10",
     Low: "text-green-500 border-green-500/30 bg-green-500/10",
+  };
+
+  const statusConfig = {
+    todo: { label: "To Do", variant: "outline" as const },
+    in_progress: { label: "In Progress", variant: "default" as const },
+    completed: { label: "Completed", variant: "secondary" as const },
   };
 
   return (
@@ -212,6 +222,25 @@ export function RoadmapContent() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: "todo" | "in_progress" | "completed") =>
+                  setFormData({ ...formData, status: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todo">To Do</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={handleCancel}>
                 Cancel
@@ -241,6 +270,9 @@ export function RoadmapContent() {
                       <span className="text-xs font-semibold px-2 py-1 rounded border">
                         {item.priority}
                       </span>
+                      <Badge variant={statusConfig[item.status].variant}>
+                        {statusConfig[item.status].label}
+                      </Badge>
                       <span className="text-xs text-muted-foreground">
                         Created: {format(new Date(item.created_at), "MMM dd, yyyy HH:mm")}
                       </span>
