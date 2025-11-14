@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Share2, Download, Copy, Link2 } from "lucide-react";
-import { BuildCard, BuildData } from "./BuildCard";
+import { BuildCard, BuildData, ComponentDetail } from "./BuildCard";
 import { ShareDialog } from "./ShareDialog";
 import { useState } from "react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import QRCode from "qrcode";
 
 interface AIResultsViewProps {
   sessionInfo: {
@@ -45,8 +47,158 @@ export const AIResultsView = ({
   const finalSessionId = sessionInfo?.session_id || sessionId || "";
   const shareUrl = finalSessionId ? `${window.location.origin}/build/${finalSessionId}` : "";
 
-  const handleDownload = () => {
-    toast.info("PDF download feature coming soon!");
+  const getComponentModel = (component: string | ComponentDetail | undefined): string => {
+    if (!component) return "—";
+    if (typeof component === "string") return component;
+    return component.model || "—";
+  };
+
+  const handleDownload = async () => {
+    if (!finalSessionId) {
+      toast.warning("Aguarde enquanto geramos o link da build...");
+      return;
+    }
+
+    try {
+      toast.info("A gerar PDF...");
+      
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPos = margin;
+
+      // Branding - Forgea logo/title
+      pdf.setFontSize(24);
+      pdf.setTextColor(59, 130, 246); // primary blue
+      pdf.text("FORGEA", margin, yPos);
+      yPos += 10;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text("PC Build Recommendations", margin, yPos);
+      yPos += 15;
+
+      // Generate QR Code
+      const qrCodeDataUrl = await QRCode.toDataURL(shareUrl, {
+        width: 80,
+        margin: 1,
+      });
+      pdf.addImage(qrCodeDataUrl, "PNG", pageWidth - margin - 25, margin, 25, 25);
+
+      // Session Info
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`País: ${sessionInfo.country}`, margin, yPos);
+      yPos += 7;
+      pdf.text(`Session ID: ${finalSessionId}`, margin, yPos);
+      yPos += 7;
+      pdf.text(`Data: ${new Date(sessionInfo.completed_at).toLocaleDateString()}`, margin, yPos);
+      yPos += 15;
+
+      // URL
+      pdf.setFontSize(9);
+      pdf.setTextColor(59, 130, 246);
+      pdf.textWithLink("Ver online: " + shareUrl, margin, yPos, { url: shareUrl });
+      yPos += 15;
+
+      // AI Report Details
+      if (sessionInfo.ai_report) {
+        pdf.setFontSize(14);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text("Análise IA", margin, yPos);
+        yPos += 10;
+
+        pdf.setFontSize(10);
+        if (sessionInfo.ai_report.budget_range) {
+          pdf.text(`Orçamento: ${sessionInfo.ai_report.budget_range}`, margin, yPos);
+          yPos += 6;
+        }
+        if (sessionInfo.ai_report.primary_use) {
+          pdf.text(`Uso Principal: ${sessionInfo.ai_report.primary_use}`, margin, yPos);
+          yPos += 6;
+        }
+        if (sessionInfo.ai_report.performance_level) {
+          pdf.text(`Nível de Performance: ${sessionInfo.ai_report.performance_level}`, margin, yPos);
+          yPos += 6;
+        }
+        if (sessionInfo.ai_report.upgrade_priority) {
+          pdf.text(`Prioridade de Upgrade: ${sessionInfo.ai_report.upgrade_priority}`, margin, yPos);
+          yPos += 6;
+        }
+        yPos += 10;
+      }
+
+      // Recommendations
+      const buildTypes = ["Best Value", "Balanced", "High Performance"] as const;
+      
+      buildTypes.forEach((buildType, index) => {
+        if (yPos > pageHeight - 60) {
+          pdf.addPage();
+          yPos = margin;
+        }
+
+        const build = recommendations[buildType];
+        
+        pdf.setFontSize(14);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(buildType, margin, yPos);
+        yPos += 8;
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`Nível: ${build.performance_tier || "—"}`, margin, yPos);
+        yPos += 6;
+        pdf.text(`Preço Estimado: ${build.estimated_price_range || "—"}`, margin, yPos);
+        yPos += 8;
+
+        // Components
+        pdf.setFontSize(9);
+        pdf.setTextColor(0, 0, 0);
+        const processorModel = getComponentModel(build.processor);
+        if (processorModel !== "—") {
+          pdf.text(`• Processador: ${processorModel}`, margin + 5, yPos);
+          yPos += 5;
+        }
+        const gpuModel = getComponentModel(build.graphics_card);
+        if (gpuModel !== "—") {
+          pdf.text(`• Placa Gráfica: ${gpuModel}`, margin + 5, yPos);
+          yPos += 5;
+        }
+        const ramModel = getComponentModel(build.ram);
+        if (ramModel !== "—") {
+          pdf.text(`• RAM: ${ramModel}`, margin + 5, yPos);
+          yPos += 5;
+        }
+        const storageModel = getComponentModel(build.storage);
+        if (storageModel !== "—") {
+          pdf.text(`• Armazenamento: ${storageModel}`, margin + 5, yPos);
+          yPos += 5;
+        }
+        const psuModel = getComponentModel(build.power_supply);
+        if (psuModel !== "—") {
+          pdf.text(`• Fonte: ${psuModel}`, margin + 5, yPos);
+          yPos += 5;
+        }
+        
+        yPos += 10;
+      });
+
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text(
+        "Estas recomendações são geradas por IA. Preços e disponibilidade podem variar.",
+        margin,
+        pageHeight - 10
+      );
+
+      pdf.save(`forgea-build-${finalSessionId}.pdf`);
+      toast.success("PDF gerado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast.error("Erro ao gerar PDF. Tente novamente.");
+    }
   };
 
   const handleCopyUrl = () => {
