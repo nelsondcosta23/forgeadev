@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ interface QuestionCardProps {
 }
 
 const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: QuestionCardProps) => {
+  const { t } = useTranslation();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [numberValue, setNumberValue] = useState<number>(question.min || 0);
 
@@ -44,9 +46,9 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
       <div className="space-y-6">
         {/* Question Title */}
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold">{question.question}</h2>
+          <h2 className="text-3xl font-bold">{t(question.question)}</h2>
           {question.description && (
-            <p className="text-muted-foreground">{question.description}</p>
+            <p className="text-muted-foreground">{t(question.description)}</p>
           )}
         </div>
 
@@ -87,10 +89,10 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
                         <span className="text-3xl">{option.icon}</span>
                       )}
                       <div className="flex-1">
-                        <div className="font-semibold text-lg mb-1">{option.label}</div>
+                        <div className="font-semibold text-lg mb-1">{t(option.label)}</div>
                         {option.description && (
                           <div className="text-sm text-muted-foreground">
-                            {option.description}
+                            {t(option.description)}
                           </div>
                         )}
                       </div>

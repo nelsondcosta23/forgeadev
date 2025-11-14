@@ -23,8 +23,8 @@ export interface Question {
 export const questions: Question[] = [
   {
     id: "country",
-    question: "What country are you from?",
-    description: "This helps us provide more accurate recommendations",
+    question: "questions.country.question",
+    description: "questions.country.description",
     type: "single",
     options: [
       { value: "PT", label: "Portugal", icon: "🇵🇹" },
@@ -79,14 +79,14 @@ export const questions: Question[] = [
   },
   {
     id: "purpose",
-    question: "What do you need the PC for?",
-    description: "Select your computer's primary use",
+    question: "questions.purpose.question",
+    description: "questions.purpose.description",
     type: "single",
     options: [
-      { value: "gaming", label: "Gaming", icon: "🎮" },
-      { value: "professional", label: "Professional/Office Use", icon: "💼" },
-      { value: "content", label: "Content Creation", icon: "🎨" },
-      { value: "mixed", label: "Mixed Use", icon: "🔄" },
+      { value: "gaming", label: "questions.purpose.gaming", icon: "🎮" },
+      { value: "professional", label: "questions.purpose.professional", icon: "💼" },
+      { value: "content", label: "questions.purpose.content", icon: "🎨" },
+      { value: "mixed", label: "questions.purpose.mixed", icon: "🔄" },
     ],
   },
   // Gaming branch
