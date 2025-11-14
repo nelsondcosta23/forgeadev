@@ -8,78 +8,78 @@ const PrivacyPolicy = () => {
           ← Back to Home
         </Link>
         
-        <h1 className="text-4xl font-bold mb-8 text-foreground">Privacy Policy</h1>
+        <h1 className="text-4xl font-bold mb-8 text-foreground">Política de Privacidade</h1>
+        
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
+          <p className="text-foreground font-medium">
+            🔒 Os seus dados são processados de forma segura e não são partilhados com terceiros. Apenas guardamos as suas respostas anonimamente para melhorar as recomendações.
+          </p>
+        </div>
         
         <div className="prose prose-lg max-w-none space-y-6 text-muted-foreground">
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Introduction</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Introdução</h2>
             <p>
-              This Privacy Policy explains how we handle your information when you use our quiz 
-              application. We value your privacy and collect only the data necessary to operate 
-              and improve the service.
+              Esta Política de Privacidade explica como tratamos as suas informações quando usa a nossa aplicação de quiz. Valorizamos a sua privacidade e recolhemos apenas os dados necessários para operar e melhorar o serviço.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Information We Collect</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Informação Que Recolhemos</h2>
             <p>
-              We collect minimal information, specifically:
+              Recolhemos informação mínima, especificamente:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Country of origin, to generate anonymous usage statistics</li>
+              <li>País de origem, para gerar estatísticas de uso anónimas</li>
             </ul>
             <p className="mt-4">
-              We do not collect names, emails, or any personally identifying data.
+              Não recolhemos nomes, e-mails ou quaisquer dados de identificação pessoal.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">How We Use This Information</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Como Usamos Esta Informação</h2>
             <p>
-              We use this information solely to:
+              Usamos esta informação apenas para:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Understand where our users come from (country-level statistics)</li>
-              <li>Improve and optimize the quiz experience</li>
+              <li>Compreender de onde vêm os nossos utilizadores (estatísticas ao nível do país)</li>
+              <li>Melhorar e otimizar a experiência do quiz</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Data Security</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Segurança de Dados</h2>
             <p>
-              We use standard security measures to protect data and ensure that no personal 
-              information is exposed or misused.
+              Utilizamos medidas de segurança padrão para proteger os dados e garantir que nenhuma informação pessoal é exposta ou mal utilizada.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Third-Party Services</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Serviços de Terceiros</h2>
             <p>
-              We may use third-party tools (e.g., analytics providers) that receive anonymized 
-              technical information, such as browser type or device, to help us understand how 
-              users interact with the site.
+              Podemos usar ferramentas de terceiros (por exemplo, fornecedores de análise) que recebem informação técnica anonimizada, como tipo de navegador ou dispositivo, para nos ajudar a compreender como os utilizadores interagem com o site.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Your Rights</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Os Seus Direitos</h2>
             <p>
-              You can contact us if you wish to request information about data handling or deletion. 
-              Since we do not store identifiable personal data, there is usually nothing to delete.
+              Pode contactar-nos se desejar solicitar informações sobre o tratamento ou eliminação de dados. Como não armazenamos dados pessoais identificáveis, geralmente não há nada para eliminar.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Changes to This Policy</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Alterações a Esta Política</h2>
             <p>
-              We may update this Privacy Policy occasionally. Updates will be published on this page.
+              Podemos atualizar esta Política de Privacidade ocasionalmente. As atualizações serão publicadas nesta página.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Contact</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">Contacto</h2>
             <p>
-              If you have any questions, please reach out through our website.
+              Se tiver alguma questão, entre em contacto através do nosso website.
             </p>
           </section>
         </div>
