@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,12 +37,20 @@ export const CountrySelect = ({
 }: CountrySelectProps) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(defaultValue || "");
+  const [triggerWidth, setTriggerWidth] = useState<number>(0);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (defaultValue && !value) {
       setValue(defaultValue);
     }
   }, [defaultValue]);
+
+  useEffect(() => {
+    if (triggerRef.current) {
+      setTriggerWidth(triggerRef.current.offsetWidth);
+    }
+  }, [open]);
 
   const selectedCountry = countries.find((country) => country.value === value);
 
@@ -56,6 +64,7 @@ export const CountrySelect = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -73,7 +82,11 @@ export const CountrySelect = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full min-w-[400px] p-0 bg-card border-2 z-[100] shadow-xl" align="start">
+      <PopoverContent 
+        className="p-0 bg-card border-2 z-[100] shadow-xl" 
+        align="start"
+        style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : '400px' }}
+      >
         <Command className="bg-card">
           <CommandInput placeholder="Search country..." className="h-12 bg-card" />
           <CommandList className="max-h-[300px] bg-card">
