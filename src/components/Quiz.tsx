@@ -149,8 +149,11 @@ const Quiz = ({ onBack }: QuizProps) => {
     return q;
   });
 
+  // Calculate total questions including all conditional ones based on current answers
+  const totalQuestions = currentQuestions.length;
+
   const currentQuestion = currentQuestions[currentStep];
-  const progress = ((currentStep + 1) / currentQuestions.length) * 100;
+  const progress = ((currentStep + 1) / totalQuestions) * 100;
 
   const handleAnswer = async (answer: string | number) => {
     const newAnswers = { ...answers, [currentQuestion.id]: answer };
@@ -464,7 +467,7 @@ const Quiz = ({ onBack }: QuizProps) => {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm text-muted-foreground">
-              <span>Question {currentStep + 1} of {currentQuestions.length}</span>
+              <span>Question {currentStep + 1} of {totalQuestions}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
