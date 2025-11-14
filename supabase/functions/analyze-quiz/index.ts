@@ -405,12 +405,57 @@ Remember: This recommendation will directly impact their purchasing decisions. B
                             "Best Value": {
                               type: "object",
                               properties: {
-                                processor: { type: "string", description: "CPU model and generation" },
-                                graphics_card: { type: "string", description: "GPU model" },
-                                ram: { type: "string", description: "RAM capacity and speed" },
-                                storage: { type: "string", description: "Storage type and capacity" },
-                                power_supply: { type: "string", description: "PSU wattage and efficiency" },
-                                estimated_price_range: { type: "string", description: "Price range in user currency" },
+                                processor: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "CPU model and generation" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                graphics_card: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "GPU model" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                ram: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "RAM capacity and speed" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                storage: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "Storage type and capacity" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                power_supply: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "PSU wattage and efficiency" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                estimated_price_range: { type: "string", description: "Total price range for this build tier in user currency" },
                                 performance_tier: { type: "string", description: "Performance level description" }
                               },
                               required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
@@ -418,12 +463,57 @@ Remember: This recommendation will directly impact their purchasing decisions. B
                             "Balanced": {
                               type: "object",
                               properties: {
-                                processor: { type: "string", description: "CPU model and generation" },
-                                graphics_card: { type: "string", description: "GPU model" },
-                                ram: { type: "string", description: "RAM capacity and speed" },
-                                storage: { type: "string", description: "Storage type and capacity" },
-                                power_supply: { type: "string", description: "PSU wattage and efficiency" },
-                                estimated_price_range: { type: "string", description: "Price range in user currency" },
+                                processor: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "CPU model and generation" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                graphics_card: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "GPU model" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                ram: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "RAM capacity and speed" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                storage: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "Storage type and capacity" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                power_supply: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "PSU wattage and efficiency" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                estimated_price_range: { type: "string", description: "Total price range for this build tier in user currency" },
                                 performance_tier: { type: "string", description: "Performance level description" }
                               },
                               required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
@@ -431,12 +521,57 @@ Remember: This recommendation will directly impact their purchasing decisions. B
                             "High Performance": {
                               type: "object",
                               properties: {
-                                processor: { type: "string", description: "CPU model and generation" },
-                                graphics_card: { type: "string", description: "GPU model" },
-                                ram: { type: "string", description: "RAM capacity and speed" },
-                                storage: { type: "string", description: "Storage type and capacity" },
-                                power_supply: { type: "string", description: "PSU wattage and efficiency" },
-                                estimated_price_range: { type: "string", description: "Price range in user currency" },
+                                processor: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "CPU model and generation" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                graphics_card: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "GPU model" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                ram: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "RAM capacity and speed" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                storage: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "Storage type and capacity" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                power_supply: {
+                                  type: "object",
+                                  properties: {
+                                    model: { type: "string", description: "PSU wattage and efficiency" },
+                                    where_to_buy: { type: "array", items: { type: "string" }, description: "Array of store names where to buy" },
+                                    video_link: { type: "string", description: "YouTube video link for component review" },
+                                    recommended_price: { type: "string", description: "Recommended price range in user currency" }
+                                  },
+                                  required: ["model", "where_to_buy", "video_link", "recommended_price"]
+                                },
+                                estimated_price_range: { type: "string", description: "Total price range for this build tier in user currency" },
                                 performance_tier: { type: "string", description: "Performance level description" }
                               },
                               required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
@@ -911,31 +1046,38 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     };
 
     // Use AI-generated builds or create empty fallback
+    const emptyComponent = {
+      model: "N/A",
+      where_to_buy: [],
+      video_link: "",
+      recommended_price: "N/A"
+    };
+    
     const finalBuilds = builds || {
       "Best Value": {
-        processor: "N/A",
-        graphics_card: "N/A",
-        ram: "N/A",
-        storage: "N/A",
-        power_supply: "N/A",
+        processor: emptyComponent,
+        graphics_card: emptyComponent,
+        ram: emptyComponent,
+        storage: emptyComponent,
+        power_supply: emptyComponent,
         estimated_price_range: "N/A",
         performance_tier: "N/A"
       },
       "Balanced": {
-        processor: "N/A",
-        graphics_card: "N/A",
-        ram: "N/A",
-        storage: "N/A",
-        power_supply: "N/A",
+        processor: emptyComponent,
+        graphics_card: emptyComponent,
+        ram: emptyComponent,
+        storage: emptyComponent,
+        power_supply: emptyComponent,
         estimated_price_range: "N/A",
         performance_tier: "N/A"
       },
       "High Performance": {
-        processor: "N/A",
-        graphics_card: "N/A",
-        ram: "N/A",
-        storage: "N/A",
-        power_supply: "N/A",
+        processor: emptyComponent,
+        graphics_card: emptyComponent,
+        ram: emptyComponent,
+        storage: emptyComponent,
+        power_supply: emptyComponent,
         estimated_price_range: "N/A",
         performance_tier: "N/A"
       }
@@ -981,15 +1123,22 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       .single();
 
     // Return structured JSON matching the user's specification
+    const metadata = {
+      model_used: usedModel,
+      tokens_used: 0, // OpenAI doesn't return token count in tool call mode
+      created_at: new Date().toISOString()
+    };
+
     return new Response(
       JSON.stringify({ 
-        recommendation: processedRecommendation,
+        session_info: {
+          recommendation: processedRecommendation,
+          ai_report: finalAiReport,
+          metadata: metadata
+        },
+        recommendations: finalBuilds,
         ai_report: finalAiReport,
-        metadata: {
-          model_used: usedModel,
-          tokens_used: 0, // OpenAI doesn't return token count in tool call mode
-          created_at: new Date().toISOString()
-        }
+        metadata: metadata
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
