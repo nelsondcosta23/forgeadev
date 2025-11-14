@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 interface AIResultsViewProps {
   sessionInfo: {
-    session_id: string;
+    session_id?: string;
     country: string;
     country_code: string;
     total_score: number | null;
@@ -21,6 +21,7 @@ interface AIResultsViewProps {
       [key: string]: any;
     };
   };
+  sessionId?: string;
   recommendations: {
     "Best Value": BuildData;
     "Balanced": BuildData;
@@ -33,6 +34,7 @@ interface AIResultsViewProps {
 
 export const AIResultsView = ({ 
   sessionInfo, 
+  sessionId,
   recommendations,
   explanation,
   onRestart, 
@@ -40,15 +42,20 @@ export const AIResultsView = ({
 }: AIResultsViewProps) => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
-  const shareUrl = `${window.location.origin}/build/${sessionInfo.session_id}`;
+  const finalSessionId = sessionInfo?.session_id || sessionId || "";
+  const shareUrl = finalSessionId ? `${window.location.origin}/build/${finalSessionId}` : "";
 
   const handleDownload = () => {
     toast.info("PDF download feature coming soon!");
   };
 
   const handleCopyUrl = () => {
+    if (!finalSessionId) {
+      toast.warning("A criar ligação da build... aguarde um momento");
+      return;
+    }
     navigator.clipboard.writeText(shareUrl);
-    toast.success("URL copied to clipboard!");
+    toast.success("URL copiada para a área de transferência!");
   };
 
   return (
@@ -77,7 +84,13 @@ export const AIResultsView = ({
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => setShareDialogOpen(true)}
+                onClick={() => {
+                  if (!finalSessionId) {
+                    toast.warning("O link ainda está a ser gerado.");
+                    return;
+                  }
+                  setShareDialogOpen(true);
+                }}
                 className="gap-2"
               >
                 <Share2 className="h-4 w-4" />
@@ -112,7 +125,7 @@ export const AIResultsView = ({
           <div className="flex gap-2">
             <div className="flex-1 bg-muted/30 rounded-md px-4 py-3 border border-border/50">
               <code className="text-sm text-primary font-mono break-all">
-                {shareUrl}
+                {finalSessionId ? shareUrl : "Gerando link da build..."}
               </code>
             </div>
             <Button
@@ -120,6 +133,7 @@ export const AIResultsView = ({
               size="icon"
               onClick={handleCopyUrl}
               className="shrink-0"
+              disabled={!finalSessionId}
             >
               <Copy className="h-4 w-4" />
             </Button>
@@ -140,7 +154,7 @@ export const AIResultsView = ({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Session ID</p>
-                <p className="font-mono text-xs truncate">{sessionInfo.session_id}</p>
+                <p className="font-mono text-xs truncate">{finalSessionId || "—"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Completed</p>
