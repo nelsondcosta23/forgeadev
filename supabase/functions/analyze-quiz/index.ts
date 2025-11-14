@@ -983,16 +983,8 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     // Return structured JSON matching the user's specification
     return new Response(
       JSON.stringify({ 
-        session_info: {
-          session_id: sessionId,
-          country: sessionData?.country || userCountryCode,
-          country_code: userCountryCode,
-          total_score: sessionData?.total_score || null,
-          completed_at: sessionData?.completed_at || new Date().toISOString(),
-          ai_report: finalAiReport
-        },
-        recommendations: finalBuilds,
-        explanation: processedRecommendation,
+        recommendation: processedRecommendation,
+        ai_report: finalAiReport,
         metadata: {
           model_used: usedModel,
           tokens_used: 0, // OpenAI doesn't return token count in tool call mode

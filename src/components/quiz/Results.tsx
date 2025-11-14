@@ -12,6 +12,7 @@ import QRCode from "qrcode";
 import TrackableLink from "./TrackableLink";
 import { AIResultsView } from "./AIResultsView";
 import { BuildCard, BuildData } from "./BuildCard";
+import { BuildReport } from "./BuildReport";
 
 interface ResultsProps {
   answers: QuizAnswers;
@@ -790,9 +791,22 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
           {/* AI Recommendation */}
           {(() => {
             try {
-              // Try to parse as JSON with builds
+              // Try to parse as JSON
               const parsedData = JSON.parse(aiRecommendation);
               
+              // Check if we have full report format (recommendation, ai_report, metadata)
+              if (parsedData?.recommendation && parsedData?.ai_report && parsedData?.metadata) {
+                return (
+                  <BuildReport
+                    recommendation={parsedData.recommendation}
+                    ai_report={parsedData.ai_report}
+                    metadata={parsedData.metadata}
+                    sessionId={sessionId}
+                  />
+                );
+              }
+              
+              // Check if we have old builds format
               if (parsedData?.builds && parsedData?.explanation) {
                 return (
                   <>

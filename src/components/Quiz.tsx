@@ -268,6 +268,19 @@ const Quiz = ({ onBack }: QuizProps) => {
         }
         setIsAnalyzing(false);
         return;
+      } else if (data?.recommendation && data?.ai_report && data?.metadata) {
+        // New format: recommendation (markdown string), ai_report, metadata
+        console.log('AI analysis received with new format');
+        console.log('Recommendation:', data.recommendation);
+        console.log('AI Report:', data.ai_report);
+        console.log('Metadata:', data.metadata);
+        
+        // Store the full response as JSON string for Results component
+        setAiRecommendation(JSON.stringify({
+          recommendation: data.recommendation,
+          ai_report: data.ai_report,
+          metadata: data.metadata
+        }));
       } else if (data?.session_info && data?.recommendations) {
         console.log('AI analysis received with structured data');
         console.log('Session info:', data.session_info);
