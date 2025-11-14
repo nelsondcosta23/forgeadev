@@ -252,25 +252,45 @@ const Admin = () => {
         timestamp: sessionData.started_at,
       };
 
-      // Build JSON (output data)
-      const buildJson = {
-        recommendation: aiData?.recommendation_text ? 
-          (aiData.recommendation_text.startsWith('{') ? 
-            JSON.parse(aiData.recommendation_text) : 
-            aiData.recommendation_text) : 
-          "No recommendation available",
-        ai_report: {
-          budget_range: responsesData?.find(r => r.question_text.includes('budget'))?.selected_answer || 'Not specified',
-          primary_use: responsesData?.find(r => r.question_text.includes('purpose') || r.question_text.includes('use'))?.selected_answer || 'Not specified',
-          performance_level: `${responsesData?.find(r => r.question_text.includes('fps') || r.question_text.includes('FPS'))?.selected_answer || 'Standard'} @ ${responsesData?.find(r => r.question_text.includes('resolution'))?.selected_answer || '1080p'}`,
-          upgrade_priority: responsesData?.find(r => r.question_text.includes('upgrade'))?.selected_answer === 'yes' ? 'Upgrade Capable' : 'New Build',
-        },
-        metadata: {
-          model_used: aiData?.model_used || 'N/A',
-          tokens_used: aiData?.tokens_used || 0,
-          created_at: aiData?.created_at || sessionData.completed_at,
-        },
-      };
+      // Build JSON (output data) - Parse the complete JSON from database
+      let buildJson;
+      try {
+        if (aiData?.recommendation_text) {
+          // Parse the stored JSON structure
+          buildJson = typeof aiData.recommendation_text === 'string' 
+            ? JSON.parse(aiData.recommendation_text) 
+            : aiData.recommendation_text;
+        } else {
+          // Fallback if no recommendation exists
+          buildJson = {
+            error: "No recommendation available",
+            session_info: {
+              recommendation: "No data",
+              ai_report: {
+                budget_range: "N/A",
+                primary_use: "N/A",
+                performance_level: "N/A",
+                upgrade_priority: "N/A"
+              },
+              metadata: {
+                model_used: "N/A",
+                tokens_used: 0,
+                created_at: sessionData.completed_at
+              }
+            },
+            recommendations: {},
+            ai_report: {},
+            metadata: {}
+          };
+        }
+      } catch (parseError) {
+        console.error("Error parsing recommendation_text:", parseError);
+        // If parse fails, show the raw text
+        buildJson = {
+          error: "Failed to parse recommendation",
+          raw_text: aiData?.recommendation_text || "No data"
+        };
+      }
 
       setDemoQuizJson(JSON.stringify(quizJson, null, 2));
       setDemoBuildJson(JSON.stringify(buildJson, null, 2));
