@@ -36,47 +36,121 @@
     },
     "purpose": {
       "question": "Wofür brauchen Sie den PC?",
+      "description": "Wählen Sie die Hauptnutzung Ihres Computers",
       "gaming": "Gaming",
       "professional": "Berufliche Arbeit",
-      "content": "Content-Erstellung"
+      "content": "Content-Erstellung",
+      "mixed": "Gemischte Nutzung"
     },
     "games": {
-      "question": "Welche Art von Spielen werden Sie spielen?",
-      "competitive": "Wettbewerbsfähig/Esports (Hohe FPS)",
-      "aaa": "AAA-Titel (Hohe Grafik)",
-      "casual": "Gelegenheitsspiele"
+      "question": "Welche Spiele oder Genres spielen Sie am meisten?",
+      "fps": "Wettbewerbsfähige FPS",
+      "fpsDesc": "CS2, Valorant, Apex",
+      "aaa": "Moderne AAA",
+      "aaaDesc": "Cyberpunk, RDR2, Starfield",
+      "moba": "MOBA/Strategie",
+      "mobaDesc": "LoL, Dota 2, Civilization",
+      "vr": "VR-Spiele",
+      "vrDesc": "Half-Life: Alyx, Beat Saber"
     },
-    "profession": {
-      "question": "Welche Art von beruflicher Arbeit?",
-      "programming": "Programmierung/Entwicklung",
+    "resolution": {
+      "question": "In welcher Auflösung möchten Sie spielen?",
+      "1080p": "1080p (Full HD)",
+      "1080pDesc": "Beste Leistung",
+      "1440p": "1440p (2K)",
+      "1440pDesc": "Ideales Gleichgewicht",
+      "4k": "4K (Ultra HD)",
+      "4kDesc": "Maximale Qualität"
+    },
+    "fps": {
+      "question": "Wie viele FPS möchten Sie erreichen?",
+      "60": "60 FPS",
+      "60Desc": "Reibungsloses Erlebnis",
+      "120": "120 FPS",
+      "120Desc": "Wettbewerbsfähiges Gaming",
+      "144": "144+ FPS",
+      "144Desc": "Extreme Leistung"
+    },
+    "streaming": {
+      "question": "Planen Sie zu streamen oder aufzunehmen?",
+      "yes": "Ja",
+      "yesDesc": "Ich brauche einen starken Encoder",
+      "no": "Nein",
+      "noDesc": "Nur Gaming"
+    },
+    "software": {
+      "question": "Welche Art von Software verwenden Sie?",
+      "office": "Office & Web",
+      "officeDesc": "Word, Excel, Surfen",
+      "cad": "CAD/Ingenieurwesen",
+      "cadDesc": "AutoCAD, SolidWorks",
       "design": "Grafikdesign",
-      "data": "Datenanalyse",
-      "office": "Büroarbeit"
+      "designDesc": "Photoshop, Illustrator",
+      "dev": "Programmierung",
+      "devDesc": "IDEs, VMs, Docker"
     },
-    "contentType": {
-      "question": "Welche Art von Inhalten werden Sie erstellen?",
+    "multitask": {
+      "question": "Müssen Sie mehrere Anwendungen gleichzeitig ausführen?",
+      "light": "Leichte Nutzung",
+      "lightDesc": "2-3 Programme",
+      "moderate": "Moderate Nutzung",
+      "moderateDesc": "5-10 Programme",
+      "heavy": "Intensive Nutzung",
+      "heavyDesc": "10+ Programme, VMs"
+    },
+    "contentSoftware": {
+      "question": "Welche Programme verwenden Sie zum Erstellen von Inhalten?",
       "video": "Videobearbeitung",
-      "photo": "Fotobearbeitung",
-      "3d": "3D-Modellierung/Rendering",
-      "streaming": "Streaming"
+      "videoDesc": "Premiere, DaVinci",
+      "3d": "3D-Modellierung",
+      "3dDesc": "Blender, Maya",
+      "photo": "Fotografie",
+      "photoDesc": "Lightroom, Capture One",
+      "music": "Musikproduktion",
+      "musicDesc": "Ableton, FL Studio"
     },
-    "budget": {
-      "question": "Was ist Ihr Budget?",
-      "value": "Budget-Build (€600-€1000)",
-      "balanced": "Ausgewogene Build (€1000-€1500)",
-      "highEnd": "High-End Build (€1500+)"
+    "render4k": {
+      "question": "Rendern Sie Videos in 4K oder höher?",
+      "yes": "Ja",
+      "yesDesc": "Ich brauche viel RAM und CPU",
+      "no": "Nein",
+      "noDesc": "1080p reicht"
     },
-    "aesthetics": {
-      "question": "Möchten Sie RGB-Beleuchtung und Ästhetik?",
-      "yes": "Ja, ich liebe RGB",
-      "minimal": "Minimalistisches/Sauberes Aussehen",
-      "no": "Nein, nur Leistung"
+    "gpuAcceleration": {
+      "question": "Benötigen Sie GPU-Beschleunigung für Rendering?",
+      "yes": "Ja",
+      "yesDesc": "CUDA/OpenCL erforderlich",
+      "no": "Nein",
+      "noDesc": "CPU reicht"
     },
-    "futureProof": {
-      "question": "Wie wichtig ist Zukunftssicherheit?",
-      "veryImportant": "Sehr Wichtig",
-      "somewhat": "Etwas Wichtig",
-      "notImportant": "Nicht Wichtig"
+    "casePreference": {
+      "question": "Haben Sie eine Präferenz für Ästhetik oder Größe?",
+      "compact": "Kompakt (Mini-ITX)",
+      "compactDesc": "Klein und tragbar",
+      "standard": "Standard (Mid Tower)",
+      "standardDesc": "Perfektes Gleichgewicht",
+      "full": "Full Tower",
+      "fullDesc": "Maximale Erweiterung",
+      "rgb": "RGB & Ästhetik",
+      "rgbDesc": "Atemberaubende Optik"
+    },
+    "peripherals": {
+      "question": "Benötigen Sie einen Monitor, Tastatur oder Maus?",
+      "none": "Nein",
+      "noneDesc": "Nur der PC",
+      "monitor": "Monitor",
+      "monitorDesc": "Monitor einbeziehen",
+      "keyboard": "Tastatur & Maus",
+      "keyboardDesc": "Basis-Peripheriegeräte",
+      "all": "Komplettes Setup",
+      "allDesc": "Monitor + Peripheriegeräte"
+    },
+    "upgradability": {
+      "question": "Möchten Sie zukünftige Upgrade-Möglichkeiten?",
+      "yes": "Ja",
+      "yesDesc": "Erweiterbare Plattform",
+      "no": "Nein",
+      "noDesc": "Feste Konfiguration"
     }
   },
   "results": {
