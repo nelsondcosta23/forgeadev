@@ -4,6 +4,7 @@
     "title": "Encontre o Seu PC Perfeito",
     "subtitle": "Responda a algumas perguntas simples e obtenha recomendações personalizadas de PC adaptadas às suas necessidades e orçamento.",
     "startQuiz": "Iniciar Quiz",
+    "privacyNotice": "🔒 Os seus dados são processados de forma segura e não são partilhados com terceiros. Apenas guardamos as suas respostas anonimamente para melhorar as recomendações.",
     "howItWorksTitle": "Como Funciona",
     "step1Title": "Responder",
     "step1Desc": "Conte-nos sobre as suas necessidades, orçamento e preferências",
@@ -36,15 +37,26 @@
     },
     "purpose": {
       "question": "Para que precisa do PC?",
+      "description": "Selecione o uso principal do seu computador",
       "gaming": "Jogos",
-      "professional": "Trabalho Profissional",
-      "content": "Criação de Conteúdo"
+      "professional": "Uso Profissional/Escritório",
+      "content": "Criação de Conteúdo",
+      "mixed": "Uso Misto"
     },
     "games": {
-      "question": "Que tipos de jogos vai jogar?",
-      "competitive": "Competitivo/Esports (FPS Alto)",
-      "aaa": "Títulos AAA (Gráficos Elevados)",
-      "casual": "Jogos Casuais"
+      "question": "Que jogos ou géneros joga mais?",
+      "competitive": "Competitivo/Esports",
+      "competitiveDesc": "FPS elevado, tempo de resposta rápido",
+      "aaa": "Títulos AAA",
+      "aaaDesc": "Jogos mais recentes, gráficos elevados",
+      "indie": "Jogos Indie/Casuais",
+      "indieDesc": "Requisitos leves a moderados"
+    },
+    "resolution": {
+      "question": "Em que resolução quer jogar?",
+      "1080p": "1080p (Full HD)",
+      "1440p": "1440p (2K)",
+      "4k": "4K (Ultra HD)"
     },
     "profession": {
       "question": "Que tipo de trabalho profissional?",
@@ -52,6 +64,13 @@
       "design": "Design Gráfico",
       "data": "Análise de Dados",
       "office": "Trabalho de Escritório"
+    },
+    "software": {
+      "question": "Que software profissional utiliza?",
+      "basic": "Pacote Office Básico",
+      "adobe": "Adobe Creative Suite",
+      "3d": "Software 3D (Blender, Maya)",
+      "cad": "Software CAD/Engenharia"
     },
     "contentType": {
       "question": "Que tipo de conteúdo vai criar?",
@@ -62,21 +81,22 @@
     },
     "budget": {
       "question": "Qual é o seu orçamento?",
-      "value": "Build Económica (€600-€1000)",
-      "balanced": "Build Equilibrada (€1000-€1500)",
-      "highEnd": "Build High-End (€1500+)"
+      "description": "Em USD ($)"
     },
     "aesthetics": {
       "question": "Quer iluminação RGB e estética?",
-      "yes": "Sim, adoro RGB",
+      "rgb": "Sim, RGB ao máximo",
       "minimal": "Visual Minimalista/Limpo",
-      "no": "Não, apenas desempenho"
+      "performance": "Não, apenas desempenho"
     },
     "futureProof": {
       "question": "Quão importante é estar preparado para o futuro?",
-      "veryImportant": "Muito Importante",
+      "very": "Muito Importante",
+      "veryDesc": "Quero usá-lo por 5+ anos",
       "somewhat": "Algo Importante",
-      "notImportant": "Não é Importante"
+      "somewhatDesc": "3-4 anos é bom",
+      "not": "Não é Importante",
+      "notDesc": "Faço upgrade regularmente"
     }
   },
   "results": {
