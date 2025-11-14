@@ -60,6 +60,13 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import enUS from '@/i18n/locales/en-US.json';
+import enGB from '@/i18n/locales/en-GB.json';
+import ptPT from '@/i18n/locales/pt-PT.json';
+import ptBR from '@/i18n/locales/pt-BR.json';
+import es from '@/i18n/locales/es.json';
+import fr from '@/i18n/locales/fr.json';
+import de from '@/i18n/locales/de.json';
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -441,8 +448,35 @@ const Admin = () => {
 
   const downloadQuestionsCSV = () => {
     try {
-      // CSV Header
-      let csvContent = "Path (Purpose),Question Number,Question ID,Question,Description,Type,Options/Possible Answers,Condition\n";
+      // Available translations
+      const translations: Record<string, any> = {
+        'en-US': enUS,
+        'en-GB': enGB,
+        'pt-PT': ptPT,
+        'pt-BR': ptBR,
+        'es': es,
+        'fr': fr,
+        'de': de,
+      };
+
+      // Helper function to get translated text
+      const getTranslation = (key: string, lang: string): string => {
+        const keys = key.split('.');
+        let value: any = translations[lang];
+        
+        for (const k of keys) {
+          if (value && typeof value === 'object') {
+            value = value[k];
+          } else {
+            return key; // Return key if translation not found
+          }
+        }
+        
+        return typeof value === 'string' ? value : key;
+      };
+
+      // CSV Header - including all languages
+      let csvContent = "Path (Purpose),Question Number,Question ID,Question (EN-US),Question (EN-GB),Question (PT-PT),Question (PT-BR),Question (ES),Question (FR),Question (DE),Type,Options/Answers,Condition\n";
 
       // Define paths based on purpose
       const paths = [
@@ -457,13 +491,34 @@ const Admin = () => {
         let questionNumber = 1;
         
         // Add separator row
-        csvContent += `\n"=== ${path.label} ===",,,,,,,\n`;
+        csvContent += `\n"=== ${path.label} ===",,,,,,,,,,,\n`;
         
         // First question (purpose) - always included
         const purposeQ = questions.find(q => q.id === "purpose");
         if (purposeQ) {
           const selectedOption = purposeQ.options?.find(opt => opt.value === path.purpose);
-          csvContent += `"${path.label}",${questionNumber},"${purposeQ.id}","${purposeQ.question.replace(/"/g, '""')}","${purposeQ.description || ''}","${purposeQ.type}","Selected: ${selectedOption?.label || path.purpose}",""\n`;
+          
+          // Get question translations
+          const questionTranslations = Object.keys(translations).map(lang => {
+            const translatedQuestion = getTranslation(purposeQ.question, lang);
+            return `"${translatedQuestion.replace(/"/g, '""')}"`;
+          }).join(',');
+          
+          // Get options translations
+          let optionsText = "";
+          if (purposeQ.options) {
+            const allLanguagesOptions = Object.keys(translations).map(lang => {
+              const opts = purposeQ.options!.map(opt => {
+                const translatedLabel = getTranslation(opt.label, lang);
+                const translatedDesc = opt.description ? getTranslation(opt.description, lang) : "";
+                return translatedDesc ? `${translatedLabel} (${translatedDesc})` : translatedLabel;
+              }).join(' | ');
+              return `[${lang.toUpperCase()}]: ${opts}`;
+            }).join(' || ');
+            optionsText = `"${allLanguagesOptions.replace(/"/g, '""')}"`;
+          }
+          
+          csvContent += `"${path.label}",${questionNumber},"${purposeQ.id}",${questionTranslations},"${purposeQ.type}",${optionsText},""\n`;
           questionNumber++;
         }
 
@@ -485,20 +540,28 @@ const Admin = () => {
 
         // Add each applicable question
         applicableQuestions.forEach(q => {
-          const question = q.question.replace(/"/g, '""');
-          const description = q.description ? q.description.replace(/"/g, '""') : "";
+          // Get question translations for all languages
+          const questionTranslations = Object.keys(translations).map(lang => {
+            const translatedQuestion = getTranslation(q.question, lang);
+            return `"${translatedQuestion.replace(/"/g, '""')}"`;
+          }).join(',');
+          
           const type = q.type;
           
-          // Build options/answers text
+          // Build options/answers text with all translations
           let optionsText = "";
           if (q.type === "single" && q.options) {
-            const opts = q.options.map(opt => {
-              const desc = opt.description ? ` (${opt.description})` : "";
-              return `${opt.label}${desc}`;
-            }).join(" | ");
-            optionsText = opts;
+            const allLanguagesOptions = Object.keys(translations).map(lang => {
+              const opts = q.options!.map(opt => {
+                const translatedLabel = getTranslation(opt.label, lang);
+                const translatedDesc = opt.description ? getTranslation(opt.description, lang) : "";
+                return translatedDesc ? `${translatedLabel} (${translatedDesc})` : translatedLabel;
+              }).join(' | ');
+              return `[${lang.toUpperCase()}]: ${opts}`;
+            }).join(' || ');
+            optionsText = `"${allLanguagesOptions.replace(/"/g, '""')}"`;
           } else if (q.type === "number") {
-            optionsText = `Number: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}`;
+            optionsText = `"Number: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}"`;
           }
 
           // Build condition text
@@ -514,7 +577,7 @@ const Admin = () => {
             }
           }
 
-          csvContent += `"${path.label}",${questionNumber},"${q.id}","${question}","${description}","${type}","${optionsText}","${conditionText}"\n`;
+          csvContent += `"${path.label}",${questionNumber},"${q.id}",${questionTranslations},"${type}",${optionsText},"${conditionText}"\n`;
           questionNumber++;
         });
 
@@ -526,16 +589,16 @@ const Admin = () => {
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", "quiz_caminhos_completos.csv");
+      link.setAttribute("download", `quiz_questions_multilang_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      toast.success("CSV with all paths generated successfully!");
+      toast.success("CSV multilíngue gerado com sucesso!");
     } catch (error) {
       console.error("Error generating CSV:", error);
-      toast.error("Error generating CSV");
+      toast.error("Erro ao gerar CSV");
     }
   };
 
