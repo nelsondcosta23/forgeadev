@@ -358,6 +358,14 @@ const Quiz = ({ onBack }: QuizProps) => {
             <Button 
               variant="outline" 
               onClick={() => {
+                if (!sessionId || !isSessionReady) {
+                  toast({
+                    title: "Please wait",
+                    description: "Session is being created...",
+                    variant: "default",
+                  });
+                  return;
+                }
                 setAnalysisError(null);
                 setShowResults(true);
               }}
@@ -396,7 +404,7 @@ const Quiz = ({ onBack }: QuizProps) => {
     );
   }
 
-  if (showResults) {
+  if (showResults && sessionId && isSessionReady) {
     return <Results answers={answers} sessionId={sessionId} aiRecommendation={aiRecommendation} onBack={onBack} onRestart={async () => {
       setAnswers({});
       setCurrentStep(0);

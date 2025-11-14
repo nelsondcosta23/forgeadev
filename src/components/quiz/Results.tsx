@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QuizAnswers } from "./questions";
-import { ArrowLeft, Share2, Download, Cpu, MemoryStick, HardDrive, Zap, Box, Fan, Copy, Check } from "lucide-react";
+import { ArrowLeft, Share2, Download, Cpu, MemoryStick, HardDrive, Zap, Box, Fan, Copy, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { ShareDialog } from "./ShareDialog";
@@ -135,8 +135,26 @@ const generateBuilds = (answers: QuizAnswers): Build[] => {
 };
 
 const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: ResultsProps) => {
+  // Validate sessionId
+  if (!sessionId || sessionId === "" || sessionId === "undefined") {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <Card className="p-12 max-w-md mx-4 text-center space-y-6">
+          <AlertCircle className="w-16 h-16 text-destructive mx-auto" />
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Invalid Session</h2>
+            <p className="text-muted-foreground">
+              Unable to load results. Please restart the quiz.
+            </p>
+          </div>
+          <Button onClick={onRestart}>Restart Quiz</Button>
+        </Card>
+      </div>
+    );
+  }
+
   // Try to parse AI recommendation as structured JSON
-  const parseAIRecommendation = (): { 
+  const parseAIRecommendation = (): {
     session_info: any; 
     recommendations: { "Best Value": BuildData; "Balanced": BuildData; "High Performance": BuildData };
     explanation?: string;
