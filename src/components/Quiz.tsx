@@ -287,14 +287,8 @@ const Quiz = ({ onBack }: QuizProps) => {
         console.log('Recommendations:', data.recommendations);
         console.log('Metadata:', data.metadata);
         
-        // Store the explanation/recommendation text
-        setAiRecommendation(data.explanation || '');
-        
-        // Store the full response for Results component (including builds)
-        setAiRecommendation(JSON.stringify({
-          builds: data.recommendations,
-          explanation: data.explanation
-        }));
+        // Store the full structured response for Results component
+        setAiRecommendation(JSON.stringify(data));
       } else if (data?.success && data?.build_data) {
         // Fallback for old format
         console.log('AI analysis received with build_data:', data.build_data);
