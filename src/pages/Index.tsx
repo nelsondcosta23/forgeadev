@@ -53,12 +53,6 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Privacy Notice */}
-            <div className="pt-6">
-              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                {t('landing.privacyNotice')}
-              </p>
-            </div>
 
             {/* How It Works */}
             <div className="pt-12 max-w-5xl mx-auto">
