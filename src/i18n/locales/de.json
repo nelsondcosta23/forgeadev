@@ -151,6 +151,10 @@
       "yesDesc": "Erweiterbare Plattform",
       "no": "Nein",
       "noDesc": "Feste Konfiguration"
+    },
+    "budget": {
+      "question": "Was ist Ihr maximales Budget?",
+      "description": "In Dollar ($)"
     }
   },
   "results": {

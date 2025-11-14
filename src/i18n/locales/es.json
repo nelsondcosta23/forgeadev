@@ -151,6 +151,10 @@
       "yesDesc": "Plataforma expansible",
       "no": "No",
       "noDesc": "Configuración fija"
+    },
+    "budget": {
+      "question": "¿Cuál es tu presupuesto máximo?",
+      "description": "En dólares ($)"
     }
   },
   "results": {

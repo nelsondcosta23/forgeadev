@@ -194,8 +194,8 @@ export const questions: Question[] = [
   // Universal questions
   {
     id: "budget",
-    question: "What is your maximum budget?",
-    description: "In dollars ($)",
+    question: "questions.budget.question",
+    description: "questions.budget.description",
     type: "number",
     min: 300,
     max: 5000,

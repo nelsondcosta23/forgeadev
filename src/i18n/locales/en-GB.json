@@ -151,6 +151,10 @@
       "yesDesc": "Expandable platform",
       "no": "No",
       "noDesc": "Fixed configuration"
+    },
+    "budget": {
+      "question": "What is your maximum budget?",
+      "description": "In pounds (£)"
     }
   },
   "results": {
