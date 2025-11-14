@@ -1114,9 +1114,11 @@ const Admin = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() =>
+                                disabled={!session.session_id}
+                                onClick={() => {
+                                  if (!session.session_id) return;
                                   navigate(`/build/${session.session_id}`)
-                                }
+                                }}
                               >
                                 View
                               </Button>

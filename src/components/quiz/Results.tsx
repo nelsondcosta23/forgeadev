@@ -200,6 +200,7 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
     return (
       <AIResultsView
         sessionInfo={structuredRecommendation.session_info}
+        sessionId={sessionId}
         recommendations={structuredRecommendation.recommendations}
         explanation={structuredRecommendation.explanation}
         onRestart={onRestart}
