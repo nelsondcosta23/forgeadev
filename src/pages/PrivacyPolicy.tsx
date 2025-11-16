@@ -1,85 +1,88 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const PrivacyPolicy = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <Link to="/" className="text-primary hover:underline mb-8 inline-block">
-          ← Back to Home
+          ← {t('privacy.backToHome')}
         </Link>
         
-        <h1 className="text-4xl font-bold mb-8 text-foreground">Política de Privacidade</h1>
+        <h1 className="text-4xl font-bold mb-8 text-foreground">{t('privacy.title')}</h1>
         
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
           <p className="text-foreground font-medium">
-            🔒 Os seus dados são processados de forma segura e não são partilhados com terceiros. Apenas guardamos as suas respostas anonimamente para melhorar as recomendações.
+            {t('privacy.securityNotice')}
           </p>
         </div>
         
         <div className="prose prose-lg max-w-none space-y-6 text-muted-foreground">
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Introdução</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.introduction.title')}</h2>
             <p>
-              Esta Política de Privacidade explica como tratamos as suas informações quando usa a nossa aplicação de quiz. Valorizamos a sua privacidade e recolhemos apenas os dados necessários para operar e melhorar o serviço.
+              {t('privacy.introduction.content')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Informação Que Recolhemos</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.informationCollected.title')}</h2>
             <p>
-              Recolhemos informação mínima, especificamente:
+              {t('privacy.informationCollected.intro')}
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>País de origem, para gerar estatísticas de uso anónimas</li>
+              <li>{t('privacy.informationCollected.country')}</li>
             </ul>
             <p className="mt-4">
-              Não recolhemos nomes, e-mails ou quaisquer dados de identificação pessoal.
+              {t('privacy.informationCollected.noPersonalData')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Como Usamos Esta Informação</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.howWeUse.title')}</h2>
             <p>
-              Usamos esta informação apenas para:
+              {t('privacy.howWeUse.intro')}
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Compreender de onde vêm os nossos utilizadores (estatísticas ao nível do país)</li>
-              <li>Melhorar e otimizar a experiência do quiz</li>
+              <li>{t('privacy.howWeUse.understand')}</li>
+              <li>{t('privacy.howWeUse.improve')}</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Segurança de Dados</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.dataSecurity.title')}</h2>
             <p>
-              Utilizamos medidas de segurança padrão para proteger os dados e garantir que nenhuma informação pessoal é exposta ou mal utilizada.
+              {t('privacy.dataSecurity.content')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Serviços de Terceiros</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.thirdParty.title')}</h2>
             <p>
-              Podemos usar ferramentas de terceiros (por exemplo, fornecedores de análise) que recebem informação técnica anonimizada, como tipo de navegador ou dispositivo, para nos ajudar a compreender como os utilizadores interagem com o site.
+              {t('privacy.thirdParty.content')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Os Seus Direitos</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.yourRights.title')}</h2>
             <p>
-              Pode contactar-nos se desejar solicitar informações sobre o tratamento ou eliminação de dados. Como não armazenamos dados pessoais identificáveis, geralmente não há nada para eliminar.
+              {t('privacy.yourRights.content')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Alterações a Esta Política</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.changes.title')}</h2>
             <p>
-              Podemos atualizar esta Política de Privacidade ocasionalmente. As atualizações serão publicadas nesta página.
+              {t('privacy.changes.content')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Contacto</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.contact.title')}</h2>
             <p>
-              Se tiver alguma questão, entre em contacto através do nosso website.
+              {t('privacy.contact.content')}
             </p>
           </section>
         </div>
