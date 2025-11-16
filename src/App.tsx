@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "./components/LanguageProvider";
 import { DynamicMetaTags } from "./components/DynamicMetaTags";
+import { useAnalytics } from "./hooks/useAnalytics";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -14,6 +15,12 @@ import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
+// Analytics wrapper component
+const AnalyticsWrapper = ({ children }: { children: React.ReactNode }) => {
+  useAnalytics(); // Automatically track page views
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -22,15 +29,17 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <DynamicMetaTags />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/build/:sessionId" element={<SharedResults />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsAndConditions />} />
-            <Route path="/admin" element={<Admin />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AnalyticsWrapper>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/build/:sessionId" element={<SharedResults />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/admin" element={<Admin />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AnalyticsWrapper>
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>

@@ -92,6 +92,102 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          country_code: string | null
+          country_name: string | null
+          created_at: string
+          event_type: string
+          id: string
+          language: string | null
+          metadata: Json | null
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      analytics_sessions: {
+        Row: {
+          country_code: string | null
+          country_name: string | null
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          first_page: string
+          id: string
+          is_bounce: boolean | null
+          language: string | null
+          last_page: string | null
+          pages_viewed: number | null
+          session_id: string
+          started_at: string
+        }
+        Insert: {
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          first_page: string
+          id?: string
+          is_bounce?: boolean | null
+          language?: string | null
+          last_page?: string | null
+          pages_viewed?: number | null
+          session_id: string
+          started_at?: string
+        }
+        Update: {
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          first_page?: string
+          id?: string
+          is_bounce?: boolean | null
+          language?: string | null
+          last_page?: string | null
+          pages_viewed?: number | null
+          session_id?: string
+          started_at?: string
+        }
+        Relationships: []
+      }
       country_store_links: {
         Row: {
           country_code: string

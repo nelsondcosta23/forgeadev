@@ -1,7 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Globe, FileText, Search, Share2, Languages, Map } from "lucide-react";
+import { CheckCircle2, Globe, FileText, Search, Share2, Languages, Map, BarChart3 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AnalyticsDashboard } from "./AnalyticsDashboard";
 
 export const SEOMarketing = () => {
   const seoFeatures = [
@@ -87,7 +89,19 @@ export const SEOMarketing = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsTrigger value="overview">
+          <Search className="h-4 w-4 mr-2" />
+          SEO Overview
+        </TabsTrigger>
+        <TabsTrigger value="analytics">
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Analytics
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="overview" className="space-y-6 mt-6">
       {/* Overview Card */}
       <Card>
         <CardHeader>
@@ -248,6 +262,11 @@ export const SEOMarketing = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="analytics" className="mt-6">
+        <AnalyticsDashboard />
+      </TabsContent>
+    </Tabs>
   );
 };
