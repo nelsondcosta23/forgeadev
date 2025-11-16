@@ -177,7 +177,7 @@
     },
     "budget": {
       "question": "Qual é o seu orçamento máximo?",
-      "description": "Em euros (€)"
+      "description": "Em dólares ($)"
     },
     "aesthetics": {
       "question": "Quer iluminação RGB e estética?",

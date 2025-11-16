@@ -162,7 +162,7 @@
     },
     "budget": {
       "question": "Quel est votre budget maximum?",
-      "description": "En euros (€)"
+      "description": "En dollars ($)"
     }
   },
   "results": {
