@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const PrivacyPolicy = () => {
   const { t } = useTranslation();
@@ -7,9 +8,13 @@ const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
-        <Link to="/" className="text-primary hover:underline mb-8 inline-block">
-          ← {t('privacy.backToHome')}
-        </Link>
+        <div className="flex items-center justify-between mb-8">
+          <Link to="/" className="text-primary hover:underline">
+            {t('privacy.backToHome')}
+          </Link>
+          
+          <LanguageSwitcher />
+        </div>
         
         <h1 className="text-4xl font-bold mb-8 text-foreground">{t('privacy.title')}</h1>
         
