@@ -18,7 +18,7 @@ const TermsAndConditions = () => {
         <Alert className="mb-8 border-amber-500 bg-amber-500/10">
           <AlertCircle className="h-5 w-5 text-amber-500" />
           <AlertDescription className="text-foreground">
-            <strong>{t('terms.importantNotice.title')}</strong> {t('terms.importantNotice.content')}
+            <strong>{t('terms.alertTitle')}</strong> {t('terms.alertDesc')}
           </AlertDescription>
         </Alert>
         
@@ -33,13 +33,13 @@ const TermsAndConditions = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('terms.aiContent.title')}</h2>
             <p>
-              {t('terms.aiContent.intro')}
+              {t('terms.aiContent.content')}
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>{t('terms.aiContent.point1')}</li>
-              <li>{t('terms.aiContent.point2')}</li>
-              <li>{t('terms.aiContent.point3')}</li>
-              <li>{t('terms.aiContent.point4')}</li>
+              <li>{t('terms.aiContent.item1')}</li>
+              <li>{t('terms.aiContent.item2')}</li>
+              <li>{t('terms.aiContent.item3')}</li>
+              <li>{t('terms.aiContent.item4')}</li>
             </ul>
           </section>
 
@@ -51,16 +51,16 @@ const TermsAndConditions = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('terms.intellectualProperty.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('terms.intellectual.title')}</h2>
             <p>
-              {t('terms.intellectualProperty.content')}
+              {t('terms.intellectual.content')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('terms.liability.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('terms.limitation.title')}</h2>
             <p>
-              {t('terms.liability.content')}
+              {t('terms.limitation.content')}
             </p>
           </section>
 
@@ -79,9 +79,9 @@ const TermsAndConditions = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('terms.governingLaw.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('terms.governing.title')}</h2>
             <p>
-              {t('terms.governingLaw.content')}
+              {t('terms.governing.content')}
             </p>
           </section>
 
