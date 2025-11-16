@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText, Map, Plus, Pencil } from "lucide-react";
+import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText, Map, Plus, Pencil, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
 import { CRM } from "@/components/admin/CRM";
+import { SEOMarketing } from "@/components/admin/SEOMarketing";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -859,11 +860,12 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="reports" className="w-full">
-            <TabsList className="grid w-full max-w-5xl grid-cols-5">
+            <TabsList className="grid w-full max-w-6xl grid-cols-6">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
               <TabsTrigger value="billingcpc">CRM</TabsTrigger>
               <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
+              <TabsTrigger value="seo">SEO & MKT</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
@@ -1428,6 +1430,10 @@ const Admin = () => {
 
             <TabsContent value="roadmap" className="space-y-8 mt-6">
               <RoadmapContent />
+            </TabsContent>
+
+            <TabsContent value="seo" className="space-y-8 mt-6">
+              <SEOMarketing />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-8 mt-6">
