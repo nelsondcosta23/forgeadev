@@ -5,20 +5,22 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const TermsAndConditions = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <div className="flex items-center justify-between mb-8">
-          <Link to="/" className="text-primary hover:underline">
+          <Link to="/" className="text-primary hover:underline transition-colors">
             {t('terms.backToHome')}
           </Link>
           
           <LanguageSwitcher />
         </div>
         
-        <h1 className="text-4xl font-bold mb-8 text-foreground">{t('terms.title')}</h1>
+        {/* Content wrapper with fade animation triggered by language change */}
+        <div key={i18n.language} className="animate-fade-in">
+          <h1 className="text-4xl font-bold mb-8 text-foreground">{t('terms.title')}</h1>
         
         <Alert className="mb-8 border-amber-500 bg-amber-500/10">
           <AlertCircle className="h-5 w-5 text-amber-500" />
@@ -97,6 +99,7 @@ const TermsAndConditions = () => {
             </p>
           </section>
         </div>
+        {/* End of animated content wrapper */}
       </div>
     </div>
   );

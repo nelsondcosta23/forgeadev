@@ -3,20 +3,22 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const PrivacyPolicy = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <div className="flex items-center justify-between mb-8">
-          <Link to="/" className="text-primary hover:underline">
+          <Link to="/" className="text-primary hover:underline transition-colors">
             {t('privacy.backToHome')}
           </Link>
           
           <LanguageSwitcher />
         </div>
         
-        <h1 className="text-4xl font-bold mb-8 text-foreground">{t('privacy.title')}</h1>
+        {/* Content wrapper with fade animation triggered by language change */}
+        <div key={i18n.language} className="animate-fade-in">
+          <h1 className="text-4xl font-bold mb-8 text-foreground">{t('privacy.title')}</h1>
         
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
           <p className="text-foreground font-medium">
