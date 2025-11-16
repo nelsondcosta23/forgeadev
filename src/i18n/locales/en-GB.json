@@ -162,7 +162,8 @@
     },
     "budget": {
       "question": "What is your maximum budget?",
-      "description": "In pounds (£)"
+      "description": "In pounds (£)",
+      "currencyLabel": "In"
     }
   },
   "results": {
