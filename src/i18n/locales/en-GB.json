@@ -187,7 +187,7 @@
   },
   "privacy": {
     "title": "Privacy Policy",
-    "backToHome": "Back to Home",
+    "backToHome": "← Back to Home",
     "securityNotice": "🔒 Your data is processed securely and not shared with third parties. We only store your responses anonymously to improve recommendations.",
     "intro": {
       "title": "Introduction",
