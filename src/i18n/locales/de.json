@@ -187,7 +187,8 @@
   },
   "privacy": {
     "title": "Datenschutzrichtlinie",
-    "backToHome": "← Zurück zur Startseite",
+    "backToHome": "Zurück zur Startseite",
+    "securityNotice": "🔒 Ihre Daten werden sicher verarbeitet und nicht an Dritte weitergegeben. Wir speichern Ihre Antworten nur anonym, um die Empfehlungen zu verbessern.",
     "intro": {
       "title": "Einführung",
       "content": "Diese Datenschutzrichtlinie erklärt, wie wir mit Ihren Informationen umgehen, wenn Sie unsere Quiz-Anwendung nutzen. Wir schätzen Ihre Privatsphäre und sammeln nur die Daten, die notwendig sind, um den Service zu betreiben und zu verbessern."

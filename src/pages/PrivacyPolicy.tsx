@@ -26,40 +26,40 @@ const PrivacyPolicy = () => {
         
         <div className="prose prose-lg max-w-none space-y-6 text-muted-foreground">
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.introduction.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.intro.title')}</h2>
             <p>
-              {t('privacy.introduction.content')}
+              {t('privacy.intro.content')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.informationCollected.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.collected.title')}</h2>
             <p>
-              {t('privacy.informationCollected.intro')}
+              {t('privacy.collected.content')}
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>{t('privacy.informationCollected.country')}</li>
+              <li>{t('privacy.collected.item1')}</li>
             </ul>
             <p className="mt-4">
-              {t('privacy.informationCollected.noPersonalData')}
+              {t('privacy.collected.note')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.howWeUse.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.usage.title')}</h2>
             <p>
-              {t('privacy.howWeUse.intro')}
+              {t('privacy.usage.content')}
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>{t('privacy.howWeUse.understand')}</li>
-              <li>{t('privacy.howWeUse.improve')}</li>
+              <li>{t('privacy.usage.item1')}</li>
+              <li>{t('privacy.usage.item2')}</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.dataSecurity.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.security.title')}</h2>
             <p>
-              {t('privacy.dataSecurity.content')}
+              {t('privacy.security.content')}
             </p>
           </section>
 
@@ -71,9 +71,9 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.yourRights.title')}</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('privacy.rights.title')}</h2>
             <p>
-              {t('privacy.yourRights.content')}
+              {t('privacy.rights.content')}
             </p>
           </section>
 
