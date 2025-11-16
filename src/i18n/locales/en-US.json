@@ -1,4 +1,12 @@
 {
+  "meta": {
+    "title": "Forgea — Instant Custom PC Builds from a 1-Minute Quiz",
+    "description": "Answer a few questions and get a battle-tested PC build tailored to your games, budget, and upgrade path. Share it, tweak it, and buy with confidence.",
+    "ogTitle": "Forgea — Instant Custom PC Builds from a 1-Minute Quiz",
+    "ogDescription": "Answer a few questions and get a battle-tested PC build tailored to your games, budget, and upgrade path. Share it, tweak it, and buy with confidence.",
+    "twitterTitle": "Forgea — Instant Custom PC Builds from a 1-Minute Quiz",
+    "twitterDescription": "Answer a few questions and get a battle-tested PC build tailored to your games, budget, and upgrade path. Share it, tweak it, and buy with confidence."
+  },
   "landing": {
     "brand": "FORGEA",
     "title": "Find Your Perfect PC",

@@ -1,4 +1,12 @@
 {
+  "meta": {
+    "title": "Forgea — Sofortige Individuelle PC-Builds aus einem 1-Minuten-Quiz",
+    "description": "Beantworten Sie einige Fragen und erhalten Sie einen getesteten PC-Build, der auf Ihre Spiele, Ihr Budget und Ihren Upgrade-Pfad zugeschnitten ist. Teilen, anpassen und mit Vertrauen kaufen.",
+    "ogTitle": "Forgea — Sofortige Individuelle PC-Builds aus einem 1-Minuten-Quiz",
+    "ogDescription": "Beantworten Sie einige Fragen und erhalten Sie einen getesteten PC-Build, der auf Ihre Spiele, Ihr Budget und Ihren Upgrade-Pfad zugeschnitten ist. Teilen, anpassen und mit Vertrauen kaufen.",
+    "twitterTitle": "Forgea — Sofortige Individuelle PC-Builds aus einem 1-Minuten-Quiz",
+    "twitterDescription": "Beantworten Sie einige Fragen und erhalten Sie einen getesteten PC-Build, der auf Ihre Spiele, Ihr Budget und Ihren Upgrade-Pfad zugeschnitten ist. Teilen, anpassen und mit Vertrauen kaufen."
+  },
   "landing": {
     "brand": "FORGEA",
     "title": "Finden Sie Ihren Perfekten PC",

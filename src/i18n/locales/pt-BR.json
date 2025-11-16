@@ -1,4 +1,12 @@
 {
+  "meta": {
+    "title": "Forgea — Builds de PC Personalizadas em 1 Minuto",
+    "description": "Responda algumas perguntas e receba uma build de PC testada e adaptada aos seus jogos, orçamento e caminho de upgrade. Compartilhe, ajuste e compre com confiança.",
+    "ogTitle": "Forgea — Builds de PC Personalizadas em 1 Minuto",
+    "ogDescription": "Responda algumas perguntas e receba uma build de PC testada e adaptada aos seus jogos, orçamento e caminho de upgrade. Compartilhe, ajuste e compre com confiança.",
+    "twitterTitle": "Forgea — Builds de PC Personalizadas em 1 Minuto",
+    "twitterDescription": "Responda algumas perguntas e receba uma build de PC testada e adaptada aos seus jogos, orçamento e caminho de upgrade. Compartilhe, ajuste e compre com confiança."
+  },
   "landing": {
     "brand": "FORGEA",
     "title": "Encontre o Seu PC Perfeito",
