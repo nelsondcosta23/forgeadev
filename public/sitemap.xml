@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en-us" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <xhtml:link rel="alternate" hreflang="en-gb" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <xhtml:link rel="alternate" hreflang="pt-pt" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <xhtml:link rel="alternate" hreflang="pt-br" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/" />
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy</loc>
+    <xhtml:link rel="alternate" hreflang="en-us" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="en-gb" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="pt-pt" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="pt-br" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/privacy" />
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Terms and Conditions -->
+  <url>
+    <loc>https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms</loc>
+    <xhtml:link rel="alternate" hreflang="en-us" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <xhtml:link rel="alternate" hreflang="en-gb" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <xhtml:link rel="alternate" hreflang="pt-pt" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <xhtml:link rel="alternate" hreflang="pt-br" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xrkzqvkyvrbkjaxrwwak.lovableproject.com/terms" />
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>
