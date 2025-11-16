@@ -162,7 +162,8 @@
     },
     "budget": {
       "question": "Quel est votre budget maximum?",
-      "description": "En dollars ($)"
+      "description": "En dollars ($)",
+      "currencyLabel": "En"
     }
   },
   "results": {

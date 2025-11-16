@@ -143,7 +143,7 @@ const Quiz = ({ onBack }: QuizProps) => {
       const currency = getCurrencyInfo(answers.country as string);
       return {
         ...q,
-        description: `In ${currency.code} (${currency.symbol})`,
+        description: `${i18n.t('questions.budget.currencyLabel')} ${currency.code} (${currency.symbol})`,
         suffix: currency.symbol,
       };
     }
