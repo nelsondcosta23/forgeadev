@@ -65,6 +65,36 @@ export const DynamicMetaTags = () => {
     // Update HTML lang attribute
     document.documentElement.lang = i18n.language.split('-')[0];
 
+    // Add hreflang tags for international SEO
+    // Remove existing hreflang links
+    document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(el => el.remove());
+    
+    const languageMap: Record<string, string> = {
+      'en-US': 'en-us',
+      'en-GB': 'en-gb',
+      'pt-PT': 'pt-pt',
+      'pt-BR': 'pt-br',
+      'es': 'es',
+      'fr': 'fr',
+      'de': 'de'
+    };
+
+    // Add hreflang for all available languages
+    locales.forEach(locale => {
+      const link = document.createElement('link');
+      link.setAttribute('rel', 'alternate');
+      link.setAttribute('hreflang', languageMap[locale] || locale.toLowerCase());
+      link.setAttribute('href', currentUrl);
+      document.head.appendChild(link);
+    });
+
+    // Add x-default hreflang (points to en-US version)
+    const defaultLink = document.createElement('link');
+    defaultLink.setAttribute('rel', 'alternate');
+    defaultLink.setAttribute('hreflang', 'x-default');
+    defaultLink.setAttribute('href', currentUrl);
+    document.head.appendChild(defaultLink);
+
   }, [t, i18n.language, location.pathname]);
 
   return null;
