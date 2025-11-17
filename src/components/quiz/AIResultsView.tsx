@@ -97,6 +97,26 @@ export const AIResultsView = ({
 
       yPos += 20;
 
+      // Build URL Highlight Box
+      pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.setFillColor(255, 250, 245);
+      pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, 18, 2, 2, "FD");
+      
+      yPos += 7;
+      pdf.setFontSize(9);
+      pdf.setFont(undefined, "bold");
+      pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.text("Your Build URL:", margin + 4, yPos);
+      
+      yPos += 6;
+      pdf.setFontSize(8);
+      pdf.setFont(undefined, "normal");
+      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+      const urlText = pdf.splitTextToSize(shareUrl, pageWidth - 2 * margin - 8);
+      pdf.text(urlText, margin + 4, yPos);
+      
+      yPos += 10;
+
       // Main Title
       pdf.setFontSize(20);
       pdf.setFont(undefined, "bold");
@@ -183,23 +203,41 @@ export const AIResultsView = ({
         yPos += 8;
       }
 
-      // Quick Links Section (if available)
-      if (yPos > pageHeight - 60) {
-        pdf.addPage();
-        yPos = margin;
+      // AI Recommendation Explanation Section
+      if (explanation) {
+        if (yPos > pageHeight - 80) {
+          pdf.addPage();
+          yPos = margin;
+        }
+
+        pdf.setFontSize(14);
+        pdf.setFont(undefined, "bold");
+        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.text("AI Recommendation Explanation", margin, yPos);
+        yPos += 8;
+
+        pdf.setFontSize(10);
+        pdf.setFont(undefined, "italic");
+        pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
+        pdf.text("Why these specific configurations were chosen for your needs", margin, yPos);
+        yPos += 10;
+
+        pdf.setFontSize(9);
+        pdf.setFont(undefined, "normal");
+        pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+        const explanationLines = pdf.splitTextToSize(explanation, pageWidth - 2 * margin);
+        
+        for (const line of explanationLines) {
+          if (yPos > pageHeight - 20) {
+            pdf.addPage();
+            yPos = margin;
+          }
+          pdf.text(line, margin, yPos);
+          yPos += 5;
+        }
+        
+        yPos += 8;
       }
-
-      pdf.setFontSize(14);
-      pdf.setFont(undefined, "bold");
-      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-      pdf.text("Enlaces Rápidos", margin, yPos);
-      yPos += 10;
-
-      pdf.setFontSize(9);
-      pdf.setFont(undefined, "normal");
-      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
-      pdf.text("Click nos links acima para pesquisar cada componente diretamente nas lojas recomendadas.", margin, yPos);
-      yPos += 8;
 
       // Footer
       pdf.setFontSize(8);
