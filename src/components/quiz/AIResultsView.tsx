@@ -210,6 +210,7 @@ export const AIResultsView = ({
           yPos = margin;
         }
 
+        // Section Header
         pdf.setFontSize(14);
         pdf.setFont(undefined, "bold");
         pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -220,23 +221,100 @@ export const AIResultsView = ({
         pdf.setFont(undefined, "italic");
         pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
         pdf.text("Why these specific configurations were chosen for your needs", margin, yPos);
-        yPos += 10;
+        yPos += 12;
 
-        pdf.setFontSize(9);
-        pdf.setFont(undefined, "normal");
-        pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-        const explanationLines = pdf.splitTextToSize(explanation, pageWidth - 2 * margin);
+        // Split explanation into paragraphs
+        const paragraphs = explanation.split('\n\n').filter(p => p.trim());
         
-        for (const line of explanationLines) {
-          if (yPos > pageHeight - 20) {
+        for (const paragraph of paragraphs) {
+          const trimmedParagraph = paragraph.trim();
+          
+          // Check for bullet points or numbered lists
+          const isBulletPoint = trimmedParagraph.match(/^[-•*]\s/);
+          const isNumberedList = trimmedParagraph.match(/^\d+\.\s/);
+          
+          if (yPos > pageHeight - 25) {
             pdf.addPage();
             yPos = margin;
           }
-          pdf.text(line, margin, yPos);
-          yPos += 5;
+
+          // Check if paragraph contains emphasis markers (**, __, or ALL CAPS words)
+          const hasEmphasis = trimmedParagraph.match(/\*\*(.+?)\*\*|__(.+?)__|[A-Z]{3,}/g);
+          
+          if (hasEmphasis) {
+            // Parse and render text with emphasis
+            const parts = trimmedParagraph.split(/(\*\*[^*]+\*\*|__[^_]+__|[A-Z]{3,}(?:\s+[A-Z]{3,})*)/g);
+            let xPos = margin;
+            
+            if (isBulletPoint || isNumberedList) {
+              xPos = margin + 5;
+              pdf.setFontSize(9);
+              pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+              pdf.text("•", margin + 2, yPos);
+            }
+            
+            for (const part of parts) {
+              if (!part) continue;
+              
+              const isEmphasis = part.match(/^\*\*(.+)\*\*$|^__(.+)__$/) || part.match(/^[A-Z]{3,}(?:\s+[A-Z]{3,})*$/);
+              
+              if (isEmphasis) {
+                // Bold and orange for emphasis
+                pdf.setFont(undefined, "bold");
+                pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                const cleanText = part.replace(/[\*_]/g, '');
+                const lines = pdf.splitTextToSize(cleanText, pageWidth - xPos - margin);
+                pdf.text(lines, xPos, yPos);
+                xPos += pdf.getTextWidth(lines[0]) + 1;
+              } else {
+                // Normal text
+                pdf.setFont(undefined, "normal");
+                pdf.setFontSize(9);
+                pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+                const lines = pdf.splitTextToSize(part, pageWidth - xPos - margin);
+                pdf.text(lines, xPos, yPos);
+                if (lines.length > 1) {
+                  yPos += (lines.length - 1) * 5;
+                }
+                xPos += pdf.getTextWidth(lines[lines.length - 1]) + 1;
+              }
+            }
+            yPos += 7;
+          } else {
+            // Regular paragraph without emphasis
+            pdf.setFontSize(9);
+            pdf.setFont(undefined, "normal");
+            pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+            
+            let textToRender = trimmedParagraph;
+            let leftMargin = margin;
+            
+            if (isBulletPoint) {
+              textToRender = trimmedParagraph.replace(/^[-•*]\s/, '');
+              leftMargin = margin + 5;
+              pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+              pdf.text("•", margin + 2, yPos);
+              pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+            } else if (isNumberedList) {
+              leftMargin = margin + 5;
+            }
+            
+            const lines = pdf.splitTextToSize(textToRender, pageWidth - leftMargin - margin);
+            
+            for (const line of lines) {
+              if (yPos > pageHeight - 20) {
+                pdf.addPage();
+                yPos = margin;
+              }
+              pdf.text(line, leftMargin, yPos);
+              yPos += 5;
+            }
+            
+            yPos += 3; // Extra space after paragraph
+          }
         }
         
-        yPos += 8;
+        yPos += 5;
       }
 
       // Footer
