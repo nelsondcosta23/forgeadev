@@ -477,7 +477,7 @@ const Quiz = ({ onBack }: QuizProps) => {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm text-muted-foreground">
-              <span>Question {currentStep + 1} of {totalQuestions}</span>
+              <span>{t('quiz.question')} {currentStep + 1} {t('quiz.of')} {totalQuestions}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
