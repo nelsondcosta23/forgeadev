@@ -32,6 +32,8 @@
     "initializing": "Sitzung wird initialisiert...",
     "submit": "Antwort Senden",
     "analyzing": "Ihre Antworten werden mit KI analysiert",
+    "analyzingTitle": "Ihre Antworten werden analysiert...",
+    "analyzingDescription": "Die KI verarbeitet Ihre Präferenzen, um personalisierte Empfehlungen zu erstellen",
     "pleaseWait": "Dies kann einen Moment dauern, bitte warten",
     "errorTitle": "Analyse Fehlgeschlagen",
     "tryAgain": "Erneut Versuchen",
