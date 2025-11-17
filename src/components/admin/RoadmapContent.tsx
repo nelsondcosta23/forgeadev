@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
@@ -19,6 +19,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface RoadmapItem {
   id: string;
@@ -32,7 +39,9 @@ export function RoadmapContent() {
   const [items, setItems] = useState<RoadmapItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showHistory, setShowHistory] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
@@ -98,6 +107,7 @@ export function RoadmapContent() {
     setFormData({ priority: "Medium", title: "", status: "todo" });
     setIsAddingNew(false);
     setEditingId(null);
+    setEditDialogOpen(false);
     fetchRoadmap();
   };
 
@@ -133,7 +143,7 @@ export function RoadmapContent() {
       status: item.status,
     });
     setEditingId(item.id);
-    setIsAddingNew(true);
+    setEditDialogOpen(true);
   };
 
   const handleCancel = () => {
@@ -146,7 +156,14 @@ export function RoadmapContent() {
     .filter((item) => {
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "all" || item.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      
+      // Se showHistory é true, mostrar apenas completas
+      // Se showHistory é false, mostrar apenas não completas
+      const matchesHistoryMode = showHistory 
+        ? item.status === "completed" 
+        : item.status !== "completed";
+      
+      return matchesSearch && matchesStatus && matchesHistoryMode;
     })
     .sort((a, b) => {
       // Always place completed items at the bottom
@@ -210,6 +227,14 @@ export function RoadmapContent() {
               <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
+          <Button 
+            variant={showHistory ? "default" : "outline"} 
+            onClick={() => setShowHistory(!showHistory)}
+            className="gap-2"
+          >
+            <History className="h-4 w-4" />
+            {showHistory ? "Tarefas Ativas" : "Histórico"}
+          </Button>
         </div>
 
         {/* Add/Edit Form */}
@@ -326,6 +351,75 @@ export function RoadmapContent() {
           )}
         </div>
       </CardContent>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Tarefa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-priority">Priority</Label>
+              <Select
+                value={formData.priority}
+                onValueChange={(value: "High" | "Medium" | "Low") =>
+                  setFormData({ ...formData, priority: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Item title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-status">Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: "todo" | "in_progress" | "completed") =>
+                  setFormData({ ...formData, status: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todo">To Do</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditDialogOpen(false);
+                setEditingId(null);
+                setFormData({ priority: "Medium", title: "", status: "todo" });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit}>Atualizar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
