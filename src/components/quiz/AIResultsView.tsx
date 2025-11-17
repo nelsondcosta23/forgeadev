@@ -68,34 +68,20 @@ export const AIResultsView = ({
       const margin = 20;
       let yPos = margin;
 
-      // Forgea Brand Colors (HSL to RGB conversion)
-      const primaryColor: [number, number, number] = [255, 117, 26];     // HSL(25, 100%, 55%)
-      const secondaryColor: [number, number, number] = [255, 153, 51];   // HSL(35, 100%, 60%)
-      const darkBg: [number, number, number] = [20, 20, 20];             // HSL(0, 0%, 8%)
-      const mutedColor: [number, number, number] = [165, 165, 165];      // HSL(0, 0%, 65%)
+      // Forgea Brand Colors
+      const primaryColor: [number, number, number] = [255, 117, 26];
+      const textDark: [number, number, number] = [40, 40, 40];
+      const textLight: [number, number, number] = [100, 100, 100];
 
-      // Header Background
-      pdf.setFillColor(darkBg[0], darkBg[1], darkBg[2]);
-      pdf.rect(0, 0, pageWidth, 50, "F");
-
-      // Gradient effect simulation
-      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.rect(0, 0, pageWidth / 2, 50, "F");
-
-      // FORGEA Logo
-      pdf.setFontSize(28);
+      // Header with FORGEA logo and QR Code
+      pdf.setFontSize(32);
       pdf.setFont(undefined, "bold");
       pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.text("FORGEA", margin, yPos + 12);
-      
-      pdf.setFontSize(11);
-      pdf.setFont(undefined, "normal");
-      pdf.setTextColor(255, 255, 255);
-      pdf.text("Recomendações de PC Personalizadas", margin, yPos + 22);
+      pdf.text("FORGEA", margin, yPos);
 
-      // Generate QR Code with orange border
+      // Generate QR Code
       const qrCodeDataUrl = await QRCode.toDataURL(shareUrl, {
-        width: 100,
+        width: 120,
         margin: 1,
         color: {
           dark: "#000000",
@@ -103,180 +89,124 @@ export const AIResultsView = ({
         }
       });
       
-      // QR Code border/box
-      pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.setLineWidth(1);
-      pdf.rect(pageWidth - margin - 32, yPos + 2, 32, 32);
-      pdf.addImage(qrCodeDataUrl, "PNG", pageWidth - margin - 30, yPos + 4, 28, 28);
+      const qrSize = 35;
+      pdf.addImage(qrCodeDataUrl, "PNG", pageWidth - margin - qrSize, yPos - 12, qrSize, qrSize);
+      pdf.setFontSize(8);
+      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
+      pdf.text("Scan to view", pageWidth - margin - qrSize + 4, yPos + 26);
 
-      yPos += 55;
+      yPos += 20;
 
-      // Session Info Card
-      pdf.setFillColor(240, 240, 240);
-      pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, 28, 3, 3, "F");
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(60, 60, 60);
+      // Main Title
+      pdf.setFontSize(20);
+      pdf.setFont(undefined, "bold");
+      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+      pdf.text("Your Custom PC Builds", margin, yPos);
       yPos += 8;
-      pdf.text(`📍 País: ${sessionInfo.country}`, margin + 5, yPos);
-      yPos += 6;
-      pdf.text(`🆔 Session: ${finalSessionId.slice(0, 20)}...`, margin + 5, yPos);
-      yPos += 6;
-      pdf.text(`📅 Data: ${new Date(sessionInfo.completed_at).toLocaleDateString('pt-PT')}`, margin + 5, yPos);
+
+      // Subtitle
+      pdf.setFontSize(11);
+      pdf.setFont(undefined, "normal");
+      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
+      pdf.text("Personalized recommendations based on your preferences", margin, yPos);
       yPos += 15;
 
-      // URL Link with icon
-      pdf.setFontSize(9);
-      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      pdf.textWithLink("🔗 Ver build completa online: " + shareUrl, margin, yPos, { url: shareUrl });
+      // AI Personalized Recommendation Section
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, "bold");
+      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+      pdf.text("AI Personalized Recommendation", margin, yPos);
       yPos += 12;
-
-      // AI Analysis Section
-      if (sessionInfo.ai_report) {
-        // Section header with colored line
-        pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.setLineWidth(2);
-        pdf.line(margin, yPos, pageWidth - margin, yPos);
-        yPos += 8;
-
-        pdf.setFontSize(14);
-        pdf.setFont(undefined, "bold");
-        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.text("🤖 Análise da IA", margin, yPos);
-        yPos += 10;
-
-        // Info box
-        pdf.setFillColor(255, 250, 245);
-        const infoBoxHeight = 35;
-        pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, infoBoxHeight, 3, 3, "F");
-        
-        pdf.setFontSize(10);
-        pdf.setFont(undefined, "normal");
-        pdf.setTextColor(60, 60, 60);
-        yPos += 7;
-        
-        if (sessionInfo.ai_report.budget_range) {
-          pdf.text(`💰 Orçamento: ${sessionInfo.ai_report.budget_range}`, margin + 5, yPos);
-          yPos += 6;
-        }
-        if (sessionInfo.ai_report.primary_use) {
-          pdf.text(`🎯 Uso Principal: ${sessionInfo.ai_report.primary_use}`, margin + 5, yPos);
-          yPos += 6;
-        }
-        if (sessionInfo.ai_report.performance_level) {
-          pdf.text(`⚡ Performance: ${sessionInfo.ai_report.performance_level}`, margin + 5, yPos);
-          yPos += 6;
-        }
-        if (sessionInfo.ai_report.upgrade_priority) {
-          pdf.text(`🔧 Prioridade: ${sessionInfo.ai_report.upgrade_priority}`, margin + 5, yPos);
-          yPos += 6;
-        }
-        yPos += 12;
-      }
 
       // Builds Section
       const buildTypes = ["Best Value", "Balanced", "High Performance"] as const;
-      const buildColors: Array<[number, number, number]> = [
-        [46, 125, 50],       // Green for Best Value
-        [25, 118, 210],      // Blue for Balanced
-        [255, 117, 26],      // Orange for High Performance (primaryColor)
-      ];
-      const buildIcons = ["💎", "⚖️", "🚀"];
+      const buildTitles = ["Best Value Build", "Balanced Build", "High Performance Build"];
       
       for (let i = 0; i < buildTypes.length; i++) {
         const buildType = buildTypes[i];
         const build = recommendations[buildType];
-        const buildColor = buildColors[i];
-        const buildIcon = buildIcons[i];
         
         if (yPos > pageHeight - 80) {
           pdf.addPage();
           yPos = margin;
         }
 
-        // Build card header with colored accent
-        pdf.setFillColor(buildColor[0], buildColor[1], buildColor[2]);
-        pdf.rect(margin, yPos, 4, 30, "F");
-        
-        pdf.setFillColor(250, 250, 250);
-        pdf.roundedRect(margin + 6, yPos, pageWidth - 2 * margin - 6, 30, 3, 3, "F");
-
-        pdf.setFontSize(16);
+        // Build Title
+        pdf.setFontSize(13);
         pdf.setFont(undefined, "bold");
-        pdf.setTextColor(buildColor[0], buildColor[1], buildColor[2]);
-        pdf.text(`${buildIcon} ${buildType}`, margin + 12, yPos + 10);
+        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.text(buildTitles[i], margin, yPos);
+        yPos += 8;
 
-        // Components list
+        // Components list with bullets
         pdf.setFontSize(10);
-        pdf.setTextColor(60, 60, 60);
+        pdf.setFont(undefined, "normal");
+        pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
 
         const components = [
-          { label: "🔲 Processador", value: getComponentModel(build.processor) },
-          { label: "🎮 GPU", value: getComponentModel(build.graphics_card) },
-          { label: "💾 RAM", value: getComponentModel(build.ram) },
-          { label: "💿 Armazenamento", value: getComponentModel(build.storage) },
-          { label: "⚡ Fonte", value: getComponentModel(build.power_supply) },
+          { label: "Processor", value: getComponentModel(build.processor) },
+          { label: "Graphics Card", value: getComponentModel(build.graphics_card) },
+          { label: "RAM", value: getComponentModel(build.ram) },
+          { label: "Storage", value: getComponentModel(build.storage) },
+          { label: "Power Supply", value: getComponentModel(build.power_supply) },
         ];
 
         for (const component of components) {
-          if (yPos > pageHeight - 20) {
+          if (yPos > pageHeight - 25) {
             pdf.addPage();
             yPos = margin;
           }
           
-          pdf.setFont(undefined, "bold");
-          pdf.text(component.label, margin + 5, yPos);
-          pdf.setFont(undefined, "normal");
+          // Bullet point
+          pdf.circle(margin + 2, yPos - 1.5, 0.8, "F");
           
-          const labelWidth = pdf.getTextWidth(component.label);
-          const maxValueWidth = pageWidth - 2 * margin - labelWidth - 15;
-          const lines = pdf.splitTextToSize(component.value, maxValueWidth);
-          pdf.text(lines, margin + labelWidth + 10, yPos);
-          
-          yPos += 6 * lines.length;
+          const text = `${component.label}: ${component.value}`;
+          const maxWidth = pageWidth - 2 * margin - 8;
+          const lines = pdf.splitTextToSize(text, maxWidth);
+          pdf.text(lines, margin + 6, yPos);
+          yPos += 5 * lines.length;
         }
 
-        // Price info
+        // Price and Performance info
         if (build.estimated_price_range) {
-          yPos += 3;
-          pdf.setFontSize(11);
-          pdf.setFont(undefined, "bold");
-          pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-          pdf.text(`Preço: ${build.estimated_price_range}`, margin + 5, yPos);
-          pdf.setFont(undefined, "normal");
-          yPos += 8;
+          pdf.circle(margin + 2, yPos - 1.5, 0.8, "F");
+          pdf.text(`Estimated Price: ${build.estimated_price_range}`, margin + 6, yPos);
+          yPos += 5;
         }
 
-        yPos += 10;
+        if (build.performance_tier) {
+          pdf.circle(margin + 2, yPos - 1.5, 0.8, "F");
+          pdf.text(`Performance Tier: ${build.performance_tier}`, margin + 6, yPos);
+          yPos += 5;
+        }
+
+        yPos += 8;
       }
 
-      // Footer with Forgea branding
-      const footerY = pageHeight - 15;
-      
-      // Footer background
-      pdf.setFillColor(darkBg[0], darkBg[1], darkBg[2]);
-      pdf.rect(0, footerY - 5, pageWidth, 20, "F");
-      
-      // Footer text with gradient effect
+      // Quick Links Section (if available)
+      if (yPos > pageHeight - 60) {
+        pdf.addPage();
+        yPos = margin;
+      }
+
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, "bold");
+      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+      pdf.text("Enlaces Rápidos", margin, yPos);
+      yPos += 10;
+
+      pdf.setFontSize(9);
+      pdf.setFont(undefined, "normal");
+      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
+      pdf.text("Click nos links acima para pesquisar cada componente diretamente nas lojas recomendadas.", margin, yPos);
+      yPos += 8;
+
+      // Footer
       pdf.setFontSize(8);
-      pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
-      pdf.text(
-        `Gerado em ${new Date().toLocaleDateString('pt-PT', { 
-          day: '2-digit', 
-          month: 'long', 
-          year: 'numeric' 
-        })}`,
-        margin,
-        footerY + 3
-      );
-      
-      pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.text("FORGEA.COM", pageWidth - margin - 30, footerY + 3);
-      
-      // Small accent line
-      pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.setLineWidth(1);
-      pdf.line(margin, footerY - 2, pageWidth - margin, footerY - 2);
+      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
+      const footerText = `Generated on ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} | www.forgea.com`;
+      const footerWidth = pdf.getTextWidth(footerText);
+      pdf.text(footerText, (pageWidth - footerWidth) / 2, pageHeight - 10);
 
       pdf.save(`forgea-build-${finalSessionId}.pdf`);
       toast.success("PDF transferido com sucesso!");
