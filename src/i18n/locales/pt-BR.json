@@ -307,5 +307,50 @@
     "title": "404",
     "message": "Ops! Página não encontrada",
     "home": "Voltar ao Início"
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Tudo o que você precisa saber sobre montagem de PCs",
+    "backToHome": "← Voltar ao Início",
+    "q1": {
+      "question": "Qual é o orçamento mínimo para um PC gamer?",
+      "answer": "O orçamento mínimo depende dos seus objetivos. Para jogos em 1080p a 60 FPS em jogos AAA modernos, considere cerca de R$ 3.500-5.000. Para jogos competitivos (CS2, Valorant) pode começar com R$ 3.000. Para 1440p ou 4K, o orçamento aumenta significativamente para R$ 7.000 ou mais."
+    },
+    "q2": {
+      "question": "Preciso de uma placa de vídeo dedicada para jogos?",
+      "answer": "Sim, para a maioria dos jogos modernos, uma GPU dedicada é essencial. Enquanto CPUs modernas têm gráficos integrados que podem executar jogos leves e antigos, jogos AAA e títulos competitivos modernos exigem uma placa de vídeo dedicada para um bom desempenho."
+    },
+    "q3": {
+      "question": "Quanta RAM eu preciso?",
+      "answer": "Para jogos: 16GB é o padrão atual recomendado. Para trabalho profissional ou criação de conteúdo: 32GB é ideal, especialmente para edição de vídeo ou modelagem 3D. Para uso básico: 8GB pode ser suficiente, mas 16GB oferece melhor longevidade."
+    },
+    "q4": {
+      "question": "Qual é a diferença entre 1080p, 1440p e 4K?",
+      "answer": "1080p (Full HD): 1920x1080 pixels, mais fácil de rodar, ideal para orçamentos menores. 1440p (2K): 2560x1440 pixels, excelente equilíbrio entre qualidade visual e desempenho. 4K (Ultra HD): 3840x2160 pixels, melhor qualidade visual, mas exige hardware muito mais potente e caro."
+    },
+    "q5": {
+      "question": "O que é FPS e por que é importante?",
+      "answer": "FPS (Frames Per Second) é o número de imagens exibidas por segundo. 60 FPS: Experiência fluida para a maioria dos jogos. 120-144 FPS: Ideal para jogos competitivos, oferece vantagem em reação e precisão. 240+ FPS: Para jogadores profissionais e competitivos de elite. FPS mais altos reduzem o input lag e tornam o movimento mais suave."
+    },
+    "q6": {
+      "question": "Devo escolher Intel ou AMD para o processador?",
+      "answer": "Ambos são excelentes escolhas. AMD Ryzen: Geralmente melhor custo-benefício, excelente para multitarefa e criação de conteúdo. Intel Core: Tradicionalmente melhor desempenho em jogos puros, especialmente nos modelos de topo. A escolha depende do seu orçamento específico e caso de uso. Recomendamos comparar modelos específicos na sua faixa de preço."
+    },
+    "q7": {
+      "question": "O que é iluminação RGB e eu preciso dela?",
+      "answer": "RGB é iluminação colorida personalizável nos componentes do PC. Não afeta o desempenho, é puramente estético. Prós: Visual atraente, personalização. Contras: Custo adicional, pode distrair. Se o orçamento é apertado, priorize desempenho sobre estética. Se tem margem no orçamento e valoriza aparência, RGB pode melhorar a experiência."
+    },
+    "q8": {
+      "question": "Como posso melhorar meu PC no futuro?",
+      "answer": "Melhorias comuns por ordem de impacto: 1. GPU: Maior impacto no desempenho de jogos. 2. Adicionar RAM: Se tiver menos de 16GB. 3. SSD: Se ainda usa HDD, melhora drasticamente a velocidade. 4. CPU: Geralmente a última prioridade, a menos que seja um gargalo. Certifique-se de que a fonte de alimentação e placa-mãe suportam melhorias futuras."
+    },
+    "q9": {
+      "question": "Preciso de refrigeração líquida?",
+      "answer": "Não necessariamente. Refrigeração a ar: Mais barato, confiável, suficiente para a maioria dos usuários. Refrigeração líquida (AIO): Melhor para overclock extremo ou estética. Custom loop: Apenas para entusiastas. Para a maioria dos PCs, um bom cooler a ar é suficiente e mais econômico."
+    },
+    "q10": {
+      "question": "Qual o tamanho de fonte de alimentação que eu preciso?",
+      "answer": "Depende dos seus componentes. PC básico/escritório: 400-500W. PC gamer médio: 600-750W. PC gamer high-end: 750-850W. PC extremo/workstation: 850W+. Use sempre uma PSU de qualidade (80+ Bronze mínimo) com 100-200W de margem acima do consumo estimado para eficiência e longevidade."
+    }
   }
 }

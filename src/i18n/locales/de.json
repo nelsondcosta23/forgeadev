@@ -12,6 +12,7 @@
     "title": "Finden Sie Ihren Perfekten PC",
     "subtitle": "Beantworten Sie einige einfache Fragen und erhalten Sie personalisierte PC-Empfehlungen, die auf Ihre Bedürfnisse und Ihr Budget zugeschnitten sind.",
     "startQuiz": "Quiz Starten",
+    "faq": "Häufig Gestellte Fragen",
     "howItWorksTitle": "Wie Es Funktioniert",
     "step1Title": "Antworten",
     "step1Desc": "Erzählen Sie uns von Ihren Bedürfnissen, Budget und Vorlieben",
@@ -277,5 +278,50 @@
     "title": "404",
     "message": "Hoppla! Seite nicht gefunden",
     "home": "Zurück zur Startseite"
+  },
+  "faq": {
+    "title": "Häufig Gestellte Fragen",
+    "subtitle": "Alles, was Sie über den PC-Bau wissen müssen",
+    "backToHome": "← Zurück zur Startseite",
+    "q1": {
+      "question": "Was ist das Mindestbudget für einen Gaming-PC?",
+      "answer": "Das Mindestbudget hängt von Ihren Zielen ab. Für Gaming in 1080p bei 60 FPS in modernen AAA-Spielen sollten Sie etwa 600-800€ einplanen. Für kompetitive Spiele (CS2, Valorant) können Sie mit 500€ beginnen. Für 1440p oder 4K steigt das Budget erheblich auf 1200€ oder mehr."
+    },
+    "q2": {
+      "question": "Brauche ich eine dedizierte Grafikkarte zum Spielen?",
+      "answer": "Ja, für die meisten modernen Spiele ist eine dedizierte GPU unerlässlich. Während moderne CPUs integrierte Grafik haben, die leichte und ältere Spiele ausführen können, erfordern AAA-Spiele und moderne kompetitive Titel eine dedizierte Grafikkarte für gute Leistung."
+    },
+    "q3": {
+      "question": "Wie viel RAM brauche ich?",
+      "answer": "Für Gaming: 16GB ist der aktuelle empfohlene Standard. Für professionelle Arbeit oder Content-Erstellung: 32GB ist ideal, besonders für Videobearbeitung oder 3D-Modellierung. Für grundlegende Nutzung: 8GB können ausreichen, aber 16GB bieten bessere Langlebigkeit."
+    },
+    "q4": {
+      "question": "Was ist der Unterschied zwischen 1080p, 1440p und 4K?",
+      "answer": "1080p (Full HD): 1920x1080 Pixel, einfacher auszuführen, ideal für kleinere Budgets. 1440p (2K): 2560x1440 Pixel, ausgezeichnetes Gleichgewicht zwischen visueller Qualität und Leistung. 4K (Ultra HD): 3840x2160 Pixel, beste visuelle Qualität, erfordert aber viel leistungsfähigere und teurere Hardware."
+    },
+    "q5": {
+      "question": "Was ist FPS und warum ist es wichtig?",
+      "answer": "FPS (Frames Per Second) ist die Anzahl der pro Sekunde angezeigten Bilder. 60 FPS: Flüssiges Erlebnis für die meisten Spiele. 120-144 FPS: Ideal für kompetitive Spiele, bietet Vorteil bei Reaktion und Präzision. 240+ FPS: Für professionelle und Elite-Wettkampfspieler. Höhere FPS reduzieren Input-Lag und machen Bewegungen flüssiger."
+    },
+    "q6": {
+      "question": "Sollte ich Intel oder AMD für den Prozessor wählen?",
+      "answer": "Beide sind ausgezeichnete Wahlen. AMD Ryzen: Generell besseres Preis-Leistungs-Verhältnis, hervorragend für Multitasking und Content-Erstellung. Intel Core: Traditionell bessere Leistung in reinen Gaming-Szenarien, besonders bei Top-Modellen. Die Wahl hängt von Ihrem spezifischen Budget und Anwendungsfall ab. Wir empfehlen, spezifische Modelle in Ihrer Preisklasse zu vergleichen."
+    },
+    "q7": {
+      "question": "Was ist RGB-Beleuchtung und brauche ich sie?",
+      "answer": "RGB ist anpassbare farbige Beleuchtung an PC-Komponenten. Beeinflusst nicht die Leistung, ist rein ästhetisch. Vorteile: Attraktive Optik, Personalisierung. Nachteile: Zusätzliche Kosten, kann ablenken. Bei knappem Budget priorisieren Sie Leistung über Ästhetik. Wenn Sie Spielraum im Budget haben und Wert auf Aussehen legen, kann RGB das Erlebnis verbessern."
+    },
+    "q8": {
+      "question": "Wie kann ich meinen PC in Zukunft aufrüsten?",
+      "answer": "Häufige Upgrades nach Auswirkung geordnet: 1. GPU: Größte Auswirkung auf Gaming-Leistung. 2. RAM hinzufügen: Wenn Sie weniger als 16GB haben. 3. SSD: Falls Sie noch HDD verwenden, verbessert die Geschwindigkeit drastisch. 4. CPU: Normalerweise letzte Priorität, es sei denn, es ist ein Engpass. Stellen Sie sicher, dass Netzteil und Mainboard zukünftige Upgrades unterstützen."
+    },
+    "q9": {
+      "question": "Brauche ich Flüssigkeitskühlung?",
+      "answer": "Nicht unbedingt. Luftkühlung: Günstiger, zuverlässig, ausreichend für die meisten Benutzer. Flüssigkeitskühlung (AIO): Besser für extremes Overclocking oder Ästhetik. Custom Loop: Nur für Enthusiasten. Für die meisten PCs ist ein guter Luftkühler ausreichend und wirtschaftlicher."
+    },
+    "q10": {
+      "question": "Welche Netzteilgröße brauche ich?",
+      "answer": "Hängt von Ihren Komponenten ab. Basis-/Büro-PC: 400-500W. Mittelklasse-Gaming-PC: 600-750W. High-End-Gaming-PC: 750-850W. Extrem-PC/Workstation: 850W+. Verwenden Sie immer ein hochwertiges Netzteil (mindestens 80+ Bronze) mit 100-200W Puffer über dem geschätzten Verbrauch für Effizienz und Langlebigkeit."
+    }
   }
 }

@@ -12,6 +12,7 @@
     "title": "Find Your Perfect PC",
     "subtitle": "Answer a few simple questions and get personalized PC build recommendations tailored to your needs and budget.",
     "startQuiz": "Start Quiz",
+    "faq": "Frequently Asked Questions",
     "howItWorksTitle": "How It Works",
     "step1Title": "Answer",
     "step1Desc": "Tell us about your needs, budget, and preferences",
@@ -277,5 +278,50 @@
     "title": "404",
     "message": "Oops! Page not found",
     "home": "Return to Home"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about building PCs",
+    "backToHome": "← Return to Home",
+    "q1": {
+      "question": "What is the minimum budget for a gaming PC?",
+      "answer": "The minimum budget depends on your goals. For 1080p gaming at 60 FPS in modern AAA games, consider around $600-800. For competitive games (CS2, Valorant) you can start with $500. For 1440p or 4K, the budget increases significantly to $1200 or more."
+    },
+    "q2": {
+      "question": "Do I need a dedicated graphics card for gaming?",
+      "answer": "Yes, for most modern games, a dedicated GPU is essential. While modern CPUs have integrated graphics that can run light and older games, AAA games and modern competitive titles require a dedicated graphics card for good performance."
+    },
+    "q3": {
+      "question": "How much RAM do I need?",
+      "answer": "For gaming: 16GB is the current recommended standard. For professional work or content creation: 32GB is ideal, especially for video editing or 3D modeling. For basic use: 8GB may suffice, but 16GB offers better longevity."
+    },
+    "q4": {
+      "question": "What's the difference between 1080p, 1440p, and 4K?",
+      "answer": "1080p (Full HD): 1920x1080 pixels, easier to run, ideal for smaller budgets. 1440p (2K): 2560x1440 pixels, excellent balance between visual quality and performance. 4K (Ultra HD): 3840x2160 pixels, best visual quality, but requires much more powerful and expensive hardware."
+    },
+    "q5": {
+      "question": "What is FPS and why is it important?",
+      "answer": "FPS (Frames Per Second) is the number of images displayed per second. 60 FPS: Smooth experience for most games. 120-144 FPS: Ideal for competitive gaming, offers advantage in reaction and precision. 240+ FPS: For professional and elite competitive players. Higher FPS reduces input lag and makes movement smoother."
+    },
+    "q6": {
+      "question": "Should I choose Intel or AMD for the processor?",
+      "answer": "Both are excellent choices. AMD Ryzen: Generally better value for money, excellent for multitasking and content creation. Intel Core: Traditionally better performance in pure gaming, especially in top models. The choice depends on your specific budget and use case. We recommend comparing specific models in your price range."
+    },
+    "q7": {
+      "question": "What is RGB lighting and do I need it?",
+      "answer": "RGB is customizable colored lighting on PC components. Doesn't affect performance, it's purely aesthetic. Pros: Attractive visual, customization. Cons: Additional cost, can distract. If budget is tight, prioritize performance over aesthetics. If you have room in your budget and value appearance, RGB can enhance the experience."
+    },
+    "q8": {
+      "question": "How can I upgrade my PC in the future?",
+      "answer": "Common upgrades by impact order: 1. GPU: Biggest impact on gaming performance. 2. Add RAM: If you have less than 16GB. 3. SSD: If still using HDD, drastically improves speed. 4. CPU: Usually last priority, unless it's a bottleneck. Make sure the power supply and motherboard support future upgrades."
+    },
+    "q9": {
+      "question": "Do I need liquid cooling?",
+      "answer": "Not necessarily. Air cooling: Cheaper, reliable, sufficient for most users. Liquid cooling (AIO): Better for extreme overclocking or aesthetics. Custom loop: Only for enthusiasts. For most PCs, a good air cooler is sufficient and more economical."
+    },
+    "q10": {
+      "question": "What size power supply do I need?",
+      "answer": "Depends on your components. Basic/office PC: 400-500W. Mid-range gaming PC: 600-750W. High-end gaming PC: 750-850W. Extreme PC/workstation: 850W+. Always use a quality PSU (80+ Bronze minimum) with 100-200W headroom above estimated consumption for efficiency and longevity."
+    }
   }
 }
