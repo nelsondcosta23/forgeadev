@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const FAQ = () => {
   const { t } = useTranslation();
@@ -21,13 +22,17 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/95 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <Link
-          to="/"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
-        >
-          {t("faq.backToHome")}
-        </Link>
+      <div className="max-w-4xl mx-auto animate-fade-in">
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            to="/"
+            className="text-primary hover:underline"
+          >
+            {t("faq.backToHome")}
+          </Link>
+          
+          <LanguageSwitcher />
+        </div>
 
         <Card className="border-border/50 shadow-lg">
           <CardHeader className="text-center space-y-4 pb-8">
@@ -40,11 +45,12 @@ const FAQ = () => {
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible className="space-y-4">
-              {faqs.map((faq) => (
+              {faqs.map((faq, index) => (
                 <AccordionItem
                   key={faq.id}
                   value={faq.id}
-                  className="border border-border/50 rounded-lg px-6 data-[state=open]:shadow-md transition-all"
+                  className="border border-border/50 rounded-lg px-6 data-[state=open]:shadow-md transition-all animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <AccordionTrigger className="text-left hover:no-underline py-4">
                     <span className="font-semibold">{faq.question}</span>
