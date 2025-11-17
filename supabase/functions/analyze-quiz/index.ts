@@ -1083,12 +1083,40 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       }
     };
 
-    // Save to database
+    // Get session info for response
+    const { data: sessionData } = await supabase
+      .from('quiz_sessions')
+      .select('*')
+      .eq('session_id', sessionId)
+      .single();
+
+    // Prepare the full structured JSON to save
+    const metadata = {
+      model_used: usedModel,
+      tokens_used: 0, // OpenAI doesn't return token count in tool call mode
+      created_at: new Date().toISOString()
+    };
+
+    const fullStructuredResponse = {
+      session_info: {
+        session_id: sessionId,
+        country: sessionData?.country_name || 'Unknown',
+        country_code: sessionData?.country_code || 'OTHER',
+        total_score: null,
+        completed_at: new Date().toISOString(),
+        ai_report: finalAiReport
+      },
+      recommendations: finalBuilds,
+      explanation: processedRecommendation,
+      metadata: metadata
+    };
+
+    // Save to database - save the full structured JSON
     const { error: insertError } = await supabase
       .from('ai_recommendations')
       .insert({
         session_id: sessionId,
-        recommendation_text: processedRecommendation,
+        recommendation_text: JSON.stringify(fullStructuredResponse),
         prompt_used: systemPrompt,
         model_used: usedModel,
       });
@@ -1115,31 +1143,9 @@ Remember: This recommendation will directly impact their purchasing decisions. B
       // Don't fail the request, recommendation was saved successfully
     }
 
-    // Get session info for response
-    const { data: sessionData } = await supabase
-      .from('quiz_sessions')
-      .select('*')
-      .eq('session_id', sessionId)
-      .single();
-
-    // Return structured JSON matching the user's specification
-    const metadata = {
-      model_used: usedModel,
-      tokens_used: 0, // OpenAI doesn't return token count in tool call mode
-      created_at: new Date().toISOString()
-    };
-
+    // Return the same structured JSON that was saved to database
     return new Response(
-      JSON.stringify({ 
-        session_info: {
-          recommendation: processedRecommendation,
-          ai_report: finalAiReport,
-          metadata: metadata
-        },
-        recommendations: finalBuilds,
-        ai_report: finalAiReport,
-        metadata: metadata
-      }),
+      JSON.stringify(fullStructuredResponse),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

@@ -64,25 +64,8 @@ const SharedResults = () => {
         if (aiError) {
           console.error("Error fetching AI recommendation:", aiError);
         } else if (aiData?.recommendation_text) {
-          // Try to parse as JSON to add ai_report if it's structured data
-          try {
-            const parsed = JSON.parse(aiData.recommendation_text);
-            if (parsed.session_info && !parsed.session_info.ai_report) {
-              // Add ai_report from reconstructed answers
-              parsed.session_info.ai_report = {
-                budget_range: reconstructedAnswers.budget ? `${reconstructedAnswers.budget}` : 'Not specified',
-                primary_use: reconstructedAnswers.purpose || 'Not specified',
-                performance_level: reconstructedAnswers.fps ? `${reconstructedAnswers.fps} FPS @ ${reconstructedAnswers.resolution || '1080p'}` : 'Standard',
-                upgrade_priority: reconstructedAnswers.upgradability === 'yes' ? 'Upgrade Capable' : 'New Build',
-              };
-              setAiRecommendation(JSON.stringify(parsed));
-            } else {
-              setAiRecommendation(aiData.recommendation_text);
-            }
-          } catch {
-            // Not JSON, use as is
-            setAiRecommendation(aiData.recommendation_text);
-          }
+          // The recommendation_text now contains the full structured JSON
+          setAiRecommendation(aiData.recommendation_text);
         }
 
       } catch (err) {
