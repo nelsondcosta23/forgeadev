@@ -657,6 +657,9 @@ const Admin = () => {
   };
 
   const filteredSessions = quizSessions.filter((session) => {
+    // Only show completed quizzes
+    if (!session.completed_at) return false;
+    
     const matchesSearch =
       session.session_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       session.country_name?.toLowerCase().includes(searchTerm.toLowerCase());
