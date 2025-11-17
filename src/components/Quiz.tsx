@@ -389,9 +389,9 @@ const Quiz = ({ onBack }: QuizProps) => {
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Analyzing your answers...</h2>
+            <h2 className="text-2xl font-bold">{t('quiz.analyzingTitle')}</h2>
             <p className="text-muted-foreground">
-              AI is processing your preferences to create personalized recommendations
+              {t('quiz.analyzingDescription')}
             </p>
           </div>
           <div className="flex justify-center gap-2">

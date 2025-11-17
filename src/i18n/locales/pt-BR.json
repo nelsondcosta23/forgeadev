@@ -32,6 +32,8 @@
     "initializing": "Inicializando sessão...",
     "submit": "Enviar Resposta",
     "analyzing": "Analisando suas respostas com IA",
+    "analyzingTitle": "Analisando suas respostas...",
+    "analyzingDescription": "A IA está processando suas preferências para criar recomendações personalizadas",
     "pleaseWait": "Isso pode levar um momento, por favor aguarde",
     "errorTitle": "Análise Falhou",
     "tryAgain": "Tentar Novamente",

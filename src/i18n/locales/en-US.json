@@ -32,6 +32,8 @@
     "initializing": "Initializing session...",
     "submit": "Submit Answer",
     "analyzing": "Analyzing your answers with AI",
+    "analyzingTitle": "Analyzing your answers...",
+    "analyzingDescription": "AI is processing your preferences to create personalized recommendations",
     "pleaseWait": "This may take a moment, please wait",
     "errorTitle": "Analysis Failed",
     "tryAgain": "Try Again",

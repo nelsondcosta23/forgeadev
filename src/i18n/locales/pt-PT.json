@@ -33,6 +33,8 @@
     "initializing": "A inicializar sessão...",
     "submit": "Submeter Resposta",
     "analyzing": "A analisar as suas respostas com IA",
+    "analyzingTitle": "A analisar as suas respostas...",
+    "analyzingDescription": "A IA está a processar as suas preferências para criar recomendações personalizadas",
     "pleaseWait": "Isto pode demorar um momento, por favor aguarde",
     "errorTitle": "Análise Falhou",
     "tryAgain": "Tentar Novamente",
