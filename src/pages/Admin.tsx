@@ -1102,7 +1102,7 @@ const Admin = () => {
                             {session.country_name || "Unknown"}
                           </TableCell>
                           <TableCell>
-                            {new Date(session.started_at).toLocaleDateString("en-US")}
+                            {format(new Date(session.started_at), "dd/MM/yyyy - HH:mm")}
                           </TableCell>
                           <TableCell>
                             {session.completed_at ? (
