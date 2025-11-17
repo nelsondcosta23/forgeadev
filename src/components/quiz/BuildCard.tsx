@@ -1,12 +1,15 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Cpu, MonitorPlay, MemoryStick, HardDrive, Zap, TrendingUp } from "lucide-react";
+import { Cpu, MonitorPlay, MemoryStick, HardDrive, Zap, TrendingUp, ShoppingCart, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export interface ComponentDetail {
   model: string;
   where_to_buy?: string[];
   video_link?: string;
+  shopping_link?: string;
+  youtube_link?: string;
   recommended_price?: string;
 }
 
@@ -115,11 +118,39 @@ export const BuildCard = ({ title, build, variant = "balanced", featured = false
 
       {/* Performance Badge at Bottom */}
       <div className={cn(
-        "px-6 py-4 border-t flex items-center gap-2",
+        "px-6 py-4 border-t flex items-center justify-between gap-2",
         "bg-gradient-to-br from-background to-muted/20"
       )}>
-        <TrendingUp className={cn("h-4 w-4", styles.icon)} />
-        <p className="text-sm font-medium">{build.performance_tier}</p>
+        <div className="flex items-center gap-2">
+          <TrendingUp className={cn("h-4 w-4", styles.icon)} />
+          <p className="text-sm font-medium">{build.performance_tier}</p>
+        </div>
+        
+        {/* Action Icons */}
+        <div className="flex items-center gap-2">
+          {typeof build.processor === 'object' && 'shopping_link' in build.processor && build.processor.shopping_link && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-8 w-8 p-0", styles.icon)}
+              onClick={() => window.open((build.processor as ComponentDetail).shopping_link, '_blank')}
+              title="Ver opções de compra"
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </Button>
+          )}
+          {typeof build.processor === 'object' && 'youtube_link' in build.processor && build.processor.youtube_link && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-8 w-8 p-0", styles.icon)}
+              onClick={() => window.open((build.processor as ComponentDetail).youtube_link, '_blank')}
+              title="Ver review no YouTube"
+            >
+              <Youtube className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
