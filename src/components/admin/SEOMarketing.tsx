@@ -152,10 +152,8 @@ export const SEOMarketing = () => {
               variant="outline"
               size="sm"
               onClick={() => {
-                const text = seoFeatures.map(f => 
-                  `${f.category}\n${f.items.map(i => `- ${i}`).join('\n')}`
-                ).join('\n\n');
-                copyToClipboard(text, "Práticas de SEO");
+                const text = seoFeatures.map(f => f.category).join('\n');
+                copyToClipboard(text, "Categorias de SEO");
               }}
             >
               <Copy className="h-4 w-4 mr-2" />
@@ -189,43 +187,43 @@ export const SEOMarketing = () => {
       {/* Languages Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Languages className="h-5 w-5" />
-                Idiomas Disponíveis
-              </CardTitle>
-              <CardDescription>
-                Todos os idiomas configurados com meta tags e hreflang tags
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const text = availableLanguages.map(l => 
-                  `${l.flag} ${l.name} (${l.code})`
-                ).join('\n');
-                copyToClipboard(text, "Idiomas");
-              }}
-            >
-              <Copy className="h-4 w-4 mr-2" />
-              Copiar
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Languages className="h-5 w-5" />
+            Idiomas Disponíveis
+          </CardTitle>
+          <CardDescription>
+            Todos os idiomas configurados com meta tags e hreflang tags
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {availableLanguages.map((lang) => (
               <div
                 key={lang.code}
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
               >
-                <span className="text-2xl">{lang.flag}</span>
-                <div>
-                  <div className="font-medium">{lang.name}</div>
-                  <div className="text-xs text-muted-foreground">{lang.code}</div>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{lang.flag}</span>
+                  <div>
+                    <div className="font-medium">{lang.name}</div>
+                    <div className="text-xs text-muted-foreground">{lang.code}</div>
+                  </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    const json = JSON.stringify({
+                      code: lang.code,
+                      name: lang.name,
+                      flag: lang.flag
+                    }, null, 2);
+                    copyToClipboard(json, lang.name);
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
             ))}
           </div>
@@ -235,30 +233,13 @@ export const SEOMarketing = () => {
       {/* Implemented Pages */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Map className="h-5 w-5" />
-                Páginas no Sitemap
-              </CardTitle>
-              <CardDescription>
-                Páginas incluídas no sitemap.xml multilingue
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const text = implementedPages.map(p => 
-                  `${p.name} - ${p.path}`
-                ).join('\n');
-                copyToClipboard(text, "Páginas");
-              }}
-            >
-              <Copy className="h-4 w-4 mr-2" />
-              Copiar
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Map className="h-5 w-5" />
+            Páginas no Sitemap
+          </CardTitle>
+          <CardDescription>
+            Páginas incluídas no sitemap.xml multilingue
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
