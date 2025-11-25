@@ -1,16 +1,196 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Globe, FileText, Search, Share2, Languages, Map, BarChart3, Copy } from "lucide-react";
+import { CheckCircle2, Globe, FileText, Search, Share2, Languages, Map, BarChart3, Copy, AlertCircle, XCircle, Shield } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
+
+type ValidationResult = {
+  category: string;
+  items: {
+    label: string;
+    status: 'success' | 'warning' | 'error';
+    message: string;
+  }[];
+};
 
 export const SEOMarketing = () => {
+  const [validationResults, setValidationResults] = useState<ValidationResult[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
+  
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copiado!`);
+  };
+
+  const validateSEO = () => {
+    setIsValidating(true);
+    const results: ValidationResult[] = [];
+
+    // Meta Tags Básicas
+    const basicMeta: ValidationResult = {
+      category: 'Meta Tags Básicas',
+      items: []
+    };
+
+    const title = document.querySelector('title')?.textContent || '';
+    if (title) {
+      if (title.length > 60) {
+        basicMeta.items.push({
+          label: 'Title Tag',
+          status: 'warning',
+          message: `Title muito longo (${title.length} caracteres). Recomendado: < 60 caracteres.`
+        });
+      } else {
+        basicMeta.items.push({
+          label: 'Title Tag',
+          status: 'success',
+          message: `Title correto (${title.length} caracteres): "${title}"`
+        });
+      }
+    } else {
+      basicMeta.items.push({
+        label: 'Title Tag',
+        status: 'error',
+        message: 'Title tag não encontrado'
+      });
+    }
+
+    const description = document.querySelector('meta[name="description"]')?.getAttribute('content') || '';
+    if (description) {
+      if (description.length > 160) {
+        basicMeta.items.push({
+          label: 'Meta Description',
+          status: 'warning',
+          message: `Description muito longa (${description.length} caracteres). Recomendado: < 160 caracteres.`
+        });
+      } else {
+        basicMeta.items.push({
+          label: 'Meta Description',
+          status: 'success',
+          message: `Description correta (${description.length} caracteres)`
+        });
+      }
+    } else {
+      basicMeta.items.push({
+        label: 'Meta Description',
+        status: 'error',
+        message: 'Meta description não encontrada'
+      });
+    }
+
+    results.push(basicMeta);
+
+    // Open Graph Tags
+    const ogMeta: ValidationResult = {
+      category: 'Open Graph Tags',
+      items: []
+    };
+
+    const ogTags = ['og:title', 'og:description', 'og:image', 'og:url', 'og:type'];
+    ogTags.forEach(tag => {
+      const element = document.querySelector(`meta[property="${tag}"]`);
+      if (element?.getAttribute('content')) {
+        ogMeta.items.push({
+          label: tag,
+          status: 'success',
+          message: `Configurado: ${element.getAttribute('content')?.substring(0, 50)}...`
+        });
+      } else {
+        ogMeta.items.push({
+          label: tag,
+          status: 'error',
+          message: `Tag ${tag} não encontrada`
+        });
+      }
+    });
+
+    results.push(ogMeta);
+
+    // Twitter Card Tags
+    const twitterMeta: ValidationResult = {
+      category: 'Twitter Card Tags',
+      items: []
+    };
+
+    const twitterTags = ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image'];
+    twitterTags.forEach(tag => {
+      const element = document.querySelector(`meta[property="${tag}"]`);
+      if (element?.getAttribute('content')) {
+        twitterMeta.items.push({
+          label: tag,
+          status: 'success',
+          message: 'Configurado'
+        });
+      } else {
+        twitterMeta.items.push({
+          label: tag,
+          status: 'error',
+          message: `Tag ${tag} não encontrada`
+        });
+      }
+    });
+
+    results.push(twitterMeta);
+
+    // Hreflang Tags
+    const hreflangMeta: ValidationResult = {
+      category: 'Hreflang Tags (SEO Internacional)',
+      items: []
+    };
+
+    const hreflangLinks = document.querySelectorAll('link[rel="alternate"][hreflang]');
+    const expectedHreflangs = ['en-us', 'en-gb', 'pt-pt', 'pt-br', 'es', 'fr', 'de', 'x-default'];
+    const foundHreflangs = Array.from(hreflangLinks).map(link => link.getAttribute('hreflang'));
+
+    expectedHreflangs.forEach(lang => {
+      if (foundHreflangs.includes(lang)) {
+        hreflangMeta.items.push({
+          label: lang,
+          status: 'success',
+          message: `Tag hreflang="${lang}" presente`
+        });
+      } else {
+        hreflangMeta.items.push({
+          label: lang,
+          status: 'warning',
+          message: `Tag hreflang="${lang}" não encontrada`
+        });
+      }
+    });
+
+    results.push(hreflangMeta);
+
+    // HTML Lang Attribute
+    const htmlLang: ValidationResult = {
+      category: 'Atributos HTML',
+      items: []
+    };
+
+    const langAttr = document.documentElement.lang;
+    if (langAttr) {
+      htmlLang.items.push({
+        label: 'Lang Attribute',
+        status: 'success',
+        message: `HTML lang="${langAttr}" configurado`
+      });
+    } else {
+      htmlLang.items.push({
+        label: 'Lang Attribute',
+        status: 'error',
+        message: 'Atributo lang não encontrado no HTML'
+      });
+    }
+
+    results.push(htmlLang);
+
+    setValidationResults(results);
+    setIsValidating(false);
+    toast.success('Validação SEO concluída!');
   };
 
   const copyRealSEO = () => {
@@ -174,13 +354,78 @@ REDES SOCIAIS
       {/* Overview Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            SEO & Marketing Overview
-          </CardTitle>
-          <CardDescription>
-            Práticas de SEO implementadas neste site para melhor indexação e visibilidade nos motores de busca
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                SEO & Marketing Overview
+              </CardTitle>
+              <CardDescription>
+                Práticas de SEO implementadas neste site para melhor indexação e visibilidade nos motores de busca
+              </CardDescription>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="default" size="sm" onClick={validateSEO}>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Validar SEO
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Relatório de Validação SEO
+                  </DialogTitle>
+                  <DialogDescription>
+                    Análise automática das meta tags e configurações de SEO do site
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 mt-4">
+                  {validationResults.length === 0 && !isValidating && (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Clique em "Validar SEO" para verificar as configurações
+                    </p>
+                  )}
+                  {isValidating && (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Validando...
+                    </p>
+                  )}
+                  {validationResults.map((result, idx) => (
+                    <div key={idx}>
+                      <h3 className="font-semibold mb-3">{result.category}</h3>
+                      <div className="space-y-2">
+                        {result.items.map((item, itemIdx) => (
+                          <div
+                            key={itemIdx}
+                            className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+                          >
+                            {item.status === 'success' && (
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                            )}
+                            {item.status === 'warning' && (
+                              <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+                            )}
+                            {item.status === 'error' && (
+                              <XCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{item.label}</div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {item.message}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {idx < validationResults.length - 1 && <Separator className="mt-4" />}
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
