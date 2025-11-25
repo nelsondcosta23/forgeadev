@@ -1,11 +1,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Globe, FileText, Search, Share2, Languages, Map, BarChart3 } from "lucide-react";
+import { CheckCircle2, Globe, FileText, Search, Share2, Languages, Map, BarChart3, Copy } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const SEOMarketing = () => {
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copiado!`);
+  };
+
   const seoFeatures = [
     {
       category: "Meta Tags Dinâmicas",
@@ -134,10 +141,27 @@ export const SEOMarketing = () => {
       {/* SEO Features */}
       <Card>
         <CardHeader>
-          <CardTitle>Práticas de SEO Implementadas</CardTitle>
-          <CardDescription>
-            Todas as técnicas e otimizações aplicadas para melhorar o ranking nos motores de busca
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Práticas de SEO Implementadas</CardTitle>
+              <CardDescription>
+                Todas as técnicas e otimizações aplicadas para melhorar o ranking nos motores de busca
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const text = seoFeatures.map(f => 
+                  `${f.category}\n${f.items.map(i => `- ${i}`).join('\n')}`
+                ).join('\n\n');
+                copyToClipboard(text, "Práticas de SEO");
+              }}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copiar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
@@ -165,13 +189,30 @@ export const SEOMarketing = () => {
       {/* Languages Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Languages className="h-5 w-5" />
-            Idiomas Disponíveis
-          </CardTitle>
-          <CardDescription>
-            Todos os idiomas configurados com meta tags e hreflang tags
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Languages className="h-5 w-5" />
+                Idiomas Disponíveis
+              </CardTitle>
+              <CardDescription>
+                Todos os idiomas configurados com meta tags e hreflang tags
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const text = availableLanguages.map(l => 
+                  `${l.flag} ${l.name} (${l.code})`
+                ).join('\n');
+                copyToClipboard(text, "Idiomas");
+              }}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copiar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -194,13 +235,30 @@ export const SEOMarketing = () => {
       {/* Implemented Pages */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Map className="h-5 w-5" />
-            Páginas no Sitemap
-          </CardTitle>
-          <CardDescription>
-            Páginas incluídas no sitemap.xml multilingue
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Map className="h-5 w-5" />
+                Páginas no Sitemap
+              </CardTitle>
+              <CardDescription>
+                Páginas incluídas no sitemap.xml multilingue
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const text = implementedPages.map(p => 
+                  `${p.name} - ${p.path}`
+                ).join('\n');
+                copyToClipboard(text, "Páginas");
+              }}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copiar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -225,10 +283,27 @@ export const SEOMarketing = () => {
       {/* Technical Files */}
       <Card>
         <CardHeader>
-          <CardTitle>Ficheiros Técnicos</CardTitle>
-          <CardDescription>
-            Arquivos de configuração para motores de busca
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Ficheiros Técnicos</CardTitle>
+              <CardDescription>
+                Arquivos de configuração para motores de busca
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const text = `/sitemap.xml - Sitemap multilingue com hreflang tags
+/robots.txt - Instruções para crawlers com referência ao sitemap
+DynamicMetaTags.tsx - Componente que gere meta tags dinâmicas`;
+                copyToClipboard(text, "Ficheiros Técnicos");
+              }}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copiar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
