@@ -1,16 +1,26 @@
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Cpu, Monitor, Sparkles } from "lucide-react";
-import Quiz from "@/components/Quiz";
+
+// Lazy load Quiz component - only loads when user clicks "Start Quiz"
+const Quiz = lazy(() => import("@/components/Quiz"));
 
 const Index = () => {
   const { t } = useTranslation();
   const [showQuiz, setShowQuiz] = useState(false);
 
   if (showQuiz) {
-    return <Quiz onBack={() => setShowQuiz(false)} />;
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      }>
+        <Quiz onBack={() => setShowQuiz(false)} />
+      </Suspense>
+    );
   }
 
   return (
