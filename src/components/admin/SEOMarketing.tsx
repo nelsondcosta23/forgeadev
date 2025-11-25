@@ -13,6 +13,68 @@ export const SEOMarketing = () => {
     toast.success(`${label} copiado!`);
   };
 
+  const copyRealSEO = () => {
+    const currentUrl = window.location.origin;
+    
+    const seoReport = `
+SEO ATUAL DO SITE
+=================
+
+META TAGS DINÂMICAS
+-------------------
+✓ Title tags dinâmicos por idioma (< 60 caracteres)
+✓ Meta descriptions otimizadas (< 160 caracteres)
+✓ Open Graph tags (og:title, og:description, og:url, og:type, og:image, og:locale)
+✓ Twitter Card tags (twitter:card, twitter:title, twitter:description, twitter:image)
+✓ Meta tags atualizadas em tempo real com mudança de idioma
+
+SEO INTERNACIONAL
+-----------------
+✓ Hreflang tags para 7 idiomas: en-US, en-GB, pt-PT, pt-BR, es, fr, de
+✓ Tag x-default apontando para en-US
+✓ Atributo lang no HTML atualizado dinamicamente
+✓ Locale alternativas nas Open Graph tags
+
+ESTRUTURA E SEMÂNTICA
+---------------------
+✓ HTML semântico (header, main, section, article)
+✓ Um único H1 por página com palavra-chave principal
+✓ Hierarquia de headings (H1, H2, H3) bem estruturada
+✓ Alt text descritivo em todas as imagens
+✓ URLs limpas e descritivas
+
+SITEMAP & ROBOTS
+----------------
+✓ Sitemap.xml multilingue: ${currentUrl}/sitemap.xml
+  - Homepage: ${currentUrl}/
+  - Privacy Policy: ${currentUrl}/privacy
+  - Terms: ${currentUrl}/terms
+  - Hreflang alternates em cada URL
+  - Prioridades: 1.0 (home), 0.5 (outras)
+  - Frequência: weekly (home), monthly (outras)
+
+✓ Robots.txt: ${currentUrl}/robots.txt
+  - Permite todos os bots (Googlebot, Bingbot, Twitterbot, facebookexternalhit)
+  - Referência ao sitemap
+
+PERFORMANCE
+-----------
+✓ Meta viewport para responsividade
+✓ Charset UTF-8 configurado
+✓ Preload de recursos críticos
+✓ Otimização de imagens com lazy loading
+
+REDES SOCIAIS
+-------------
+✓ Open Graph image: ${currentUrl}/images/og-image.png
+✓ Twitter Card com imagem de preview
+✓ Títulos e descrições otimizados para partilha
+✓ URL canônicas para evitar conteúdo duplicado
+`;
+
+    copyToClipboard(seoReport.trim(), "SEO Atual");
+  };
+
   const seoFeatures = [
     {
       category: "Meta Tags Dinâmicas",
@@ -151,10 +213,7 @@ export const SEOMarketing = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                const text = seoFeatures.map(f => f.category).join('\n');
-                copyToClipboard(text, "Categorias de SEO");
-              }}
+              onClick={copyRealSEO}
             >
               <Copy className="h-4 w-4 mr-2" />
               Copiar
