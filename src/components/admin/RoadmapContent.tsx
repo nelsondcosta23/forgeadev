@@ -152,6 +152,8 @@ export function RoadmapContent() {
     setEditingId(null);
   };
 
+  const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+
   const filteredItems = items
     .filter((item) => {
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -166,10 +168,12 @@ export function RoadmapContent() {
       return matchesSearch && matchesStatus && matchesHistoryMode;
     })
     .sort((a, b) => {
-      // Always place completed items at the bottom
-      if (a.status === "completed" && b.status !== "completed") return 1;
-      if (a.status !== "completed" && b.status === "completed") return -1;
-      return 0;
+      // Sort by priority: High > Medium > Low
+      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+      if (priorityDiff !== 0) return priorityDiff;
+      
+      // Within same priority, sort by creation date (oldest first)
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
   const priorityColor = {
