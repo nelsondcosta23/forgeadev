@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,11 +9,13 @@ import { DynamicMetaTags } from "./components/DynamicMetaTags";
 import { useAnalytics } from "./hooks/useAnalytics";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsAndConditions from "./pages/TermsAndConditions";
-import SharedResults from "./pages/SharedResults";
-import Admin from "./pages/Admin";
-import FAQ from "./pages/FAQ";
+
+// Lazy load secondary pages
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const SharedResults = lazy(() => import("./pages/SharedResults"));
+const Admin = lazy(() => import("./pages/Admin"));
+const FAQ = lazy(() => import("./pages/FAQ"));
 
 const queryClient = new QueryClient();
 
@@ -31,16 +34,18 @@ const App = () => (
         <BrowserRouter>
           <DynamicMetaTags />
           <AnalyticsWrapper>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/build/:sessionId" element={<SharedResults />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsAndConditions />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/admin" element={<Admin />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/build/:sessionId" element={<SharedResults />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsAndConditions />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/admin" element={<Admin />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </AnalyticsWrapper>
         </BrowserRouter>
       </TooltipProvider>
