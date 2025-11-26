@@ -115,32 +115,28 @@ export const BuildCard = ({ title, build, variant = "balanced", featured = false
               </div>
               
               {/* Component Action Icons */}
-              {componentData && (
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {componentData.website_link && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn("h-7 w-7 p-0", styles.icon)}
-                      onClick={() => window.open(componentData.website_link, '_blank')}
-                      title="Ver no site"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                  {componentData.youtube_link && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn("h-7 w-7 p-0", styles.icon)}
-                      onClick={() => window.open(componentData.youtube_link, '_blank')}
-                      title="Ver review no YouTube"
-                    >
-                      <Youtube className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              )}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn("h-7 w-7 p-0", styles.icon, !componentData?.website_link && "opacity-30")}
+                  onClick={() => componentData?.website_link && window.open(componentData.website_link, '_blank')}
+                  disabled={!componentData?.website_link}
+                  title={componentData?.website_link ? "Ver no site" : "Link não disponível"}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn("h-7 w-7 p-0", styles.icon, !componentData?.youtube_link && "opacity-30")}
+                  onClick={() => componentData?.youtube_link && window.open(componentData.youtube_link, '_blank')}
+                  disabled={!componentData?.youtube_link}
+                  title={componentData?.youtube_link ? "Ver review no YouTube" : "Vídeo não disponível"}
+                >
+                  <Youtube className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           );
         })}
