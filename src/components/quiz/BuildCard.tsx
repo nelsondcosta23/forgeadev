@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Cpu, MonitorPlay, MemoryStick, HardDrive, Zap, TrendingUp, ShoppingCart, Youtube } from "lucide-react";
+import { Cpu, MonitorPlay, MemoryStick, HardDrive, Zap, TrendingUp, ExternalLink, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -8,7 +8,7 @@ export interface ComponentDetail {
   model: string;
   where_to_buy?: string[];
   video_link?: string;
-  shopping_link?: string;
+  website_link?: string;
   youtube_link?: string;
   recommended_price?: string;
 }
@@ -61,11 +61,11 @@ export const BuildCard = ({ title, build, variant = "balanced", featured = false
   };
 
   const components = [
-    { icon: Cpu, label: "Processor", value: getComponentValue(build.processor) },
-    { icon: MonitorPlay, label: "Graphics Card", value: getComponentValue(build.graphics_card) },
-    { icon: MemoryStick, label: "RAM", value: getComponentValue(build.ram) },
-    { icon: HardDrive, label: "Storage", value: getComponentValue(build.storage) },
-    { icon: Zap, label: "Power Supply", value: getComponentValue(build.power_supply) },
+    { icon: Cpu, label: "Processor", value: getComponentValue(build.processor), data: build.processor },
+    { icon: MonitorPlay, label: "Graphics Card", value: getComponentValue(build.graphics_card), data: build.graphics_card },
+    { icon: MemoryStick, label: "RAM", value: getComponentValue(build.ram), data: build.ram },
+    { icon: HardDrive, label: "Storage", value: getComponentValue(build.storage), data: build.storage },
+    { icon: Zap, label: "Power Supply", value: getComponentValue(build.power_supply), data: build.power_supply },
   ];
 
   return (
@@ -99,6 +99,8 @@ export const BuildCard = ({ title, build, variant = "balanced", featured = false
       <div className="px-6 pb-6 space-y-3">
         {components.map((component, index) => {
           const Icon = component.icon;
+          const componentData = typeof component.data === 'object' ? component.data : null;
+          
           return (
             <div 
               key={index}
@@ -111,6 +113,34 @@ export const BuildCard = ({ title, build, variant = "balanced", featured = false
                 <p className="text-xs text-muted-foreground mb-1">{component.label}</p>
                 <p className="text-sm font-medium leading-relaxed">{component.value}</p>
               </div>
+              
+              {/* Component Action Icons */}
+              {componentData && (
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {componentData.website_link && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn("h-7 w-7 p-0", styles.icon)}
+                      onClick={() => window.open(componentData.website_link, '_blank')}
+                      title="Ver no site"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  {componentData.youtube_link && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn("h-7 w-7 p-0", styles.icon)}
+                      onClick={() => window.open(componentData.youtube_link, '_blank')}
+                      title="Ver review no YouTube"
+                    >
+                      <Youtube className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -118,39 +148,11 @@ export const BuildCard = ({ title, build, variant = "balanced", featured = false
 
       {/* Performance Badge at Bottom */}
       <div className={cn(
-        "px-6 py-4 border-t flex items-center justify-between gap-2",
+        "px-6 py-4 border-t flex items-center justify-center gap-2",
         "bg-gradient-to-br from-background to-muted/20"
       )}>
-        <div className="flex items-center gap-2">
-          <TrendingUp className={cn("h-4 w-4", styles.icon)} />
-          <p className="text-sm font-medium">{build.performance_tier}</p>
-        </div>
-        
-        {/* Action Icons */}
-        <div className="flex items-center gap-2">
-          {typeof build.processor === 'object' && 'shopping_link' in build.processor && build.processor.shopping_link && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn("h-8 w-8 p-0", styles.icon)}
-              onClick={() => window.open((build.processor as ComponentDetail).shopping_link, '_blank')}
-              title="Ver opções de compra"
-            >
-              <ShoppingCart className="h-4 w-4" />
-            </Button>
-          )}
-          {typeof build.processor === 'object' && 'youtube_link' in build.processor && build.processor.youtube_link && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn("h-8 w-8 p-0", styles.icon)}
-              onClick={() => window.open((build.processor as ComponentDetail).youtube_link, '_blank')}
-              title="Ver review no YouTube"
-            >
-              <Youtube className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        <TrendingUp className={cn("h-4 w-4", styles.icon)} />
+        <p className="text-sm font-medium">{build.performance_tier}</p>
       </div>
     </Card>
   );
