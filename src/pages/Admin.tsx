@@ -243,57 +243,116 @@ const Admin = () => {
 
       if (aiError) console.error("Error fetching AI recommendation:", aiError);
 
-      // Quiz JSON (input data)
+      // Quiz JSON (input data) - reflects actual quiz structure
       const quizJson = {
         session_id: sessionData.session_id,
-        answers: responsesData?.reduce((acc, response) => {
-          const questionKey = response.question_text.toLowerCase().replace(/[^a-z0-9]/g, '_');
-          acc[questionKey] = response.selected_answer;
-          return acc;
-        }, {} as Record<string, string>) || {},
-        questions: responsesData?.map((response) => ({
-          number: response.question_number,
-          text: response.question_text,
-          answer: response.selected_answer,
-        })) || [],
         country_code: sessionData.country_code,
-        timestamp: sessionData.started_at,
+        country_name: sessionData.country_name,
+        started_at: sessionData.started_at,
+        completed_at: sessionData.completed_at,
+        answers: {
+          // Base questions
+          country: responsesData?.find(r => r.question_number === 1)?.selected_answer || "",
+          purpose: responsesData?.find(r => r.question_number === 2)?.selected_answer || "",
+          // Conditional gaming questions
+          games: responsesData?.find(r => r.question_text.toLowerCase().includes("game") && r.question_number > 2)?.selected_answer,
+          resolution: responsesData?.find(r => r.question_text.toLowerCase().includes("resolution"))?.selected_answer,
+          fps: responsesData?.find(r => r.question_text.toLowerCase().includes("fps") || r.question_text.toLowerCase().includes("frame"))?.selected_answer,
+          streaming: responsesData?.find(r => r.question_text.toLowerCase().includes("stream"))?.selected_answer,
+          // Conditional professional questions
+          software: responsesData?.find(r => r.question_text.toLowerCase().includes("software") && !r.question_text.toLowerCase().includes("content"))?.selected_answer,
+          multitask: responsesData?.find(r => r.question_text.toLowerCase().includes("multitask"))?.selected_answer,
+          // Conditional content creation questions
+          contentSoftware: responsesData?.find(r => r.question_text.toLowerCase().includes("content") && r.question_text.toLowerCase().includes("software"))?.selected_answer,
+          render4k: responsesData?.find(r => r.question_text.toLowerCase().includes("4k") || r.question_text.toLowerCase().includes("render"))?.selected_answer,
+          gpuAcceleration: responsesData?.find(r => r.question_text.toLowerCase().includes("gpu") || r.question_text.toLowerCase().includes("acceleration"))?.selected_answer,
+          // Universal questions
+          budget: responsesData?.find(r => r.question_text.toLowerCase().includes("budget") || r.question_text.toLowerCase().includes("orçamento"))?.selected_answer,
+          casePreference: responsesData?.find(r => r.question_text.toLowerCase().includes("case") || r.question_text.toLowerCase().includes("torre"))?.selected_answer,
+          peripherals: responsesData?.find(r => r.question_text.toLowerCase().includes("periph") || r.question_text.toLowerCase().includes("acessórios"))?.selected_answer,
+          upgradability: responsesData?.find(r => r.question_text.toLowerCase().includes("upgrade") || r.question_text.toLowerCase().includes("atualização"))?.selected_answer,
+        },
+        raw_responses: responsesData?.map((response) => ({
+          question_number: response.question_number,
+          question_text: response.question_text,
+          selected_answer: response.selected_answer,
+          answered_at: response.answered_at,
+        })) || [],
       };
 
-      // Build JSON (output data) - Parse the complete JSON from database
+      // Build JSON (output data) - reflects current component schema
       let buildJson;
       try {
         if (aiData?.recommendation_text) {
           // Parse the stored JSON structure
-          buildJson = typeof aiData.recommendation_text === 'string' 
+          const parsed = typeof aiData.recommendation_text === 'string' 
             ? JSON.parse(aiData.recommendation_text) 
             : aiData.recommendation_text;
-        } else {
-          // Fallback if no recommendation exists
+          
           buildJson = {
-            error: "No recommendation available",
-            session_info: {
-              recommendation: "No data",
+            ...parsed,
+            _schema_reference: {
+              component_structure: {
+                cpu: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+                gpu: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+                motherboard: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+                ram: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+                storage: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+                psu: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+                case: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+                cooling: { model: "string", where_to_buy: "url", youtube_link: "url|null", website_link: "url|null", recommended_price: "number" },
+              },
+              ai_report_structure: {
+                budget_range: "string (e.g., '$1000-$1500')",
+                primary_use: "string (e.g., 'Gaming', 'Content Creation')",
+                performance_level: "string (e.g., 'High-End', 'Mid-Range')",
+                upgrade_priority: "string (e.g., 'GPU > CPU > RAM')",
+                key_features: "string[] (array of features)",
+                compatibility_notes: "string (important compatibility info)",
+              },
+              metadata_structure: {
+                model_used: "string (AI model identifier)",
+                tokens_used: "number",
+                created_at: "ISO timestamp",
+                session_id: "string",
+              }
+            }
+          };
+        } else {
+          // Fallback with full schema reference
+          buildJson = {
+            error: "No recommendation available for this session",
+            expected_structure: {
+              recommendation: "Markdown formatted PC build recommendation",
               ai_report: {
-                budget_range: "N/A",
-                primary_use: "N/A",
-                performance_level: "N/A",
-                upgrade_priority: "N/A"
+                budget_range: "string",
+                primary_use: "string",
+                performance_level: "string",
+                upgrade_priority: "string",
+                key_features: ["array", "of", "features"],
+                compatibility_notes: "string"
+              },
+              components: {
+                cpu: { model: "AMD Ryzen 7 7800X3D", where_to_buy: "https://...", youtube_link: "https://youtube.com/...", website_link: "https://amd.com/...", recommended_price: 449 },
+                gpu: { model: "NVIDIA RTX 4070 Ti", where_to_buy: "https://...", youtube_link: "https://youtube.com/...", website_link: "https://nvidia.com/...", recommended_price: 799 },
+                motherboard: { model: "ASUS ROG B650-E", where_to_buy: "https://...", youtube_link: null, website_link: "https://asus.com/...", recommended_price: 269 },
+                ram: { model: "G.Skill Trident Z5 32GB DDR5", where_to_buy: "https://...", youtube_link: null, website_link: null, recommended_price: 119 },
+                storage: { model: "Samsung 990 Pro 2TB", where_to_buy: "https://...", youtube_link: null, website_link: "https://samsung.com/...", recommended_price: 179 },
+                psu: { model: "Corsair RM850x", where_to_buy: "https://...", youtube_link: null, website_link: null, recommended_price: 139 },
+                case: { model: "Lian Li O11 Dynamic", where_to_buy: "https://...", youtube_link: null, website_link: null, recommended_price: 149 },
+                cooling: { model: "Noctua NH-D15", where_to_buy: "https://...", youtube_link: null, website_link: null, recommended_price: 99 }
               },
               metadata: {
-                model_used: "N/A",
+                model_used: "google/gemini-2.5-flash",
                 tokens_used: 0,
-                created_at: sessionData.completed_at
+                created_at: sessionData.completed_at,
+                session_id: sessionData.session_id
               }
-            },
-            recommendations: {},
-            ai_report: {},
-            metadata: {}
+            }
           };
         }
       } catch (parseError) {
         console.error("Error parsing recommendation_text:", parseError);
-        // If parse fails, show the raw text
         buildJson = {
           error: "Failed to parse recommendation",
           raw_text: aiData?.recommendation_text || "No data"
