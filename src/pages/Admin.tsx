@@ -1556,7 +1556,7 @@ const Admin = () => {
     Start([👤 Utilizador Inicia Quiz]) --> CreateSession
     
     subgraph "1️⃣ INICIALIZAÇÃO"
-        CreateSession[📝 Criar Sessão de Quiz] --> DetectCountry[🌍 Detetar País do Utilizador]
+        CreateSession[📝 Criar Sessão de Quiz] --> DetectCountry[🌍 Detetar País via Edge Function]
         DetectCountry --> SaveSession[(💾 Guardar em quiz_sessions)]
         SaveSession --> |session_id<br/>country_code<br/>country_name<br/>started_at| SessionReady[✅ Sessão Pronta]
     end
@@ -1574,55 +1574,59 @@ const Admin = () => {
     PrepareAnalysis --> CallEdgeFunction
     
     subgraph "3️⃣ PREPARAÇÃO PARA AI"
-        CallEdgeFunction[🚀 Chamar analyze-quiz Function] --> FetchData
-        FetchData[📊 Buscar Dados] --> GetSession[(🔍 quiz_sessions)]
-        GetSession --> GetResponses[(🔍 quiz_responses)]
-        GetResponses --> GetStores[(🔍 country_store_links)]
-        GetStores --> GetPrompt[(🔍 admin_prompts)]
-        GetPrompt --> PreparePayload[📦 Preparar Payload]
+        CallEdgeFunction[🚀 Chamar analyze-quiz Function] --> CheckDuplicate{Sessão já analisada?}
+        CheckDuplicate -->|Sim| ReturnCached[📦 Retornar Cache]
+        CheckDuplicate -->|Não| FetchData[📊 Buscar Dados]
+        FetchData --> GetPrompt[(🔍 admin_prompts)]
+        GetPrompt --> GetStores[(🔍 country_store_links)]
+        GetStores --> DetermineCurrency[💱 Determinar Moeda por País]
+        DetermineCurrency --> PreparePayload[📦 Preparar System Prompt]
     end
     
     PreparePayload --> AICall
     
-    subgraph "4️⃣ CHAMADA À AI OpenAI"
-        AICall[🤖 Chamar OpenAI API] --> AIPayload
-        AIPayload[📤 Enviar para AI:<br/>- System Prompt com placeholders<br/>- User answers JSON<br/>- Country/Currency info<br/>- Store URLs] 
-        AIPayload --> AIProcessing[⚙️ AI Processing<br/>Model: gpt-4o-mini]
-        AIProcessing --> AIResponse[📥 AI Responde]
+    subgraph "4️⃣ CHAMADA À AI - Lovable AI Gateway"
+        AICall[🤖 Chamar Lovable AI Gateway] --> AIPayload
+        AIPayload[📤 Enviar para AI:<br/>- System Prompt com instruções<br/>- User answers JSON<br/>- Country/Currency info<br/>- Store URLs disponíveis] 
+        AIPayload --> AIProcessing[⚙️ AI Processing<br/>Model: google/gemini-2.5-flash<br/>via ai.gateway.lovable.dev]
+        AIProcessing --> AIResponse[📥 AI Responde com Tool Call]
     end
     
     AIResponse --> ParseResponse
     
     subgraph "5️⃣ PROCESSAR RESPOSTA DA AI"
         ParseResponse[🔧 Parse Tool Call Response] --> ExtractData
-        ExtractData[📋 Extrair:<br/>- recommendation texto<br/>- builds 3 cards<br/>- ai_report] 
-        ExtractData --> ProcessLinks[🔗 Processar Links]
-        ProcessLinks --> CreateTrackedLinks[(💾 Criar tracked_links)]
-        CreateTrackedLinks --> InjectLinks[✏️ Injetar Links no Texto]
+        ExtractData[📋 Extrair Dados Estruturados:<br/>- recommendation markdown<br/>- 3 builds com componentes<br/>- ai_report análise] 
+        ExtractData --> ValidateBuilds[✅ Validar Estrutura dos Builds]
+        ValidateBuilds --> ProcessComponents[🔧 Processar Componentes]
+        ProcessComponents --> CreateTrackedLinks[(💾 Criar tracked_links)]
+        CreateTrackedLinks --> InjectLinks[✏️ Injetar Links Trackados no Texto]
     end
     
     InjectLinks --> SaveResults
     
     subgraph "6️⃣ GUARDAR RESULTADOS"
         SaveResults[💾 Guardar Recomendação] --> SaveToAI[(📝 ai_recommendations)]
-        SaveToAI --> |session_id<br/>recommendation_text<br/>prompt_used<br/>model_used| UpdateSession[(🔄 Atualizar quiz_sessions)]
-        UpdateSession --> |completed_at| PrepareJSON
+        SaveToAI --> |session_id<br/>recommendation_text JSON<br/>prompt_used<br/>model_used<br/>tokens_used| UpdateSession[(🔄 Atualizar quiz_sessions)]
+        UpdateSession --> |completed_at = now| PrepareJSON
     end
     
     PrepareJSON --> ReturnToClient
     
     subgraph "7️⃣ RESPOSTA AO CLIENTE"
-        ReturnToClient[📤 Retornar JSON] --> JSONStructure
-        JSONStructure[📋 Estrutura:<br/><b>session_info</b><br/>- session_id, country<br/>- ai_report<br/><b>recommendations</b><br/>- Best Value<br/>- Balanced<br/>- High Performance<br/><b>explanation</b><br/>- Markdown texto<br/><b>metadata</b><br/>- model_used, created_at]
+        ReturnToClient[📤 Retornar JSON Estruturado] --> JSONStructure
+        JSONStructure[📋 Estrutura Resposta:<br/><b>session_info:</b> id, country, ai_report<br/><b>recommendations:</b> 3 builds<br/><b>explanation:</b> markdown<br/><b>metadata:</b> model, created_at]
     end
     
     JSONStructure --> DisplayResults
     
-    subgraph "8️⃣ APRESENTAÇÃO"
-        DisplayResults[🖥️ Mostrar no Frontend] --> ParseBuilds[🎴 Parse Builds JSON]
-        ParseBuilds --> ShowCards[📇 Mostrar 3 Cards]
-        ShowCards --> ShowExplanation[📝 Mostrar Explicação Markdown]
-        ShowExplanation --> TrackClicks[👆 Track Clicks em Links]
+    subgraph "8️⃣ APRESENTAÇÃO NO FRONTEND"
+        DisplayResults[🖥️ Mostrar Resultados] --> ParseBuilds[🎴 Parse 3 Build Cards]
+        ParseBuilds --> RenderCards[📇 Render BuildCard Components]
+        RenderCards --> ShowComponents[🔧 Mostrar Componentes com:<br/>- Modelo<br/>- Preço Recomendado<br/>- Link Website<br/>- Link YouTube<br/>- Link Compra]
+        ShowComponents --> ShowExplanation[📝 Mostrar AI Report + Explanation]
+        ShowExplanation --> ShareOptions[📤 Opções: Share, PDF, Copy]
+        ShareOptions --> TrackClicks[👆 Track Clicks via tracked_links]
     end
     
     TrackClicks --> End([✅ Fim])
@@ -1635,20 +1639,45 @@ const Admin = () => {
     style SaveResponse fill:#3b82f6,stroke:#2563eb,stroke-width:2px
     style SaveToAI fill:#3b82f6,stroke:#2563eb,stroke-width:2px
     style CreateTrackedLinks fill:#3b82f6,stroke:#2563eb,stroke-width:2px
-    style UpdateSession fill:#3b82f6,stroke:#2563eb,stroke-width:2px`}
+    style UpdateSession fill:#3b82f6,stroke:#2563eb,stroke-width:2px
+    style ReturnCached fill:#a855f7,stroke:#9333ea,stroke-width:2px`}
                         </pre>
                       </div>
                     </div>
-                    <div className="mt-4 text-sm text-muted-foreground space-y-2">
-                      <p><strong>Tabelas Envolvidas:</strong></p>
-                      <ul className="list-disc list-inside space-y-1 ml-4">
-                        <li><code>quiz_sessions</code> - Armazena cada sessão de quiz iniciada</li>
-                        <li><code>quiz_responses</code> - Guarda todas as respostas individuais</li>
-                        <li><code>country_store_links</code> - Links de lojas por país</li>
-                        <li><code>admin_prompts</code> - Prompt configurável para a AI</li>
-                        <li><code>ai_recommendations</code> - Recomendações geradas pela AI</li>
-                        <li><code>tracked_links</code> - Links com tracking de clicks</li>
-                      </ul>
+                    <div className="mt-4 text-sm text-muted-foreground space-y-4">
+                      <div>
+                        <p><strong>Tabelas Envolvidas:</strong></p>
+                        <ul className="list-disc list-inside space-y-1 ml-4">
+                          <li><code>quiz_sessions</code> - Armazena cada sessão de quiz iniciada</li>
+                          <li><code>quiz_responses</code> - Guarda todas as respostas individuais</li>
+                          <li><code>country_store_links</code> - Links de lojas por país</li>
+                          <li><code>admin_prompts</code> - Prompt configurável para a AI</li>
+                          <li><code>ai_recommendations</code> - Recomendações geradas pela AI</li>
+                          <li><code>tracked_links</code> - Links com tracking de clicks</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <p><strong>Schema de Componentes (Build Card):</strong></p>
+                        <pre className="bg-muted/50 p-3 rounded text-xs mt-2 overflow-x-auto">
+{`{
+  "type": "GPU" | "CPU" | "RAM" | "Storage" | "PSU" | "Case" | "Motherboard" | "Cooler",
+  "model": "Nome do modelo específico",
+  "where_to_buy": "URL para compra (da loja do país)",
+  "youtube_link": "URL de review no YouTube (opcional)",
+  "website_link": "URL do site oficial do produto (opcional)",
+  "recommended_price": "Preço sugerido na moeda local"
+}`}
+                        </pre>
+                      </div>
+                      <div>
+                        <p><strong>Edge Functions:</strong></p>
+                        <ul className="list-disc list-inside space-y-1 ml-4">
+                          <li><code>detect-country</code> - Deteta país do utilizador via IP</li>
+                          <li><code>analyze-quiz</code> - Processa quiz e chama Lovable AI Gateway</li>
+                          <li><code>track-analytics</code> - Regista eventos de analytics</li>
+                          <li><code>meta-tags</code> - Gera meta tags dinâmicas para SEO</li>
+                        </ul>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
