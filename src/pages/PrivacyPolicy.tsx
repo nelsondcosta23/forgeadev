@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const PrivacyPolicy = () => {
@@ -14,7 +15,10 @@ const PrivacyPolicy = () => {
             {t('privacy.backToHome')}
           </Link>
           
-          <LanguageSwitcher />
+           <div className="flex items-center gap-2">
+             <ThemeToggle />
+             <LanguageSwitcher />
+           </div>
         </div>
         
         <Card className="border-border/50 shadow-lg">
