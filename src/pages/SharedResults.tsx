@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { QuizAnswers } from "@/components/quiz/questions";
+import { questions } from "@/components/quiz/questions";
 import Results from "@/components/quiz/Results";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ const SharedResults = () => {
   const [answers, setAnswers] = useState<QuizAnswers | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [aiRecommendation, setAiRecommendation] = useState<string>("");
 
   useEffect(() => {
@@ -40,11 +40,11 @@ const SharedResults = () => {
         }
 
         // Reconstruct the answers object from responses
+        // question_text is stored as the translation key (e.g. "questions.country.question")
         const reconstructedAnswers: QuizAnswers = {};
         responses.forEach((response) => {
           const questionId = extractQuestionId(response.question_text);
           if (questionId) {
-            // Try to parse as number first, otherwise keep as string
             const value = isNaN(Number(response.selected_answer)) 
               ? response.selected_answer 
               : Number(response.selected_answer);
@@ -64,7 +64,6 @@ const SharedResults = () => {
         if (aiError) {
           console.error("Error fetching AI recommendation:", aiError);
         } else if (aiData?.recommendation_text) {
-          // The recommendation_text now contains the full structured JSON
           setAiRecommendation(aiData.recommendation_text);
         }
 
@@ -79,10 +78,20 @@ const SharedResults = () => {
     fetchResults();
   }, [sessionId]);
 
-  // Helper function to extract question ID from question text
+  // Build map from translation keys to question IDs
   const extractQuestionId = (questionText: string): string | null => {
-    // Map question texts to their IDs based on the questions.ts structure
-    const questionMap: { [key: string]: string } = {
+    // First try matching by translation key (stored format)
+    const translationKeyMap: { [key: string]: string } = {};
+    questions.forEach(q => {
+      translationKeyMap[q.question] = q.id;
+    });
+
+    if (translationKeyMap[questionText]) {
+      return translationKeyMap[questionText];
+    }
+
+    // Fallback: match by hardcoded English text for legacy data
+    const legacyMap: { [key: string]: string } = {
       "What country are you from?": "country",
       "What do you need the PC for?": "purpose",
       "What games or genres do you play the most?": "games",
@@ -100,7 +109,7 @@ const SharedResults = () => {
       "Do you want future upgrade capability?": "upgradability",
     };
 
-    return questionMap[questionText] || null;
+    return legacyMap[questionText] || null;
   };
 
   if (loading) {
