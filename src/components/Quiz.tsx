@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { mapCountryToLanguage } from "@/i18n/config";
+import { getCurrencyInfo } from "@/lib/currency";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const quizResponseSchema = z.object({
   session_id: z.string().min(1).max(100),
@@ -34,13 +36,12 @@ const Quiz = ({ onBack }: QuizProps) => {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [isSessionReady, setIsSessionReady] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<string>("");
-  const [fixedTotalQuestions, setFixedTotalQuestions] = useState<number>(10);
   const { toast } = useToast();
 
   // Create a quiz session when component mounts
   useEffect(() => {
     const createSession = async () => {
-      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      const newSessionId = crypto.randomUUID();
       setSessionId(newSessionId);
 
       // Detect user's country
@@ -52,7 +53,7 @@ const Quiz = ({ onBack }: QuizProps) => {
         if (countryData && !countryData.error) {
           countryCode = countryData.country_code;
           countryName = countryData.country_name;
-          setDetectedCountry(countryCode); // Store detected country for pre-selection
+          setDetectedCountry(countryCode);
         }
       } catch (error) {
         if (import.meta.env.DEV) {
@@ -78,61 +79,12 @@ const Quiz = ({ onBack }: QuizProps) => {
           variant: "destructive",
         });
       } else {
-        // Session created successfully, ready to accept answers
         setIsSessionReady(true);
       }
     };
 
     createSession();
   }, []);
-
-  // Function to get currency based on country
-  const getCurrencyInfo = (countryCode: string) => {
-    const currencyMap: Record<string, { symbol: string, code: string }> = {
-      PT: { symbol: '€', code: 'EUR' },
-      ES: { symbol: '€', code: 'EUR' },
-      FR: { symbol: '€', code: 'EUR' },
-      DE: { symbol: '€', code: 'EUR' },
-      IT: { symbol: '€', code: 'EUR' },
-      NL: { symbol: '€', code: 'EUR' },
-      BE: { symbol: '€', code: 'EUR' },
-      AT: { symbol: '€', code: 'EUR' },
-      IE: { symbol: '€', code: 'EUR' },
-      FI: { symbol: '€', code: 'EUR' },
-      GR: { symbol: '€', code: 'EUR' },
-      BR: { symbol: 'R$', code: 'BRL' },
-      GB: { symbol: '£', code: 'GBP' },
-      US: { symbol: '$', code: 'USD' },
-      CA: { symbol: 'CA$', code: 'CAD' },
-      AU: { symbol: 'AU$', code: 'AUD' },
-      NZ: { symbol: 'NZ$', code: 'NZD' },
-      MX: { symbol: 'MX$', code: 'MXN' },
-      AR: { symbol: 'AR$', code: 'ARS' },
-      CL: { symbol: 'CL$', code: 'CLP' },
-      CO: { symbol: 'CO$', code: 'COP' },
-      PE: { symbol: 'S/', code: 'PEN' },
-      JP: { symbol: '¥', code: 'JPY' },
-      KR: { symbol: '₩', code: 'KRW' },
-      CN: { symbol: '¥', code: 'CNY' },
-      IN: { symbol: '₹', code: 'INR' },
-      CH: { symbol: 'CHF', code: 'CHF' },
-      SE: { symbol: 'kr', code: 'SEK' },
-      NO: { symbol: 'kr', code: 'NOK' },
-      DK: { symbol: 'kr', code: 'DKK' },
-      PL: { symbol: 'zł', code: 'PLN' },
-      CZ: { symbol: 'Kč', code: 'CZK' },
-      HU: { symbol: 'Ft', code: 'HUF' },
-      RO: { symbol: 'lei', code: 'RON' },
-      TR: { symbol: '₺', code: 'TRY' },
-      ZA: { symbol: 'R', code: 'ZAR' },
-      SG: { symbol: 'S$', code: 'SGD' },
-      AE: { symbol: 'AED', code: 'AED' },
-      SA: { symbol: 'SAR', code: 'SAR' },
-      IL: { symbol: '₪', code: 'ILS' },
-    };
-    
-    return currencyMap[countryCode] || { symbol: '$', code: 'USD' };
-  };
 
   const currentQuestions = questions.filter(q => {
     if (!q.condition) return true;
@@ -150,8 +102,8 @@ const Quiz = ({ onBack }: QuizProps) => {
     return q;
   });
 
-  // Use fixed total of 10 questions
-  const totalQuestions = fixedTotalQuestions;
+  // Dynamic total questions based on current branch
+  const totalQuestions = currentQuestions.length;
 
   const currentQuestion = currentQuestions[currentStep];
   const progress = ((currentStep + 1) / totalQuestions) * 100;
@@ -283,13 +235,7 @@ const Quiz = ({ onBack }: QuizProps) => {
         setIsAnalyzing(false);
         return;
       } else if (data?.recommendation && data?.ai_report && data?.metadata) {
-        // New format: recommendation (markdown string), ai_report, metadata
         console.log('AI analysis received with new format');
-        console.log('Recommendation:', data.recommendation);
-        console.log('AI Report:', data.ai_report);
-        console.log('Metadata:', data.metadata);
-        
-        // Store the full response as JSON string for Results component
         setAiRecommendation(JSON.stringify({
           recommendation: data.recommendation,
           ai_report: data.ai_report,
@@ -297,19 +243,10 @@ const Quiz = ({ onBack }: QuizProps) => {
         }));
       } else if (data?.session_info && data?.recommendations) {
         console.log('AI analysis received with structured data');
-        console.log('Session info:', data.session_info);
-        console.log('Recommendations:', data.recommendations);
-        console.log('Metadata:', data.metadata);
-        
-        // Store the full structured response for Results component
         setAiRecommendation(JSON.stringify(data));
       } else if (data?.success && data?.build_data) {
-        // Fallback for old format
         console.log('AI analysis received with build_data:', data.build_data);
         setAiRecommendation(data.build_data.recommendation);
-        
-        console.log('Quiz data:', data.quiz_data);
-        console.log('AI Report:', data.build_data.ai_report);
       } else {
         setAnalysisError('Unexpected error. Please try again.');
         setIsAnalyzing(false);
@@ -322,8 +259,6 @@ const Quiz = ({ onBack }: QuizProps) => {
       return;
     }
 
-    // Edge function will mark session as completed
-    // Just show results
     console.log('Analysis successful, showing results');
     setIsAnalyzing(false);
     setShowResults(true);
@@ -344,7 +279,7 @@ const Quiz = ({ onBack }: QuizProps) => {
         <Card className="p-12 max-w-md mx-4 text-center space-y-6">
           <AlertCircle className="w-16 h-16 text-destructive mx-auto" />
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Analysis Error</h2>
+            <h2 className="text-2xl font-bold">{t('quiz.errorTitle')}</h2>
             <p className="text-muted-foreground">{analysisError}</p>
           </div>
           <div className="flex flex-col gap-4">
@@ -353,7 +288,7 @@ const Quiz = ({ onBack }: QuizProps) => {
               className="bg-gradient-to-r from-primary to-secondary"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
+              {t('quiz.tryAgain')}
             </Button>
             <Button 
               variant="outline" 
@@ -370,7 +305,7 @@ const Quiz = ({ onBack }: QuizProps) => {
                 setShowResults(true);
               }}
             >
-              View Results Without AI
+              {t('quiz.viewWithoutAI')}
             </Button>
           </div>
         </Card>
@@ -412,10 +347,9 @@ const Quiz = ({ onBack }: QuizProps) => {
       setAiRecommendation("");
       setIsAnalyzing(false);
       setIsSessionReady(false);
-      setFixedTotalQuestions(10);
       
-      // Create new session for restart
-      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      // Create new session for restart with UUID
+      const newSessionId = crypto.randomUUID();
       setSessionId(newSessionId);
       
       // Detect country for new session
@@ -447,7 +381,6 @@ const Quiz = ({ onBack }: QuizProps) => {
           console.error('Error creating new quiz session:', error);
         }
       } else {
-        // Session ready for new answers
         setIsSessionReady(true);
       }
     }} />;
@@ -471,7 +404,7 @@ const Quiz = ({ onBack }: QuizProps) => {
               className="border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              {t('quiz.back')}
             </Button>
           </div>
 
@@ -482,21 +415,46 @@ const Quiz = ({ onBack }: QuizProps) => {
             </div>
             <Progress value={progress} className="h-2" />
           </div>
+
+          {/* Mobile back button */}
+          {currentStep > 0 && (
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="md:hidden mt-4 gap-2 text-muted-foreground"
+              size="sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t('quiz.back')}
+            </Button>
+          )}
         </div>
 
         {/* Question */}
         <div className="max-w-3xl mx-auto">
-          {!isSessionReady && (
-            <div className="text-center text-muted-foreground mb-4">
-              Initializing session...
+          {!isSessionReady ? (
+            <Card className="p-8">
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <div className="space-y-3 pt-4">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <div key={currentQuestion.id} className="animate-fade-in">
+              <QuestionCard
+                key={currentQuestion.id}
+                question={currentQuestion}
+                onAnswer={handleAnswer}
+                disabled={!isSessionReady}
+                defaultValue={currentQuestion.id === "country" ? detectedCountry : undefined}
+              />
             </div>
           )}
-          <QuestionCard
-            question={currentQuestion}
-            onAnswer={handleAnswer}
-            disabled={!isSessionReady}
-            defaultValue={currentQuestion.id === "country" ? detectedCountry : undefined}
-          />
         </div>
       </div>
 
@@ -504,13 +462,13 @@ const Quiz = ({ onBack }: QuizProps) => {
       <footer className="hidden md:block border-t border-border/50 bg-card/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2025 Forgea. All rights reserved.</p>
+            <p>{t('landing.copyright')}</p>
             <div className="flex gap-6">
               <a href="/terms" className="hover:text-primary transition-colors">
-                Terms & Conditions
+                {t('landing.terms')}
               </a>
               <a href="/privacy" className="hover:text-primary transition-colors">
-                Privacy Policy
+                {t('landing.privacy')}
               </a>
             </div>
           </div>

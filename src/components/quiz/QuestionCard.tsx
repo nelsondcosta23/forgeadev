@@ -18,7 +18,7 @@ interface QuestionCardProps {
 const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: QuestionCardProps) => {
   const { t } = useTranslation();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [numberValue, setNumberValue] = useState<number>(question.min || 0);
+  const [numberValue, setNumberValue] = useState<number>(question.min ?? 0);
 
   const handleOptionSelect = (value: string) => {
     setSelectedOption(value);
@@ -113,7 +113,7 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
                 className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
                 size="lg"
               >
-                Continue
+                {t('quiz.submit')}
               </Button>
             )}
           </div>
@@ -155,7 +155,7 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
               className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
               size="lg"
             >
-              Continue
+              {t('quiz.submit')}
             </Button>
           </div>
         )}

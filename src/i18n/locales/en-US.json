@@ -20,7 +20,7 @@
     "step2Desc": "Our AI analyzes your responses to find the perfect match",
     "step3Title": "Receive",
     "step3Desc": "Get personalized PC build recommendations instantly",
-    "copyright": "© 2025 Forgea. All rights reserved.",
+    "copyright": "© 2026 Forgea. All rights reserved.",
     "terms": "Terms & Conditions",
     "privacy": "Privacy Policy"
   },
@@ -38,7 +38,11 @@
     "errorTitle": "Analysis Failed",
     "tryAgain": "Try Again",
     "viewWithoutAI": "View Results Without AI",
-    "restartQuiz": "Restart Quiz"
+    "restartQuiz": "Restart Quiz",
+    "selectCountry": "Select your country...",
+    "searchCountry": "Search country...",
+    "noCountryFound": "No country found.",
+    "continue": "Continue"
   },
   "questions": {
     "country": {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ export const CountrySelect = ({
   defaultValue,
   disabled = false 
 }: CountrySelectProps) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(defaultValue || "");
   const [triggerWidth, setTriggerWidth] = useState<number>(0);
@@ -77,7 +79,7 @@ export const CountrySelect = ({
               <span className="text-lg font-semibold">{selectedCountry.label}</span>
             </div>
           ) : (
-            <span className="text-muted-foreground">Select your country...</span>
+            <span className="text-muted-foreground">{t('quiz.selectCountry')}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -88,9 +90,9 @@ export const CountrySelect = ({
         style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : '400px' }}
       >
         <Command className="bg-card">
-          <CommandInput placeholder="Search country..." className="h-12 bg-card" />
+          <CommandInput placeholder={t('quiz.searchCountry')} className="h-12 bg-card" />
           <CommandList className="max-h-[300px] bg-card">
-            <CommandEmpty className="bg-card">No country found.</CommandEmpty>
+            <CommandEmpty className="bg-card">{t('quiz.noCountryFound')}</CommandEmpty>
             <CommandGroup className="bg-card">
               {countries.map((country) => (
                 <CommandItem

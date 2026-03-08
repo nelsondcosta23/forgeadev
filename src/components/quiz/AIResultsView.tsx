@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Share2, Download, Copy, Link2 } from "lucide-react";
@@ -42,6 +43,7 @@ export const AIResultsView = ({
   onRestart, 
   onBack 
 }: AIResultsViewProps) => {
+  const { t } = useTranslation();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const finalSessionId = sessionInfo?.session_id || sessionId || "";
@@ -55,12 +57,12 @@ export const AIResultsView = ({
 
   const handleDownload = async () => {
     if (!finalSessionId) {
-      toast.warning("Aguarde enquanto geramos o link da build...");
+      toast.warning(t('results.generatingLink', { defaultValue: 'Generating build link...' }));
       return;
     }
 
     try {
-      toast.info("A gerar PDF...");
+      toast.info(t('results.generatingPDF', { defaultValue: 'Generating PDF...' }));
       
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -325,20 +327,20 @@ export const AIResultsView = ({
       pdf.text(footerText, (pageWidth - footerWidth) / 2, pageHeight - 10);
 
       pdf.save(`forgea-build-${finalSessionId}.pdf`);
-      toast.success("PDF transferido com sucesso!");
+      toast.success(t('results.pdfDownloaded', { defaultValue: 'PDF downloaded successfully!' }));
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
-      toast.error("Erro ao gerar PDF. Tente novamente.");
+      console.error("Error generating PDF:", error);
+      toast.error(t('results.pdfError', { defaultValue: 'Error generating PDF. Please try again.' }));
     }
   };
 
   const handleCopyUrl = () => {
     if (!finalSessionId) {
-      toast.warning("A criar ligação da build... aguarde um momento");
+      toast.warning(t('results.generatingLink', { defaultValue: 'Generating build link...' }));
       return;
     }
     navigator.clipboard.writeText(shareUrl);
-    toast.success("URL copiada para a área de transferência!");
+    toast.success(t('results.copied'));
   };
 
   return (
@@ -353,7 +355,7 @@ export const AIResultsView = ({
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t('quiz.back')}
             </Button>
             
             <div className="flex items-center gap-2">
@@ -363,13 +365,13 @@ export const AIResultsView = ({
                 className="gap-2"
               >
                 <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Download PDF</span>
+                <span className="hidden sm:inline">{t('results.export')}</span>
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => {
                   if (!finalSessionId) {
-                    toast.warning("O link ainda está a ser gerado.");
+                    toast.warning(t('results.generatingLink', { defaultValue: 'Generating build link...' }));
                     return;
                   }
                   setShareDialogOpen(true);
@@ -377,10 +379,10 @@ export const AIResultsView = ({
                 className="gap-2"
               >
                 <Share2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Share</span>
+                <span className="hidden sm:inline">{t('results.share')}</span>
               </Button>
               <Button onClick={onRestart}>
-                New Quiz
+                {t('results.restart')}
               </Button>
             </div>
           </div>
@@ -392,10 +394,10 @@ export const AIResultsView = ({
         {/* Hero Section */}
         <div className="text-center mb-8 space-y-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-            Your PC Build Recommendations
+            {t('results.title')}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Personalized builds for {sessionInfo.country}, crafted by AI based on your preferences
+            {t('results.subtitle')}
           </p>
         </div>
 
@@ -403,12 +405,12 @@ export const AIResultsView = ({
         <Card className="mb-8 p-6 bg-gradient-to-br from-card to-card/80 border-border">
           <div className="flex items-center gap-2 mb-4">
             <Link2 className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Your Unique Build URL</h2>
+            <h2 className="text-lg font-semibold">{t('results.uniqueBuildUrl', { defaultValue: 'Your Unique Build URL' })}</h2>
           </div>
           <div className="flex gap-2">
             <div className="flex-1 bg-muted/30 rounded-md px-4 py-3 border border-border/50">
               <code className="text-sm text-primary font-mono break-all">
-                {finalSessionId ? shareUrl : "Gerando link da build..."}
+                {finalSessionId ? shareUrl : t('results.generatingLink', { defaultValue: 'Generating build link...' })}
               </code>
             </div>
             <Button
@@ -422,7 +424,7 @@ export const AIResultsView = ({
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-3">
-            Save or share this unique link to access your custom PC build recommendations anytime.
+            {t('results.saveShareNote', { defaultValue: 'Save or share this unique link to access your custom PC build recommendations anytime.' })}
           </p>
         </Card>
 

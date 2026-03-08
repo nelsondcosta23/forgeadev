@@ -355,10 +355,10 @@ Remember: This recommendation will directly impact their purchasing decisions. B
 
     // Call AI with retry logic
     const callAIWithRetry = async (model: string, maxRetries = 3): Promise<{ content: string; aiReport: any; builds: any }> => {
-      const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+      const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
       
-      if (!openaiApiKey) {
-        throw new Error('OPENAI_API_KEY not configured');
+      if (!lovableApiKey) {
+        throw new Error('LOVABLE_API_KEY not configured');
       }
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -369,11 +369,11 @@ Remember: This recommendation will directly impact their purchasing decisions. B
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 45000);
           
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             signal: controller.signal,
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${openaiApiKey}`,
+              'Authorization': `Bearer ${lovableApiKey}`,
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
@@ -765,9 +765,9 @@ Remember: This recommendation will directly impact their purchasing decisions. B
     let recommendation = '';
     let aiReport: any = null;
     let builds: any = null;
-    let usedModel = 'gpt-4o-mini';
+    let usedModel = 'google/gemini-2.5-flash';
     try {
-      const result = await callAIWithRetry('gpt-4o-mini');
+      const result = await callAIWithRetry('google/gemini-2.5-flash');
       recommendation = result.content;
       aiReport = result.aiReport;
       builds = result.builds;
@@ -780,9 +780,9 @@ Remember: This recommendation will directly impact their purchasing decisions. B
           errorMessage === 'SSE_PARSE_FAILED' || 
           errorMessage === 'PARSE_FAILED' ||
           errorMessage === 'CONTENT_TOO_SHORT') {
-        console.log('Attempting fallback retry with gpt-4o-mini...');
+        console.log('Attempting fallback retry with google/gemini-2.5-flash...');
         try {
-          const result = await callAIWithRetry('gpt-4o-mini', 2);
+          const result = await callAIWithRetry('google/gemini-2.5-flash', 2);
           recommendation = result.content;
           aiReport = result.aiReport;
           builds = result.builds;

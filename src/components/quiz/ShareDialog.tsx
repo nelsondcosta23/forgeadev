@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -31,25 +32,26 @@ interface ShareDialogProps {
 }
 
 export const ShareDialog = ({ open, onOpenChange, shareUrl }: ShareDialogProps) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const messages = {
-    facebook: `🚀 Acabei de criar meu PC dos sonhos com o Forgea! Veja todos os detalhes da minha build personalizada no link: ${shareUrl} 💻✨`,
-    twitter: `🔥 Criei meu PC ideal com o Forgea! Confira minha build completa: ${shareUrl} 💻 #PCGaming #TechSetup`,
-    whatsapp: `Olá! 👋 Acabei de montar meu PC ideal usando o Forgea! Dá uma olhada na minha configuração completa: ${shareUrl} 🎮💻`,
-    linkedin: `🚀 Acabei de criar meu PC dos sonhos com o Forgea! Veja todos os detalhes da minha build personalizada: ${shareUrl} 💻✨`,
-    reddit: `Used Forgea to build my dream PC setup! Check out my full custom build here: ${shareUrl} - What do you think? 🖥️`,
-    telegram: `🚀 Criei meu PC ideal com o Forgea! Veja a build completa: ${shareUrl} 💻✨`,
+    facebook: `🚀 ${t('share.facebook', { url: shareUrl, defaultValue: `Just created my dream PC with Forgea! Check out my personalized build: ${shareUrl} 💻✨` })}`,
+    twitter: `🔥 ${t('share.twitter', { url: shareUrl, defaultValue: `Built my ideal PC with Forgea! Check my full build: ${shareUrl} 💻 #PCGaming #TechSetup` })}`,
+    whatsapp: `${t('share.whatsapp', { url: shareUrl, defaultValue: `Hey! 👋 I just built my ideal PC using Forgea! Check out my full configuration: ${shareUrl} 🎮💻` })}`,
+    linkedin: `🚀 ${t('share.linkedin', { url: shareUrl, defaultValue: `Just created my dream PC with Forgea! See all the details of my personalized build: ${shareUrl} 💻✨` })}`,
+    reddit: `${t('share.reddit', { url: shareUrl, defaultValue: `Used Forgea to build my dream PC setup! Check out my full custom build here: ${shareUrl} - What do you think? 🖥️` })}`,
+    telegram: `🚀 ${t('share.telegram', { url: shareUrl, defaultValue: `Built my ideal PC with Forgea! See the full build: ${shareUrl} 💻✨` })}`,
   };
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Link copiado para a área de transferência!");
+      toast.success(t('results.copied'));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error("Erro ao copiar link");
+      toast.error(t('share.copyError', { defaultValue: 'Error copying link' }));
     }
   };
 
@@ -59,10 +61,10 @@ export const ShareDialog = ({ open, onOpenChange, shareUrl }: ShareDialogProps) 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
-            Compartilhe Sua Build
+            {t('results.shareTitle')}
           </DialogTitle>
           <DialogDescription>
-            Compartilhe sua configuração personalizada nas redes sociais
+            {t('results.shareDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -144,12 +146,12 @@ export const ShareDialog = ({ open, onOpenChange, shareUrl }: ShareDialogProps) 
             {copied ? (
               <>
                 <Check className="h-4 w-4 mr-2" />
-                Link Copiado!
+                {t('results.copied')}
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4 mr-2" />
-                Copiar Link
+                {t('results.copyLink')}
               </>
             )}
           </Button>
