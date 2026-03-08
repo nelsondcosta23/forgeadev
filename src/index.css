@@ -108,47 +108,47 @@ All colors MUST be HSL.
 
 /* Custom styles for AI markdown recommendation */
 .ai-recommendation {
-  color: white !important;
+  color: hsl(var(--foreground)) !important;
 }
 
 .ai-recommendation h1 {
-  @apply text-3xl font-bold text-white mb-4 mt-6;
+  @apply text-3xl font-bold text-foreground mb-4 mt-6;
 }
 
 .ai-recommendation h2 {
-  @apply text-2xl font-semibold text-white mb-3 mt-5;
+  @apply text-2xl font-semibold text-foreground mb-3 mt-5;
 }
 
 .ai-recommendation h3 {
-  @apply text-xl font-semibold text-white mb-2 mt-4;
+  @apply text-xl font-semibold text-foreground mb-2 mt-4;
 }
 
 .ai-recommendation p {
-  @apply text-white mb-3 leading-relaxed;
+  @apply text-foreground mb-3 leading-relaxed;
 }
 
 .ai-recommendation ul {
-  @apply list-disc list-inside mb-3 text-white space-y-1;
+  @apply list-disc list-inside mb-3 text-foreground space-y-1;
 }
 
 .ai-recommendation ol {
-  @apply list-decimal list-inside mb-3 text-white space-y-1;
+  @apply list-decimal list-inside mb-3 text-foreground space-y-1;
 }
 
 .ai-recommendation li {
-  @apply text-white;
+  @apply text-foreground;
 }
 
 .ai-recommendation strong {
-  @apply text-white font-bold;
+  @apply text-foreground font-bold;
 }
 
 .ai-recommendation code {
-  @apply bg-primary/20 px-2 py-1 rounded text-white font-mono text-sm;
+  @apply bg-primary/20 px-2 py-1 rounded text-foreground font-mono text-sm;
 }
 
 .ai-recommendation pre {
-  @apply bg-black/30 p-4 rounded-lg mb-3 overflow-x-auto;
+  @apply bg-muted p-4 rounded-lg mb-3 overflow-x-auto;
 }
 
 .ai-recommendation pre code {
@@ -160,7 +160,7 @@ All colors MUST be HSL.
 }
 
 .ai-recommendation blockquote {
-  @apply border-l-4 border-primary pl-4 italic text-white/90 my-3;
+  @apply border-l-4 border-primary pl-4 italic text-foreground/90 my-3;
 }
 
 .ai-recommendation table {
@@ -168,9 +168,9 @@ All colors MUST be HSL.
 }
 
 .ai-recommendation th {
-  @apply bg-primary/20 text-white font-semibold p-2 border border-primary/30;
+  @apply bg-primary/20 text-foreground font-semibold p-2 border border-primary/30;
 }
 
 .ai-recommendation td {
-  @apply text-white p-2 border border-border;
+  @apply text-foreground p-2 border border-border;
 }

@@ -849,10 +849,10 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
                           <Cpu className="w-8 h-8 text-primary" />
                         </div>
                         <div className="flex-1 space-y-4">
-                          <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                          <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
                             🤖 AI Personalized Recommendation
                           </h3>
-                          <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
+                          <div className="prose prose-lg max-w-none dark:prose-invert ai-recommendation">
                             <ReactMarkdown 
                               remarkPlugins={[remarkGfm]}
                               components={{
@@ -911,10 +911,10 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
                       <Cpu className="w-8 h-8 text-primary" />
                     </div>
                     <div className="flex-1 space-y-4">
-                      <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                      <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
                         🤖 AI Personalized Recommendation
                       </h3>
-                      <div className="prose prose-invert prose-lg max-w-none ai-recommendation">
+                      <div className="prose prose-lg max-w-none dark:prose-invert ai-recommendation">
                         <ReactMarkdown 
                           remarkPlugins={[remarkGfm]}
                           components={{
