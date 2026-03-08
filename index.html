@@ -3,33 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Primary Meta Tags -->
     <title>Forgea — Instant Custom PC Builds from a 1-Minute Quiz</title>
-    <meta name="title" content="Forgea — Instant Custom PC Builds from a 1-Minute Quiz" />
     <meta name="description" content="Answer a few questions and get a battle-tested PC build tailored to your games, budget, and upgrade path. Share it, tweak it, and buy with confidence." />
-    <meta name="author" content="PC Builder Quiz" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://forgea.dev/" />
     <meta property="og:title" content="Forgea — Instant Custom PC Builds from a 1-Minute Quiz" />
-    <meta property="og:description" content="Answer a few questions and get a battle-tested PC build tailored to your games, budget, and upgrade path. Share it, tweak it, and buy with confidence." />
+    <meta property="og:description" content="Answer a few questions and get a battle-tested PC build tailored to your games, budget, and upgrade path." />
     <meta property="og:image" content="/images/og-image.png" />
 
-    <!-- X (Twitter) -->
+    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://forgea.dev/" />
     <meta property="twitter:title" content="Forgea — Instant Custom PC Builds from a 1-Minute Quiz" />
-    <meta property="twitter:description" content="Answer a few questions and get a battle-tested PC build tailored to your games, budget, and upgrade path. Share it, tweak it, and buy with confidence." />
     <meta property="twitter:image" content="/images/og-image.png" />
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/Vu5fnn2kvLS97Pxzt508Mzp1VTn1/uploads/1761931305529-forgea-favicon-64.png">
+
+    <style>
+      #root-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #0a0a0a;
+        color: #888;
+        font-family: system-ui, sans-serif;
+        font-size: 14px;
+      }
+      html[data-app-boot="ok"] #root-fallback { display: none; }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
+    <div id="root-fallback">Loading application…</div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
