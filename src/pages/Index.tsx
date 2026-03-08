@@ -2,7 +2,8 @@ import { useState, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Cpu, Monitor, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Lazy load Quiz component - only loads when user clicks "Start Quiz"
 const Quiz = lazy(() => import("@/components/Quiz"));
@@ -33,6 +34,11 @@ const Index = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(155_85%_45%_/_0.15),transparent_50%)]" />
         
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
+          {/* Theme Toggle - top right */}
+          <div className="absolute top-4 right-4">
+            <ThemeToggle />
+          </div>
+
           <div className="max-w-4xl mx-auto text-center space-y-8">
             {/* Logo/Brand */}
             <div className="mb-4">
