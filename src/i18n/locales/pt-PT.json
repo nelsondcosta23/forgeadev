@@ -21,7 +21,7 @@
     "step2Desc": "A nossa IA analisa as suas respostas para encontrar a combinação perfeita",
     "step3Title": "Receber",
     "step3Desc": "Obtenha recomendações personalizadas de PC instantaneamente",
-    "copyright": "© 2025 Forgea. Todos os direitos reservados.",
+    "copyright": "© 2026 Forgea. Todos os direitos reservados.",
     "terms": "Termos e Condições",
     "privacy": "Política de Privacidade"
   },
@@ -39,7 +39,11 @@
     "errorTitle": "Análise Falhou",
     "tryAgain": "Tentar Novamente",
     "viewWithoutAI": "Ver Resultados Sem IA",
-    "restartQuiz": "Reiniciar Quiz"
+    "restartQuiz": "Reiniciar Quiz",
+    "selectCountry": "Selecione o seu país...",
+    "searchCountry": "Pesquisar país...",
+    "noCountryFound": "País não encontrado.",
+    "continue": "Continuar"
   },
   "questions": {
     "country": {

@@ -20,7 +20,7 @@
     "step2Desc": "Unsere KI analysiert Ihre Antworten, um die perfekte Übereinstimmung zu finden",
     "step3Title": "Empfangen",
     "step3Desc": "Erhalten Sie sofort personalisierte PC-Empfehlungen",
-    "copyright": "© 2025 Forgea. Alle Rechte vorbehalten.",
+    "copyright": "© 2026 Forgea. Alle Rechte vorbehalten.",
     "terms": "Geschäftsbedingungen",
     "privacy": "Datenschutzrichtlinie"
   },
@@ -38,7 +38,11 @@
     "errorTitle": "Analyse Fehlgeschlagen",
     "tryAgain": "Erneut Versuchen",
     "viewWithoutAI": "Ergebnisse Ohne KI Anzeigen",
-    "restartQuiz": "Quiz Neu Starten"
+    "restartQuiz": "Quiz Neu Starten",
+    "selectCountry": "Wählen Sie Ihr Land...",
+    "searchCountry": "Land suchen...",
+    "noCountryFound": "Kein Land gefunden.",
+    "continue": "Weiter"
   },
   "questions": {
     "country": {
