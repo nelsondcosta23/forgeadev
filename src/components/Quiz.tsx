@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import QuestionCard from "./quiz/QuestionCard";
 import Results from "./quiz/Results";
 import { questions, QuizAnswers } from "./quiz/questions";
@@ -398,14 +399,17 @@ const Quiz = ({ onBack }: QuizProps) => {
             >
               FORGEA
             </h1>
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              className="border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('quiz.back')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                className="border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {t('quiz.back')}
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-4">
