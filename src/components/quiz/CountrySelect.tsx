@@ -45,6 +45,7 @@ export const CountrySelect = ({
   useEffect(() => {
     if (defaultValue && !value) {
       setValue(defaultValue);
+      onSelect(defaultValue);
     }
   }, [defaultValue]);
 

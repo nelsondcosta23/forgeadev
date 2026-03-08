@@ -29,9 +29,9 @@ const Index = () => {
       {/* Hero Section */}
       <div className="relative">
         {/* Animated background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(195_92%_55%_/_0.15),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(155_85%_45%_/_0.15),transparent_50%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-secondary/20 dark:from-primary/10 dark:to-secondary/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(195_92%_55%_/_0.25),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_20%,hsl(195_92%_55%_/_0.15),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(155_85%_45%_/_0.25),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,hsl(155_85%_45%_/_0.15),transparent_50%)]" />
         
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
           {/* Theme Toggle - top right */}

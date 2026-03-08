@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const FAQ = () => {
   const { t } = useTranslation();
@@ -31,7 +32,10 @@ const FAQ = () => {
             {t("faq.backToHome")}
           </Link>
           
-          <LanguageSwitcher />
+           <div className="flex items-center gap-2">
+             <ThemeToggle />
+             <LanguageSwitcher />
+           </div>
         </div>
 
         <Card className="border-border/50 shadow-lg">
