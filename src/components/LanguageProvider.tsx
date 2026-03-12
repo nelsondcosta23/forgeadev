@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
 import { mapCountryToLanguage } from '@/i18n/config';
 
 interface LanguageProviderProps {
@@ -21,6 +20,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
           return;
         }
 
+        const { supabase } = await import('@/integrations/supabase/client');
         const { data, error } = await supabase.functions.invoke('detect-country', {
           body: null,
         });
