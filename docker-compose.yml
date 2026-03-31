@@ -1,0 +1,9 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Port 80 is exposed by the Dockerfile. 
+    # Coolify will manage the mapping and SSL termination automatically.
+    # No ports mapping, networks, or labels manually defined as requested.
+    restart: always
