@@ -21,6 +21,25 @@ const TABLES = [
 
 type TableName = typeof TABLES[number];
 
+const escapeSQL = (val: any): string => {
+  if (val === null || val === undefined) return "NULL";
+  if (typeof val === "number") return String(val);
+  if (typeof val === "boolean") return val ? "TRUE" : "FALSE";
+  if (typeof val === "object") return `'${JSON.stringify(val).replace(/'/g, "''")}'`;
+  return `'${String(val).replace(/'/g, "''")}'`;
+};
+
+const rowsToSQL = (table: string, rows: Record<string, any>[]): string => {
+  if (rows.length === 0) return `-- ${table}: no data\n`;
+  const cols = Object.keys(rows[0]);
+  const header = `-- ${table}: ${rows.length} rows\n`;
+  const statements = rows.map((row) => {
+    const values = cols.map((c) => escapeSQL(row[c])).join(", ");
+    return `INSERT INTO public.${table} (${cols.join(", ")}) VALUES (${values});`;
+  });
+  return header + statements.join("\n") + "\n\n";
+};
+
 export const DatabaseBackup = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<Record<string, "pending" | "loading" | "done" | "error">>({});
@@ -49,18 +68,25 @@ export const DatabaseBackup = () => {
     return allRows;
   };
 
+  const downloadFile = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: "text/sql" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleFullBackup = async () => {
     setIsExporting(true);
     const progress: Record<string, "pending" | "loading" | "done" | "error"> = {};
     TABLES.forEach((t) => (progress[t] = "pending"));
     setExportProgress({ ...progress });
 
-    const backup: Record<string, any> = {
-      _meta: {
-        exported_at: new Date().toISOString(),
-        tables: [...TABLES],
-      },
-    };
+    let sql = `-- Forgea Full Backup\n-- Exported at: ${new Date().toISOString()}\n-- Tables: ${TABLES.join(", ")}\n\n`;
 
     for (const table of TABLES) {
       try {
@@ -68,7 +94,7 @@ export const DatabaseBackup = () => {
         setExportProgress({ ...progress });
 
         const data = await fetchAllRows(table);
-        backup[table] = { count: data.length, rows: data };
+        sql += rowsToSQL(table, data);
 
         progress[table] = "done";
         setExportProgress({ ...progress });
@@ -76,22 +102,12 @@ export const DatabaseBackup = () => {
         console.error(`Error exporting ${table}:`, err);
         progress[table] = "error";
         setExportProgress({ ...progress });
-        backup[table] = { count: 0, rows: [], error: String(err) };
+        sql += `-- ERROR exporting ${table}: ${String(err)}\n\n`;
       }
     }
 
-    // Download JSON
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `forgea-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    toast.success("Backup completo exportado com sucesso!");
+    downloadFile(sql, `forgea-backup-${new Date().toISOString().slice(0, 10)}.sql`);
+    toast.success("Backup SQL completo exportado com sucesso!");
     setIsExporting(false);
   };
 
@@ -100,16 +116,10 @@ export const DatabaseBackup = () => {
       setExportProgress((prev) => ({ ...prev, [table]: "loading" }));
       const data = await fetchAllRows(table);
 
-      const blob = new Blob([JSON.stringify({ table, count: data.length, exported_at: new Date().toISOString(), rows: data }, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `forgea-${table}-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      let sql = `-- ${table} backup\n-- Exported at: ${new Date().toISOString()}\n\n`;
+      sql += rowsToSQL(table, data);
 
+      downloadFile(sql, `forgea-${table}-${new Date().toISOString().slice(0, 10)}.sql`);
       setExportProgress((prev) => ({ ...prev, [table]: "done" }));
       toast.success(`Tabela ${table} exportada (${data.length} registos)`);
     } catch (err) {
@@ -132,10 +142,10 @@ export const DatabaseBackup = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="w-5 h-5" />
-            Backup Completo
+            Backup Completo (SQL)
           </CardTitle>
           <CardDescription>
-            Exporta todas as tabelas da base de dados num único ficheiro JSON.
+            Exporta todas as tabelas da base de dados num único ficheiro .sql com INSERT statements.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -143,7 +153,7 @@ export const DatabaseBackup = () => {
             {isExporting ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> A exportar...</>
             ) : (
-              <><Download className="w-4 h-4 mr-2" /> Exportar Tudo</>
+              <><Download className="w-4 h-4 mr-2" /> Exportar Tudo (.sql)</>
             )}
           </Button>
         </CardContent>
@@ -152,7 +162,7 @@ export const DatabaseBackup = () => {
       <Card>
         <CardHeader>
           <CardTitle>Tabelas Individuais</CardTitle>
-          <CardDescription>Exporta cada tabela separadamente.</CardDescription>
+          <CardDescription>Exporta cada tabela separadamente em formato SQL.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
