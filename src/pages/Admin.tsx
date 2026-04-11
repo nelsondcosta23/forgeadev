@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
 import { CRM } from "@/components/admin/CRM";
 import { SEOMarketing } from "@/components/admin/SEOMarketing";
+import { DatabaseBackup } from "@/components/admin/DatabaseBackup";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -922,12 +923,13 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="reports" className="w-full">
-            <TabsList className="grid w-full max-w-6xl grid-cols-6">
+             <TabsList className="grid w-full max-w-6xl grid-cols-7">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
               <TabsTrigger value="billingcpc">CRM</TabsTrigger>
               <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
               <TabsTrigger value="seo">SEO & MKT</TabsTrigger>
+              <TabsTrigger value="backup">Backup</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
@@ -1496,6 +1498,10 @@ const Admin = () => {
 
             <TabsContent value="seo" className="space-y-8 mt-6">
               <SEOMarketing />
+            </TabsContent>
+
+            <TabsContent value="backup" className="mt-6">
+              <DatabaseBackup />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-8 mt-6">
