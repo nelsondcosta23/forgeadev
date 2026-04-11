@@ -923,12 +923,13 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="reports" className="w-full">
-            <TabsList className="grid w-full max-w-6xl grid-cols-6">
+             <TabsList className="grid w-full max-w-6xl grid-cols-7">
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="selling">Selling</TabsTrigger>
               <TabsTrigger value="billingcpc">CRM</TabsTrigger>
               <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
               <TabsTrigger value="seo">SEO & MKT</TabsTrigger>
+              <TabsTrigger value="backup">Backup</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
