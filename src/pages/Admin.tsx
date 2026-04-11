@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
 import { CRM } from "@/components/admin/CRM";
 import { SEOMarketing } from "@/components/admin/SEOMarketing";
+import { DatabaseBackup } from "@/components/admin/DatabaseBackup";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
