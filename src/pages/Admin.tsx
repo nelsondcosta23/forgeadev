@@ -1500,6 +1500,10 @@ const Admin = () => {
               <SEOMarketing />
             </TabsContent>
 
+            <TabsContent value="backup" className="mt-6">
+              <DatabaseBackup />
+            </TabsContent>
+
             <TabsContent value="settings" className="space-y-8 mt-6">
               <div className="grid gap-6">
                 {/* Export Options */}
