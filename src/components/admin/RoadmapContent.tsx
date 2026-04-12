@@ -3,12 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
+
+const safeFormatDate = (dateStr: string | null | undefined, formatStr: string = "MMM dd, yyyy HH:mm") => {
+  if (!dateStr) return "N/A";
+  try {
+    const date = new Date(dateStr);
+    if (!isValid(date)) return "Invalid Date";
+    return format(date, formatStr);
+  } catch (e) {
+    return "Invalid Date";
+  }
+};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +43,7 @@ interface RoadmapItem {
   priority: "High" | "Medium" | "Low";
   title: string;
   status: "todo" | "in_progress" | "completed";
-  created_at: string;
+  created: string;
 }
 
 export function RoadmapContent() {
@@ -56,19 +67,13 @@ export function RoadmapContent() {
   }, []);
 
   const fetchRoadmap = async () => {
-    const { data, error } = await supabase
-      .from("admin_roadmap")
-      .select("*")
-      .order("priority", { ascending: true })
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      const data = await api.get("/api/pb/admin_roadmap");
+      setItems((data || []) as RoadmapItem[]);
+    } catch (error) {
       toast.error("Error loading roadmap");
       console.error(error);
-      return;
     }
-
-    setItems((data || []) as RoadmapItem[]);
   };
 
   const handleSubmit = async () => {
@@ -77,31 +82,18 @@ export function RoadmapContent() {
       return;
     }
 
-    if (editingId) {
-      const { error } = await supabase
-        .from("admin_roadmap")
-        .update(formData)
-        .eq("id", editingId);
-
-      if (error) {
-        toast.error("Error updating item");
-        console.error(error);
-        return;
+    try {
+      if (editingId) {
+        await api.patch(`/api/pb/admin_roadmap?id=${editingId}`, formData);
+        toast.success("Item updated successfully");
+      } else {
+        await api.post("/api/pb/admin_roadmap", formData);
+        toast.success("Item created successfully");
       }
-
-      toast.success("Item updated successfully");
-    } else {
-      const { error } = await supabase
-        .from("admin_roadmap")
-        .insert([formData]);
-
-      if (error) {
-        toast.error("Error creating item");
-        console.error(error);
-        return;
-      }
-
-      toast.success("Item created successfully");
+    } catch (error) {
+      toast.error(editingId ? "Error updating item" : "Error creating item");
+      console.error(error);
+      return;
     }
 
     setFormData({ priority: "Medium", title: "", status: "todo" });
@@ -119,21 +111,16 @@ export function RoadmapContent() {
   const handleDelete = async () => {
     if (!itemToDelete) return;
 
-    const { error } = await supabase
-      .from("admin_roadmap")
-      .delete()
-      .eq("id", itemToDelete);
-
-    if (error) {
+    try {
+      await api.delete(`/api/pb/admin_roadmap?id=${itemToDelete}`);
+      toast.success("Item deleted successfully");
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      fetchRoadmap();
+    } catch (error) {
       toast.error("Error deleting item");
       console.error(error);
-      return;
     }
-
-    toast.success("Item deleted successfully");
-    setDeleteDialogOpen(false);
-    setItemToDelete(null);
-    fetchRoadmap();
   };
 
   const handleEdit = (item: RoadmapItem) => {
@@ -173,7 +160,14 @@ export function RoadmapContent() {
       if (priorityDiff !== 0) return priorityDiff;
       
       // Within same priority, sort by creation date (oldest first)
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      const dateA = new Date(a.created).getTime();
+      const dateB = new Date(b.created).getTime();
+      
+      if (isNaN(dateA) && isNaN(dateB)) return 0;
+      if (isNaN(dateA)) return 1;
+      if (isNaN(dateB)) return -1;
+      
+      return dateA - dateB;
     });
 
   const priorityColor = {
@@ -326,7 +320,7 @@ export function RoadmapContent() {
                         {statusConfig[item.status].label}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        Created: {format(new Date(item.created_at), "MMM dd, yyyy HH:mm")}
+                        Created: {safeFormatDate(item.created)}
                       </span>
                     </div>
                     <p className="text-sm">{item.title}</p>

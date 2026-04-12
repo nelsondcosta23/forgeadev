@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -56,15 +56,7 @@ export const CRM = () => {
 
   const { data: companies, isLoading } = useQuery({
     queryKey: ["crm-companies"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("country_store_links")
-        .select("*")
-        .order("country_name", { ascending: true });
-      
-      if (error) throw error;
-      return data as StoreLink[];
-    },
+    queryFn: () => api.get("/api/pb/country_store_links"),
   });
 
   const uniqueCountries = useMemo(() => {
@@ -97,50 +89,29 @@ export const CRM = () => {
   }, [filteredCompanies, currentPage]);
 
   const createCompanyMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof companySchema>) => {
-      const { error } = await supabase
-        .from("country_store_links")
-        .insert([{
-          store_name: data.store_name,
-          country_name: data.country_name,
-          country_code: data.country_code,
-          store_url: data.store_url,
-          status: data.status,
-        }]);
-      if (error) throw error;
-    },
+    mutationFn: (data: z.infer<typeof companySchema>) => 
+      api.post("/api/pb/country_store_links", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-companies"] });
       setIsDialogOpen(false);
       resetForm();
       toast({ title: "Empresa criada com sucesso" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Erro ao criar empresa", description: error.message, variant: "destructive" });
     },
   });
 
   const updateCompanyMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: z.infer<typeof companySchema> }) => {
-      const { error } = await supabase
-        .from("country_store_links")
-        .update({
-          store_name: data.store_name,
-          country_name: data.country_name,
-          country_code: data.country_code,
-          store_url: data.store_url,
-          status: data.status,
-        })
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, data }: { id: string; data: z.infer<typeof companySchema> }) => 
+      api.patch(`/api/pb/country_store_links?id=${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-companies"] });
       setIsDialogOpen(false);
       resetForm();
       toast({ title: "Empresa atualizada com sucesso" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Erro ao atualizar empresa", description: error.message, variant: "destructive" });
     },
   });

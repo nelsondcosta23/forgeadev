@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -51,19 +51,13 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
   }, [open]);
 
   const fetchRoadmap = async () => {
-    const { data, error } = await supabase
-      .from("admin_roadmap")
-      .select("*")
-      .order("priority", { ascending: true })
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      const data = await api.get("/api/pb/admin_roadmap");
+      setItems((data || []) as RoadmapItem[]);
+    } catch (error) {
       toast.error("Error loading roadmap");
       console.error(error);
-      return;
     }
-
-    setItems((data || []) as RoadmapItem[]);
   };
 
   const handleSubmit = async () => {
@@ -72,31 +66,18 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
       return;
     }
 
-    if (editingId) {
-      const { error } = await supabase
-        .from("admin_roadmap")
-        .update(formData)
-        .eq("id", editingId);
-
-      if (error) {
-        toast.error("Error updating item");
-        console.error(error);
-        return;
+    try {
+      if (editingId) {
+        await api.patch(`/api/pb/admin_roadmap?id=${editingId}`, formData);
+        toast.success("Item updated successfully");
+      } else {
+        await api.post("/api/pb/admin_roadmap", formData);
+        toast.success("Item created successfully");
       }
-
-      toast.success("Item updated successfully");
-    } else {
-      const { error } = await supabase
-        .from("admin_roadmap")
-        .insert([formData]);
-
-      if (error) {
-        toast.error("Error creating item");
-        console.error(error);
-        return;
-      }
-
-      toast.success("Item created successfully");
+    } catch (error) {
+      toast.error(editingId ? "Error updating item" : "Error creating item");
+      console.error(error);
+      return;
     }
 
     setFormData({ priority: "Medium", title: "" });
@@ -113,21 +94,16 @@ export function RoadmapDialog({ open, onOpenChange }: RoadmapDialogProps) {
   const handleDelete = async () => {
     if (!itemToDelete) return;
 
-    const { error } = await supabase
-      .from("admin_roadmap")
-      .delete()
-      .eq("id", itemToDelete);
-
-    if (error) {
+    try {
+      await api.delete(`/api/pb/admin_roadmap?id=${itemToDelete}`);
+      toast.success("Item deleted successfully");
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      fetchRoadmap();
+    } catch (error) {
       toast.error("Error deleting item");
       console.error(error);
-      return;
     }
-
-    toast.success("Item deleted successfully");
-    setDeleteDialogOpen(false);
-    setItemToDelete(null);
-    fetchRoadmap();
   };
 
   const handleEdit = (item: RoadmapItem) => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -8,12 +9,12 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import QuestionCard from "./quiz/QuestionCard";
 import Results from "./quiz/Results";
 import { questions, QuizAnswers } from "./quiz/questions";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
+import { api } from "@/lib/api";
 import { mapCountryToLanguage } from "@/i18n/config";
 import { getCurrencyInfo } from "@/lib/currency";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 const quizResponseSchema = z.object({
   session_id: z.string().min(1).max(100),
@@ -27,12 +28,13 @@ interface QuizProps {
 }
 
 const Quiz = ({ onBack }: QuizProps) => {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({});
-  const [showResults, setShowResults] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
   const [aiRecommendation, setAiRecommendation] = useState<string>("");
+  const [showResults, setShowResults] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [isSessionReady, setIsSessionReady] = useState(false);
@@ -45,32 +47,27 @@ const Quiz = ({ onBack }: QuizProps) => {
       const newSessionId = crypto.randomUUID();
       setSessionId(newSessionId);
 
-      // Detect user's country
-      let countryCode = null;
-      let countryName = null;
-      
+      // Detect user's country (Local fallback to avoid external API dependencies causing CORS/429)
+      const countryCode = 'PT'; // Default to PT, user can change in quiz
+      const countryName = 'Portugal';
+      setDetectedCountry(countryCode);
+
       try {
-        const { data: countryData } = await supabase.functions.invoke('detect-country');
-        if (countryData && !countryData.error) {
-          countryCode = countryData.country_code;
-          countryName = countryData.country_name;
-          setDetectedCountry(countryCode);
-        }
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error('Error detecting country:', error);
-        }
-      }
-
-      const { error } = await supabase
-        .from('quiz_sessions')
-        .insert({
-          session_id: newSessionId,
-          country_code: countryCode,
-          country_name: countryName,
+        const res = await fetch('/api/pb/quiz_sessions', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json', 
+            'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || ''
+          },
+          body: JSON.stringify({
+            session_id: newSessionId,
+            country_code: countryCode,
+            country_name: countryName,
+          })
         });
-
-      if (error) {
+        if (!res.ok) throw new Error('Failed to create session');
+        setIsSessionReady(true);
+      } catch (error) {
         if (import.meta.env.DEV) {
           console.error('Error creating quiz session:', error);
         }
@@ -79,8 +76,6 @@ const Quiz = ({ onBack }: QuizProps) => {
           description: "Unable to start quiz session.",
           variant: "destructive",
         });
-      } else {
-        setIsSessionReady(true);
       }
     };
 
@@ -135,13 +130,15 @@ const Quiz = ({ onBack }: QuizProps) => {
         // Validate data before inserting
         quizResponseSchema.parse(responseData);
 
-        const { error } = await supabase
-          .from('quiz_responses')
-          .insert(responseData);
+        const res = await fetch('/api/pb/quiz_responses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || 'default-dev-key' },
+          body: JSON.stringify(responseData)
+        });
 
-        if (error) {
+        if (!res.ok) {
           if (import.meta.env.DEV) {
-            console.error('Error saving quiz response:', error);
+            console.error('Error saving quiz response');
           }
           toast({
             title: "Error",
@@ -182,32 +179,29 @@ const Quiz = ({ onBack }: QuizProps) => {
       // Get all questions that were answered
       const answeredQuestions = currentQuestions.filter(q => finalAnswers[q.id] !== undefined);
       
-      console.log('Calling analyze-quiz function...');
-      const { data, error } = await supabase.functions.invoke('analyze-quiz', {
-        body: {
+      console.log('Calling /api/quiz/analyze endpoint...');
+      const res = await fetch('/api/quiz/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || 'default-dev-key' },
+        body: JSON.stringify({
           answers: finalAnswers,
           questions: answeredQuestions,
           sessionId: sessionId
-        }
+        })
       });
 
-      if (error) {
+      if (!res.ok) {
+        const error = await res.json();
         console.error('Error analyzing quiz:', error);
-        console.error('Error details:', { message: error.message, status: (error as any)?.status });
         
         // Handle 409: Session already analyzed
         if ((error as any)?.status === 409 || error.message?.includes('409') || error.message?.toLowerCase().includes('already analyzed')) {
           console.log('Session already analyzed, fetching existing recommendation...');
           try {
-            const { data: rec, error: recError } = await supabase
-              .from('ai_recommendations')
-              .select('recommendation_text')
-              .eq('session_id', sessionId)
-              .maybeSingle();
+            const data = await api.get(`/api/pb/ai_recommendations?session_id=${sessionId}`);
+            const rec = data && data.length > 0 ? data[0] : null;
             
-            if (recError) {
-              console.error('Error fetching existing recommendation:', recError);
-            } else if (rec?.recommendation_text) {
+            if (rec?.recommendation_text) {
               console.log('Found existing recommendation, displaying results');
               setAiRecommendation(rec.recommendation_text);
               setShowResults(true);
@@ -235,7 +229,11 @@ const Quiz = ({ onBack }: QuizProps) => {
         }
         setIsAnalyzing(false);
         return;
-      } else if (data?.recommendation && data?.ai_report && data?.metadata) {
+      } 
+      
+      const data = await res.json();
+      
+      if (data?.recommendation && data?.ai_report && data?.metadata) {
         console.log('AI analysis received with new format');
         setAiRecommendation(JSON.stringify({
           recommendation: data.recommendation,
@@ -260,9 +258,9 @@ const Quiz = ({ onBack }: QuizProps) => {
       return;
     }
 
-    console.log('Analysis successful, showing results');
+    console.log('Analysis successful, navigating to results');
     setIsAnalyzing(false);
-    setShowResults(true);
+    navigate(`/build/${sessionId}`);
   };
 
   const handleBack = () => {
@@ -353,36 +351,25 @@ const Quiz = ({ onBack }: QuizProps) => {
       const newSessionId = crypto.randomUUID();
       setSessionId(newSessionId);
       
-      // Detect country for new session
-      let countryCode = null;
-      let countryName = null;
-      
+      // Local fallback for restart
+      const countryCode = 'PT';
+      const countryName = 'Portugal';
+
       try {
-        const { data: countryData } = await supabase.functions.invoke('detect-country');
-        if (countryData && !countryData.error) {
-          countryCode = countryData.country_code;
-          countryName = countryData.country_name;
-        }
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error('Error detecting country:', error);
-        }
-      }
-
-      const { error } = await supabase
-        .from('quiz_sessions')
-        .insert({
-          session_id: newSessionId,
-          country_code: countryCode,
-          country_name: countryName,
+        await fetch('/api/pb/quiz_sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || 'default-dev-key' },
+          body: JSON.stringify({
+            session_id: newSessionId,
+            country_code: countryCode,
+            country_name: countryName,
+          })
         });
-
-      if (error) {
+        setIsSessionReady(true);
+      } catch (error) {
         if (import.meta.env.DEV) {
           console.error('Error creating new quiz session:', error);
         }
-      } else {
-        setIsSessionReady(true);
       }
     }} />;
   }

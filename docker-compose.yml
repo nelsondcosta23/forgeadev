@@ -3,7 +3,36 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # Port 80 is exposed by the Dockerfile. 
-    # Coolify will manage the mapping and SSL termination automatically.
-    # No ports mapping, networks, or labels manually defined as requested.
+      args:
+        - VITE_INTERNAL_PROXY_KEY=${VITE_INTERNAL_PROXY_KEY}
+    ports:
+      - "8085:8085"
+    environment:
+      - PORT=8085
+      - POCKETBASE_URL=http://pb:8090
+      - INTERNAL_PROXY_KEY=${INTERNAL_PROXY_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL}
+      - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD}
+    networks:
+      - internal
     restart: always
+
+  pb:
+    image: ghcr.io/muchobien/pocketbase:latest
+    ports:
+      - "8090:8090"
+    volumes:
+      - pb_data:/pb_data
+    # For initial setup, you might temporarily map port 8090 to localhost 
+    # to hit the UI via internal IPs, but Coolify sub-domains are standard.
+    networks:
+      - internal
+    restart: always
+
+volumes:
+  pb_data:
+
+networks:
+  internal:
+    driver: bridge

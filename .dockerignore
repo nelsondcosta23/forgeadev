@@ -1,0 +1,40 @@
+# Development and dependencies
+node_modules
+npm-debug.log*
+
+# Build outputs
+dist
+dist-ssr
+
+# PocketBase local data (managed by Docker volumes in compose)
+pb_data
+pb_public
+
+# Environment and Secrets
+.env
+.env.*
+
+# Temporary, scratch, and local files
+scratch
+test_*.js
+*.log
+*.pdf
+*.sql
+*.json
+!package.json
+!tsconfig*.json
+!components.json
+
+# Local IDE/Configuration
+.git
+.vscode
+.idea
+.gemini
+.github
+
+# Docker specific
+Dockerfile
+docker-compose.yml
+README.md
+.gitignore
+.dockerignore

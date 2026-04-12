@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { Eye, Users, TrendingDown, Globe, Languages, Clock } from "lucide-react";
 import { format, subDays } from "date-fns";
 import {
@@ -11,6 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+const safeFormatDate = (dateStr: string | null | undefined, formatStr: string = "dd/MM/yyyy HH:mm") => {
+  if (!dateStr) return "N/A";
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "Invalid Date";
+    return format(date, formatStr);
+  } catch (e) {
+    return "Invalid Date";
+  }
+};
 
 interface AnalyticsStats {
   total_pageviews: number;
@@ -27,7 +38,7 @@ interface AnalyticsStats {
     is_bounce: boolean;
     country_name: string;
     language: string;
-    started_at: string;
+    created: string;
   }>;
 }
 
@@ -42,36 +53,51 @@ export const AnalyticsDashboard = () => {
       const daysAgo = parseInt(timeRange);
       const fromDate = subDays(new Date(), daysAgo);
 
-      // Fetch pageviews
-      const { data: pageviews, error: pageviewsError } = await supabase
-        .from("analytics_events")
-        .select("*")
-        .eq("event_type", "pageview")
-        .gte("created_at", fromDate.toISOString());
-
-      if (pageviewsError) throw pageviewsError;
-
-      // Fetch sessions
-      const { data: sessions, error: sessionsError } = await supabase
-        .from("analytics_sessions")
-        .select("*")
-        .gte("created_at", fromDate.toISOString())
-        .order("started_at", { ascending: false });
-
-      if (sessionsError) throw sessionsError;
-
-      // Calculate stats
-      const totalPageviews = pageviews?.length || 0;
-      const totalSessions = sessions?.length || 0;
-      const bouncedSessions = sessions?.filter(s => s.is_bounce).length || 0;
-      const bounceRate = totalSessions > 0 ? (bouncedSessions / totalSessions) * 100 : 0;
+      // Fetch all relevant events
+      const events = await api.get(`/api/pb/analytics_events?created[gte]=${fromDate.toISOString().replace('T', ' ')}`);
       
-      const totalPages = sessions?.reduce((sum, s) => sum + (s.pages_viewed || 0), 0) || 0;
-      const avgPagesPerSession = totalSessions > 0 ? totalPages / totalSessions : 0;
+      if (!events || !Array.isArray(events)) {
+        setStats({
+          total_pageviews: 0,
+          total_sessions: 0,
+          bounce_rate: 0,
+          avg_pages_per_session: 0,
+          top_pages: [],
+          by_country: [],
+          by_language: [],
+          recent_sessions: [],
+        });
+        return;
+      }
+
+      // Process sessions from events
+      const sessionsMap: Record<string, any> = {};
+      events.forEach(event => {
+        const sid = event.session_id || "anonymous";
+        if (!sessionsMap[sid]) {
+          sessionsMap[sid] = {
+            session_id: sid,
+            events: [],
+            country_name: event.country_name || "Unknown",
+            country_code: event.country_code || "UN",
+            language: event.language || "Unknown",
+            created: event.created,
+          };
+        }
+        sessionsMap[sid].events.push(event);
+      });
+
+      const sessionsList = Object.values(sessionsMap);
+      const totalPageviews = events.filter(e => e.event_type === 'pageview').length;
+      const totalSessions = sessionsList.length;
+      
+      const bouncedSessions = sessionsList.filter(s => s.events.length === 1).length;
+      const bounceRate = totalSessions > 0 ? (bouncedSessions / totalSessions) * 100 : 0;
+      const avgPagesPerSession = totalSessions > 0 ? totalPageviews / totalSessions : 0;
 
       // Top pages
       const pageCounts: Record<string, number> = {};
-      pageviews?.forEach(pv => {
+      events.filter(e => e.event_type === 'pageview').forEach(pv => {
         pageCounts[pv.page_path] = (pageCounts[pv.page_path] || 0) + 1;
       });
       const topPages = Object.entries(pageCounts)
@@ -81,28 +107,18 @@ export const AnalyticsDashboard = () => {
 
       // By country
       const countryCounts: Record<string, { name: string; code: string; count: number }> = {};
-      sessions?.forEach(s => {
-        if (s.country_code && s.country_name) {
-          if (!countryCounts[s.country_code]) {
-            countryCounts[s.country_code] = {
-              name: s.country_name,
-              code: s.country_code,
-              count: 0
-            };
-          }
-          countryCounts[s.country_code].count++;
+      sessionsList.forEach(s => {
+        if (!countryCounts[s.country_code]) {
+          countryCounts[s.country_code] = { name: s.country_name, code: s.country_code, count: 0 };
         }
+        countryCounts[s.country_code].count++;
       });
-      const byCountry = Object.values(countryCounts)
-        .map(c => ({ country_name: c.name, country_code: c.code, count: c.count }))
-        .sort((a, b) => b.count - a.count);
+      const byCountry = Object.values(countryCounts).sort((a, b) => b.count - a.count);
 
       // By language
       const languageCounts: Record<string, number> = {};
-      sessions?.forEach(s => {
-        if (s.language) {
-          languageCounts[s.language] = (languageCounts[s.language] || 0) + 1;
-        }
+      sessionsList.forEach(s => {
+        languageCounts[s.language] = (languageCounts[s.language] || 0) + 1;
       });
       const byLanguage = Object.entries(languageCounts)
         .map(([language, count]) => ({ language, count }))
@@ -116,7 +132,15 @@ export const AnalyticsDashboard = () => {
         top_pages: topPages,
         by_country: byCountry,
         by_language: byLanguage,
-        recent_sessions: sessions?.slice(0, 20) || [],
+        recent_sessions: sessionsList.map(s => ({
+          session_id: s.session_id,
+          first_page: s.events[0]?.page_path || "/",
+          pages_viewed: s.events.length,
+          is_bounce: s.events.length === 1,
+          country_name: s.country_name,
+          language: s.language,
+          created: s.created,
+        })).sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()).slice(0, 20),
       });
     } catch (error) {
       console.error("Error fetching analytics:", error);
@@ -313,7 +337,7 @@ export const AnalyticsDashboard = () => {
                     <span>•</span>
                     <span>{session.language}</span>
                     <span>•</span>
-                    <span>{format(new Date(session.started_at), "dd/MM/yyyy HH:mm")}</span>
+                    <span>{safeFormatDate(session.created)}</span>
                   </div>
                 </div>
               </div>

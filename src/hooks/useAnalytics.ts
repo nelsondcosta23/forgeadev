@@ -17,32 +17,58 @@ const getSessionId = (): string => {
   }
 };
 
-// Get country info from localStorage (set by detect-country function)
-const getCountryInfo = () => {
+// Get country info from localStorage or detect via IP
+const getCountryInfo = async () => {
   try {
-    const countryData = localStorage.getItem('detectedCountry');
-    if (countryData) {
-      const parsed = JSON.parse(countryData);
+    // 1. Try localStorage first (cached)
+    const cached = localStorage.getItem('detectedCountry');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      // Check if cache is fresh (less than 24 hours)
+      if (Date.now() - (parsed.timestamp || 0) < 86400000) {
+        return {
+          country_code: parsed.code,
+          country_name: parsed.name,
+        };
+      }
+    }
+
+    // 2. Detect via IP if not cached or stale
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    
+    if (data.country_code && data.country_name) {
+      const countryData = {
+        code: data.country_code,
+        name: data.country_name,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('detectedCountry', JSON.stringify(countryData));
       return {
-        country_code: parsed.code,
-        country_name: parsed.name,
+        country_code: data.country_code,
+        country_name: data.country_name,
       };
     }
   } catch (error) {
-    console.error('Error parsing country data:', error);
+    if (import.meta.env.DEV) {
+      console.warn('Geolocation detection failed:', error);
+    }
   }
   return {
-    country_code: undefined,
-    country_name: undefined,
+    country_code: 'Unknown',
+    country_name: 'Unknown',
   };
 };
 
 const invokeTrackAnalytics = async (event: Record<string, unknown>) => {
-  // Dynamic import prevents app-boot crashes when storage is unavailable in some browsers/environments
-  const { supabase } = await import('@/integrations/supabase/client');
-  return supabase.functions.invoke('track-analytics', {
-    body: event,
-  });
+  return fetch('/api/analytics/track', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || '',
+    },
+    body: JSON.stringify(event),
+  }).then(res => res.json());
 };
 
 export const useAnalytics = () => {
@@ -61,7 +87,7 @@ export const useAnalytics = () => {
     const trackPageView = async () => {
       try {
         const sessionId = getSessionId();
-        const countryInfo = getCountryInfo();
+        const countryInfo = await getCountryInfo();
 
         const event = {
           event_type: 'pageview',
@@ -79,7 +105,7 @@ export const useAnalytics = () => {
         };
 
         await invokeTrackAnalytics(event);
-        console.log('Analytics event tracked:', event.page_path);
+        console.log('Analytics event tracked:', event.page_path, countryInfo.country_code);
       } catch (error) {
         console.error('Error tracking analytics:', error);
       }
@@ -99,7 +125,7 @@ export const trackEvent = async (
 ) => {
   try {
     const sessionId = getSessionId();
-    const countryInfo = getCountryInfo();
+    const countryInfo = await getCountryInfo();
 
     const event = {
       event_type: eventType,

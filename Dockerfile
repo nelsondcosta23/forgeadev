@@ -1,30 +1,39 @@
-# Stage 1: Build
-FROM node:18-alpine as build
+# Stage 1: Build React PWA
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
+# Install dependencies (only for frontend)
 COPY package*.json ./
-# Note: Project also contains bun.lock, but using npm as requested
 RUN npm install
 
-# Copy source code
+# Build frontend
 COPY . .
-
-# Build the application
+ARG VITE_INTERNAL_PROXY_KEY
+ENV VITE_INTERNAL_PROXY_KEY=$VITE_INTERNAL_PROXY_KEY
 RUN npm run build
 
-# Stage 2: Production
-FROM nginx:stable-alpine
+# Stage 2: Production Proxy & Static Server
+FROM node:18-alpine
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy build files from stage 1
-COPY --from=build /app/dist /usr/share/nginx/html
+# Switch to non-root user 'node' as recommended in the Playbook context
+RUN chown -R node:node /app
+USER node
 
-# Expose port 80
-EXPOSE 80
+# We copy the bare minimum files for the proxy server
+COPY --chown=node:node package*.json ./
+# Make sure to install production dependencies only for the node server
+RUN npm install --omit=dev
 
-# Coolify will handle healthchecks via UI, so none included here
-CMD ["nginx", "-g", "daemon off;"]
+# Copy the server file
+COPY --chown=node:node server.js ./
+
+# Copy the static dist folder built in Stage 1
+COPY --chown=node:node --from=build /app/dist ./dist
+
+# Avoid running on privileged port
+EXPOSE 8085
+
+CMD ["node", "server.js"]

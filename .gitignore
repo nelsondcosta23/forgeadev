@@ -1,25 +1,62 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Dependency directories
+node_modules/
+jspdf/
+html2canvas/
 
-node_modules
-dist
-dist-ssr
+# Build outputs
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Environment and Secrets (CRITICAL: never commit these)
+.env
+.env.*
+!.env.example
+
+# PocketBase Data
+pb_data/
+pb_public/
+
+# Database Backups & sensitive dumps
+*.sql
+*.sqlite
+*.db
+*.json
+!package.json
+!tsconfig.json
+!components.json
+!composer.json
+forgea-backup-*/
+
+# Local IDE and OS files
+.vscode/
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.env
+.gemini/
+.github/
+
+# Logs and temporary files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+scratch/
+test_*.js
+*.tmp
+
+# User-specific or generated assets
+*.pdf
+public/builds/
+public/images/debug/
+build_report_*.png
+
+# Bun
+bun.lockb
+bun.lock

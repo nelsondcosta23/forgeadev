@@ -7,6 +7,7 @@ import { ShareDialog } from "./ShareDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import QRCode from "qrcode";
 
 interface AIResultsViewProps {
@@ -57,280 +58,228 @@ export const AIResultsView = ({
 
   const handleDownload = async () => {
     if (!finalSessionId) {
-      toast.warning(t('results.generatingLink', { defaultValue: 'Generating build link...' }));
+      toast.warning(t('results.generatingLink', { defaultValue: 'A gerar link da build...' }));
       return;
     }
 
     try {
-      toast.info(t('results.generatingPDF', { defaultValue: 'Generating PDF...' }));
+      toast.info(t('results.generatingPDF', { defaultValue: 'A gerar PDF profissional...' }));
       
-      const pdf = new jsPDF();
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 20;
+      const margin = 15;
       let yPos = margin;
 
       // Forgea Brand Colors
       const primaryColor: [number, number, number] = [255, 117, 26];
-      const textDark: [number, number, number] = [40, 40, 40];
-      const textLight: [number, number, number] = [100, 100, 100];
+      const secondaryColor: [number, number, number] = [31, 41, 55]; // Slate 800
+      const lightBg: [number, number, number] = [249, 250, 251]; // Gray 50
+      const borderColor: [number, number, number] = [229, 231, 235]; // Gray 200
 
-      // Header with FORGEA logo and QR Code
-      pdf.setFontSize(32);
+      // 1. Header Section
+      // Background for header
+      pdf.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.rect(0, 0, pageWidth, 45, "F");
+
+      // logo
+      pdf.setFontSize(28);
+      pdf.setTextColor(255, 255, 255);
       pdf.setFont(undefined, "bold");
-      pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.text("FORGEA", margin, yPos);
+      pdf.text("FORGEA", margin, 28);
+
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, "normal");
+      pdf.setTextColor(200, 200, 200);
+      pdf.text("Build Inteligente de PC", margin, 35);
 
       // Generate QR Code
       const qrCodeDataUrl = await QRCode.toDataURL(shareUrl, {
-        width: 120,
+        width: 150,
         margin: 1,
-        color: {
-          dark: "#000000",
-          light: "#FFFFFF"
-        }
+        color: { dark: "#1F2937", light: "#FFFFFF" }
       });
       
-      const qrSize = 35;
-      pdf.addImage(qrCodeDataUrl, "PNG", pageWidth - margin - qrSize, yPos - 12, qrSize, qrSize);
-      pdf.setFontSize(8);
-      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
-      pdf.text("Scan to view", pageWidth - margin - qrSize + 4, yPos + 26);
-
-      yPos += 20;
-
-      // Build URL Highlight Box
-      pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.setFillColor(255, 250, 245);
-      pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, 18, 2, 2, "FD");
+      const qrSize = 30;
+      // QR Box on the right
+      pdf.setFillColor(255, 255, 255);
+      pdf.roundedRect(pageWidth - margin - qrSize - 4, 6, qrSize + 8, qrSize + 8, 2, 2, "F");
+      pdf.addImage(qrCodeDataUrl, "PNG", pageWidth - margin - qrSize - 2, 8, qrSize + 4, qrSize + 4);
       
-      yPos += 7;
+      pdf.setFontSize(7);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text("SCAN TO VIEW ONLINE", pageWidth - margin - qrSize - 1, 42);
+
+      yPos = 55;
+
+      // 2. Build Summary Banner
+      pdf.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
+      pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+      pdf.roundedRect(margin, yPos, pageWidth - (margin * 2), 25, 2, 2, "FD");
+
+      const sessionDate = new Date(sessionInfo.completed_at).toLocaleDateString();
+      
       pdf.setFontSize(9);
+      pdf.setTextColor(100, 100, 100);
       pdf.setFont(undefined, "bold");
-      pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.text("Your Build URL:", margin + 4, yPos);
-      
-      yPos += 6;
-      pdf.setFontSize(8);
+      pdf.text("SESSION ID", margin + 5, yPos + 8);
+      pdf.text("COUNTRY", margin + 70, yPos + 8);
+      pdf.text("DATE", margin + 130, yPos + 8);
+
+      pdf.setFontSize(10);
+      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
       pdf.setFont(undefined, "normal");
-      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-      const urlText = pdf.splitTextToSize(shareUrl, pageWidth - 2 * margin - 8);
-      pdf.text(urlText, margin + 4, yPos);
-      
-      yPos += 10;
+      pdf.text(finalSessionId.substring(0, 18) + "...", margin + 5, yPos + 15);
+      pdf.text(sessionInfo.country || "Global", margin + 70, yPos + 15);
+      pdf.text(sessionDate, margin + 130, yPos + 15);
 
-      // Main Title
-      pdf.setFontSize(20);
-      pdf.setFont(undefined, "bold");
-      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-      pdf.text("Your Custom PC Builds", margin, yPos);
-      yPos += 8;
+      yPos += 35;
 
-      // Subtitle
-      pdf.setFontSize(11);
-      pdf.setFont(undefined, "normal");
-      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
-      pdf.text("Personalized recommendations based on your preferences", margin, yPos);
-      yPos += 15;
-
-      // AI Personalized Recommendation Section
-      pdf.setFontSize(14);
-      pdf.setFont(undefined, "bold");
-      pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-      pdf.text("AI Personalized Recommendation", margin, yPos);
-      yPos += 12;
-
-      // Builds Section
-      const buildTypes = ["Best Value", "Balanced", "High Performance"] as const;
-      const buildTitles = ["Best Value Build", "Balanced Build", "High Performance Build"];
-      
-      for (let i = 0; i < buildTypes.length; i++) {
-        const buildType = buildTypes[i];
-        const build = recommendations[buildType];
-        
-        if (yPos > pageHeight - 80) {
-          pdf.addPage();
-          yPos = margin;
-        }
-
-        // Build Title
-        pdf.setFontSize(13);
-        pdf.setFont(undefined, "bold");
-        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.text(buildTitles[i], margin, yPos);
-        yPos += 8;
-
-        // Components list with bullets
-        pdf.setFontSize(10);
-        pdf.setFont(undefined, "normal");
-        pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-
-        const components = [
-          { label: "Processor", value: getComponentModel(build.processor) },
-          { label: "Graphics Card", value: getComponentModel(build.graphics_card) },
-          { label: "RAM", value: getComponentModel(build.ram) },
-          { label: "Storage", value: getComponentModel(build.storage) },
-          { label: "Power Supply", value: getComponentModel(build.power_supply) },
-        ];
-
-        for (const component of components) {
-          if (yPos > pageHeight - 25) {
-            pdf.addPage();
-            yPos = margin;
-          }
-          
-          // Bullet point
-          pdf.circle(margin + 2, yPos - 1.5, 0.8, "F");
-          
-          const text = `${component.label}: ${component.value}`;
-          const maxWidth = pageWidth - 2 * margin - 8;
-          const lines = pdf.splitTextToSize(text, maxWidth);
-          pdf.text(lines, margin + 6, yPos);
-          yPos += 5 * lines.length;
-        }
-
-        // Price and Performance info
-        if (build.estimated_price_range) {
-          pdf.circle(margin + 2, yPos - 1.5, 0.8, "F");
-          pdf.text(`Estimated Price: ${build.estimated_price_range}`, margin + 6, yPos);
-          yPos += 5;
-        }
-
-        if (build.performance_tier) {
-          pdf.circle(margin + 2, yPos - 1.5, 0.8, "F");
-          pdf.text(`Performance Tier: ${build.performance_tier}`, margin + 6, yPos);
-          yPos += 5;
-        }
-
-        yPos += 8;
-      }
-
-      // AI Recommendation Explanation Section
-      if (explanation) {
-        if (yPos > pageHeight - 80) {
-          pdf.addPage();
-          yPos = margin;
-        }
-
-        // Section Header
+      // 3. User Requirements (Optional but good)
+      if (sessionInfo.ai_report) {
         pdf.setFontSize(14);
         pdf.setFont(undefined, "bold");
         pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.text("AI Recommendation Explanation", margin, yPos);
+        pdf.text("O Teu Perfil", margin, yPos);
+        yPos += 8;
+
+        autoTable(pdf, {
+          startY: yPos,
+          margin: { left: margin },
+          theme: 'plain',
+          styles: { fontSize: 10, cellPadding: 2 },
+          columnStyles: { 0: { fontStyle: 'bold', textColor: [100, 100, 100], width: 40 } },
+          body: [
+            ["Orçamento:", sessionInfo.ai_report.budget_range || "N/A"],
+            ["Uso Principal:", sessionInfo.ai_report.primary_use || "N/A"],
+            ["Performance:", sessionInfo.ai_report.performance_level || "N/A"],
+          ],
+        });
+        yPos = (pdf as any).lastAutoTable.finalY + 15;
+      }
+
+      // 4. Recommendation Cards
+      const buildTypes = ["Best Value", "Balanced", "High Performance"] as const;
+      const buildColors: Record<string, [number, number, number]> = {
+        "Best Value": [16, 185, 129],    // Emerald 500
+        "Balanced": [255, 117, 26],      // Forgea Orange
+        "High Performance": [139, 92, 246] // Purple 500
+      };
+
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, "bold");
+      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.text("Configurações Recomendadas", margin, yPos);
+      yPos += 10;
+
+      for (const buildType of buildTypes) {
+        const build = recommendations[buildType];
+        const color = buildColors[buildType];
+
+        if (yPos > pageHeight - 80) {
+          pdf.addPage();
+          yPos = margin;
+        }
+
+        // Card Header
+        pdf.setFillColor(color[0], color[1], color[2]);
+        pdf.roundedRect(margin, yPos, pageWidth - (margin * 2), 10, 1, 1, "F");
+        
+        pdf.setFontSize(11);
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont(undefined, "bold");
+        pdf.text(`${buildType.toUpperCase()} - ${build.performance_tier}`, margin + 5, yPos + 6.5);
+        
+        pdf.setTextColor(255, 255, 255);
+        const priceText = build.estimated_price_range;
+        const priceWidth = pdf.getTextWidth(priceText);
+        pdf.text(priceText, pageWidth - margin - priceWidth - 5, yPos + 6.5);
+
+        yPos += 10;
+
+        // Components Table
+        autoTable(pdf, {
+          startY: yPos,
+          margin: { left: margin, right: margin },
+          theme: 'striped',
+          head: [['Componente', 'Modelo Recomendado']],
+          headStyles: { fillColor: [240, 240, 40], textColor: [0,0,0], fontSize: 0, cellPadding: 0 }, // Hide header but keep structure
+          showHead: false,
+          styles: { fontSize: 9, cellPadding: 4 },
+          columnStyles: { 
+            0: { fontStyle: 'bold', width: 45, textColor: color },
+            1: { cellWidth: 'auto' }
+          },
+          body: [
+            ['Processador', getComponentModel(build.processor)],
+            ['Placa Gráfica', getComponentModel(build.graphics_card)],
+            ['Memória RAM', getComponentModel(build.ram)],
+            ['Armazenamento', getComponentModel(build.storage)],
+            ['Fonte Alimentação', getComponentModel(build.power_supply)],
+          ],
+        });
+
+        yPos = (pdf as any).lastAutoTable.finalY + 12;
+      }
+
+      // 5. AI Explanation
+      if (explanation) {
+        if (yPos > pageHeight - 60) {
+          pdf.addPage();
+          yPos = margin;
+        }
+
+        pdf.setFontSize(14);
+        pdf.setFont(undefined, "bold");
+        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.text("Análise da Nossa IA", margin, yPos);
         yPos += 8;
 
         pdf.setFontSize(10);
-        pdf.setFont(undefined, "italic");
-        pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
-        pdf.text("Why these specific configurations were chosen for your needs", margin, yPos);
-        yPos += 12;
-
-        // Split explanation into paragraphs
-        const paragraphs = explanation.split('\n\n').filter(p => p.trim());
+        pdf.setFont(undefined, "normal");
+        pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
         
-        for (const paragraph of paragraphs) {
-          const trimmedParagraph = paragraph.trim();
-          
-          // Check for bullet points or numbered lists
-          const isBulletPoint = trimmedParagraph.match(/^[-•*]\s/);
-          const isNumberedList = trimmedParagraph.match(/^\d+\.\s/);
-          
-          if (yPos > pageHeight - 25) {
+        const splitExplanation = pdf.splitTextToSize(explanation, pageWidth - (margin * 2));
+        
+        // Handle multipage text carefully
+        for (const line of splitExplanation) {
+          if (yPos > pageHeight - 15) {
             pdf.addPage();
             yPos = margin;
           }
-
-          // Check if paragraph contains emphasis markers (**, __, or ALL CAPS words)
-          const hasEmphasis = trimmedParagraph.match(/\*\*(.+?)\*\*|__(.+?)__|[A-Z]{3,}/g);
-          
-          if (hasEmphasis) {
-            // Parse and render text with emphasis
-            const parts = trimmedParagraph.split(/(\*\*[^*]+\*\*|__[^_]+__|[A-Z]{3,}(?:\s+[A-Z]{3,})*)/g);
-            let xPos = margin;
-            
-            if (isBulletPoint || isNumberedList) {
-              xPos = margin + 5;
-              pdf.setFontSize(9);
-              pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-              pdf.text("•", margin + 2, yPos);
-            }
-            
-            for (const part of parts) {
-              if (!part) continue;
-              
-              const isEmphasis = part.match(/^\*\*(.+)\*\*$|^__(.+)__$/) || part.match(/^[A-Z]{3,}(?:\s+[A-Z]{3,})*$/);
-              
-              if (isEmphasis) {
-                // Bold and orange for emphasis
-                pdf.setFont(undefined, "bold");
-                pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-                const cleanText = part.replace(/[\*_]/g, '');
-                const lines = pdf.splitTextToSize(cleanText, pageWidth - xPos - margin);
-                pdf.text(lines, xPos, yPos);
-                xPos += pdf.getTextWidth(lines[0]) + 1;
-              } else {
-                // Normal text
-                pdf.setFont(undefined, "normal");
-                pdf.setFontSize(9);
-                pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-                const lines = pdf.splitTextToSize(part, pageWidth - xPos - margin);
-                pdf.text(lines, xPos, yPos);
-                if (lines.length > 1) {
-                  yPos += (lines.length - 1) * 5;
-                }
-                xPos += pdf.getTextWidth(lines[lines.length - 1]) + 1;
-              }
-            }
-            yPos += 7;
-          } else {
-            // Regular paragraph without emphasis
-            pdf.setFontSize(9);
-            pdf.setFont(undefined, "normal");
-            pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-            
-            let textToRender = trimmedParagraph;
-            let leftMargin = margin;
-            
-            if (isBulletPoint) {
-              textToRender = trimmedParagraph.replace(/^[-•*]\s/, '');
-              leftMargin = margin + 5;
-              pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-              pdf.text("•", margin + 2, yPos);
-              pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-            } else if (isNumberedList) {
-              leftMargin = margin + 5;
-            }
-            
-            const lines = pdf.splitTextToSize(textToRender, pageWidth - leftMargin - margin);
-            
-            for (const line of lines) {
-              if (yPos > pageHeight - 20) {
-                pdf.addPage();
-                yPos = margin;
-              }
-              pdf.text(line, leftMargin, yPos);
-              yPos += 5;
-            }
-            
-            yPos += 3; // Extra space after paragraph
-          }
+          pdf.text(line, margin, yPos);
+          yPos += 5.5;
         }
-        
-        yPos += 5;
       }
 
-      // Footer
-      pdf.setFontSize(8);
-      pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
-      const footerText = `Generated on ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} | www.forgea.com`;
-      const footerWidth = pdf.getTextWidth(footerText);
-      pdf.text(footerText, (pageWidth - footerWidth) / 2, pageHeight - 10);
+      // 6. Share Section at bottom
+      yPos += 15;
+      if (yPos < pageHeight - 30) {
+        pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 10;
+        
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text("Link Direto para Partilha:", margin, yPos);
+        yPos += 5;
+        
+        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.setFont(undefined, "bold");
+        pdf.text(shareUrl, margin, yPos);
+      }
 
+      // Save PDF
       pdf.save(`forgea-build-${finalSessionId}.pdf`);
-      toast.success(t('results.pdfDownloaded', { defaultValue: 'PDF downloaded successfully!' }));
+      toast.success(t('results.pdfDownloaded', { defaultValue: 'PDF gerado com sucesso!' }));
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error(t('results.pdfError', { defaultValue: 'Error generating PDF. Please try again.' }));
+      toast.error(t('results.pdfError', { defaultValue: 'Erro ao gerar PDF. Tenta novamente.' }));
     }
   };
 

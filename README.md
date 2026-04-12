@@ -1,73 +1,70 @@
-# Welcome to your Lovable project
+# Forgea — AI-Powered PC Build Recommender
 
-## Project info
+Forgea is a high-performance web application that helps users find their perfect PC build in under a minute. By answering a simple quiz about their goals, budget, and preferences, users receive professional, AI-generated build recommendations tailored to their specific needs.
 
-**URL**: https://lovable.dev/projects/5960d8b5-f07c-4be1-ad4d-8fe700f59646
+## 🚀 Features
 
-## How can I edit this code?
+*   **1-Minute Quiz**: Streamlined questionnaire to capture technical requirements.
+*   **AI Engine**: Powered by **Google Gemini 1.5 Flash** for intelligent, balanced, and compatible component selection.
+*   **Multi-Store Support**: Dynamic regional links (Amazon.com, Amazon.es, etc.) based on user location.
+*   **High-Fidelity PDF Export**: Professional build reports for offline reference.
+*   **Administrative Panel**: Complete dashboard for managing prompts, store links, SEO, and viewing detailed project analytics.
+*   **Real-time Telemetry**: Integrated tracking for user sessions and conversion metrics.
 
-There are several ways of editing your application.
+## 🛠️ Technology Stack
 
-**Use Lovable**
+*   **Frontend**: React + Vite + TypeScript + Tailwind CSS (UI: shadcn/ui)
+*   **Backend (BFF)**: Node.js + Express
+*   **Database**: PocketBase (SQLite-based backend-as-a-service)
+*   **AI Agent**: Google Gemini API
+*   **Infrastructure**: Docker + Docker Compose
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5960d8b5-f07c-4be1-ad4d-8fe700f59646) and start prompting.
+## 📦 Setup & Installation
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
+*   [Docker](https://www.docker.com/) and Docker Compose installed.
+*   A Google Gemini API Key.
 
-**Use your preferred IDE**
+### 1. Environment Configuration
+Create a `.env` file in the root directory based on the `.env.example` provided:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```env
+# Server Config
+PORT=8085
+INTERNAL_PROXY_KEY=your_secure_random_key_here
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# PocketBase Config
+POCKETBASE_URL=http://pb:8090
+PB_ADMIN_EMAIL=admin@forgea.com
+PB_ADMIN_PASSWORD=secure_password_here
 
-Follow these steps:
+# AI Config
+GEMINI_API_KEY=your_google_gemini_key
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Frontend Build
+VITE_INTERNAL_PROXY_KEY=your_secure_random_key_here
 ```
 
-**Edit a file directly in GitHub**
+### 2. Run with Docker
+Start the entire stack (PocketBase + BFF + Frontend) using:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+docker compose up -d --build
+```
 
-**Use GitHub Codespaces**
+The application will be available at `http://localhost:8085` and the PocketBase admin UI at `http://localhost:8090/_/`.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📂 Project Structure
 
-## What technologies are used for this project?
+*   `/src`: Frontend source code (React components, hooks, pages).
+*   `/server.js`: BFF (Backend For Frontend) handle proxying to PocketBase and AI requests.
+*   `/pb_data`: Local volume for PocketBase data storage (ignored by git).
+*   `/public`: Static assets and icons.
 
-This project is built with:
+## 🛡️ Security
+*   Credentials and API keys are strictly managed via environment variables.
+*   The BFF acts as a security proxy, preventing direct exposure of the database to the public web.
+*   Sensitive files (backups, logs, local DBs) are excluded via `.gitignore`.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5960d8b5-f07c-4be1-ad4d-8fe700f59646) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+© 2026 Forgea. Created by building high-performance PC solutions.

@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -20,31 +19,31 @@ export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': import.meta.env.VITE_INTERNAL_PROXY_KEY || ''
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) {
-        toast.error("Login failed: " + error.message);
+      if (!response.ok) {
+        const err = await response.json();
+        toast.error("Login failed: " + (err.error || "Invalid credentials"));
         setIsLoading(false);
         return;
       }
 
-      if (data.user) {
-        // Check if user has admin role
-        const { data: hasAdminRole, error: roleError } = await supabase.rpc('has_role', {
-          _user_id: data.user.id,
-          _role: 'admin'
-        });
-
-        if (roleError || !hasAdminRole) {
-          toast.error("Access denied. Admin privileges required.");
-          await supabase.auth.signOut();
-          setIsLoading(false);
-          return;
-        }
-
+      const data = await response.json();
+      
+      if (data.token) {
+        // Save PB auth data for subsequent proxied requests
+        localStorage.setItem('pb_auth', JSON.stringify({
+          token: data.token,
+          model: data.record || data.admin
+        }));
+        
         toast.success("Access granted!");
         onLogin();
       }

@@ -20,19 +20,8 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
           return;
         }
 
-        const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase.functions.invoke('detect-country', {
-          body: null,
-        });
-
-        if (controller.signal.aborted) return;
-
-        if (error) {
-          console.error('Error detecting country:', error);
-          return;
-        }
-
-        const countryCode = data?.country_code;
+        // Fallback to avoid external API dependencies that can be blocked or error out
+        const countryCode = 'PT';
         const language = mapCountryToLanguage(countryCode);
         console.log('Detected country:', countryCode, '-> Language:', language);
         await i18n.changeLanguage(language);

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { QuizAnswers } from "@/components/quiz/questions";
 import { questions } from "@/components/quiz/questions";
 import Results from "@/components/quiz/Results";
@@ -24,49 +23,13 @@ const SharedResults = () => {
       }
 
       try {
-        // Fetch quiz responses for this session
-        const { data: responses, error: fetchError } = await supabase
-          .from("quiz_responses")
-          .select("*")
-          .eq("session_id", sessionId)
-          .order("question_number", { ascending: true });
-
-        if (fetchError) throw fetchError;
-
-        if (!responses || responses.length === 0) {
-          setError("No results found for this session");
-          setLoading(false);
-          return;
-        }
-
-        // Reconstruct the answers object from responses
-        // question_text is stored as the translation key (e.g. "questions.country.question")
-        const reconstructedAnswers: QuizAnswers = {};
-        responses.forEach((response) => {
-          const questionId = extractQuestionId(response.question_text);
-          if (questionId) {
-            const value = isNaN(Number(response.selected_answer)) 
-              ? response.selected_answer 
-              : Number(response.selected_answer);
-            reconstructedAnswers[questionId] = value;
-          }
-        });
-
-        setAnswers(reconstructedAnswers);
-
-        // Fetch AI recommendation for this session
-        const { data: aiData, error: aiError } = await supabase
-          .from("ai_recommendations")
-          .select("recommendation_text")
-          .eq("session_id", sessionId)
-          .maybeSingle();
-
-        if (aiError) {
-          console.error("Error fetching AI recommendation:", aiError);
-        } else if (aiData?.recommendation_text) {
-          setAiRecommendation(aiData.recommendation_text);
-        }
-
+        const response = await fetch(`/api/results/${sessionId}`);
+        if (!response.ok) throw new Error("Results not found");
+        
+        const data = await response.json();
+        
+        setAnswers(data.answers);
+        setAiRecommendation(JSON.stringify(data.recommendation));
       } catch (err) {
         console.error("Error fetching results:", err);
         setError("Failed to load results");
@@ -77,40 +40,6 @@ const SharedResults = () => {
 
     fetchResults();
   }, [sessionId]);
-
-  // Build map from translation keys to question IDs
-  const extractQuestionId = (questionText: string): string | null => {
-    // First try matching by translation key (stored format)
-    const translationKeyMap: { [key: string]: string } = {};
-    questions.forEach(q => {
-      translationKeyMap[q.question] = q.id;
-    });
-
-    if (translationKeyMap[questionText]) {
-      return translationKeyMap[questionText];
-    }
-
-    // Fallback: match by hardcoded English text for legacy data
-    const legacyMap: { [key: string]: string } = {
-      "What country are you from?": "country",
-      "What do you need the PC for?": "purpose",
-      "What games or genres do you play the most?": "games",
-      "What resolution do you want to play at?": "resolution",
-      "How many FPS do you want to achieve?": "fps",
-      "Do you plan to stream or record?": "streaming",
-      "What type of software do you use?": "software",
-      "Do you need to run multiple applications simultaneously?": "multitask",
-      "What programs do you use to create content?": "contentSoftware",
-      "Do you render video in 4K or higher?": "render4k",
-      "Do you need to accelerate rendering with GPU?": "gpuAcceleration",
-      "What is your maximum budget?": "budget",
-      "Do you have a preference for aesthetics or size?": "casePreference",
-      "Do you need a monitor, keyboard or mouse?": "peripherals",
-      "Do you want future upgrade capability?": "upgradability",
-    };
-
-    return legacyMap[questionText] || null;
-  };
 
   if (loading) {
     return (
