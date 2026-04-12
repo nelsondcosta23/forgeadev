@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
 import { CRM } from "@/components/admin/CRM";
 import { SEOMarketing } from "@/components/admin/SEOMarketing";
-import { DatabaseBackup } from "@/components/admin/DatabaseBackup";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1292,8 +1291,23 @@ const Admin = () => {
               <SEOMarketing />
             </TabsContent>
 
-            <TabsContent value="backup" className="mt-6">
-              <DatabaseBackup />
+            <TabsContent value="backup" className="space-y-6 mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Database Backup</CardTitle>
+                  <CardDescription>
+                    All data is now stored in PocketBase. Backups should be managed via the PocketBase Admin UI or automated S3 backups in the PB configuration.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    onClick={() => window.open(`${import.meta.env.VITE_POCKETBASE_URL || 'http://localhost:8090'}/_/#/settings/backups`, '_blank')}
+                    variant="outline"
+                  >
+                    Open PocketBase Backup Settings
+                  </Button>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-8 mt-6">
