@@ -167,14 +167,14 @@ export const BuildReport = ({ recommendation, ai_report, metadata, sessionId, re
                       <Cpu className="h-4 w-4 text-primary" />
                       Processor
                     </div>
-                    <p className="text-sm font-medium">{build.processor.model}</p>
-                    <p className="text-xs text-muted-foreground">{build.processor.recommended_price}</p>
-                    {build.processor.where_to_buy.length > 0 && (
+                    <p className="text-sm font-medium">{build.processor?.model}</p>
+                    <p className="text-xs text-muted-foreground">{build.processor?.recommended_price}</p>
+                    {build.processor?.where_to_buy?.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         Buy at: {build.processor.where_to_buy.join(", ")}
                       </p>
                     )}
-                    {build.processor.video_link && (
+                    {build.processor?.video_link && (
                       <a 
                         href={build.processor.video_link} 
                         target="_blank" 
@@ -194,14 +194,14 @@ export const BuildReport = ({ recommendation, ai_report, metadata, sessionId, re
                       <Box className="h-4 w-4 text-primary" />
                       Graphics Card
                     </div>
-                    <p className="text-sm font-medium">{build.graphics_card.model}</p>
-                    <p className="text-xs text-muted-foreground">{build.graphics_card.recommended_price}</p>
-                    {build.graphics_card.where_to_buy.length > 0 && (
+                    <p className="text-sm font-medium">{build.graphics_card?.model}</p>
+                    <p className="text-xs text-muted-foreground">{build.graphics_card?.recommended_price}</p>
+                    {build.graphics_card?.where_to_buy?.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         Buy at: {build.graphics_card.where_to_buy.join(", ")}
                       </p>
                     )}
-                    {build.graphics_card.video_link && (
+                    {build.graphics_card?.video_link && (
                       <a 
                         href={build.graphics_card.video_link} 
                         target="_blank" 
@@ -221,14 +221,14 @@ export const BuildReport = ({ recommendation, ai_report, metadata, sessionId, re
                       <MemoryStick className="h-4 w-4 text-primary" />
                       RAM
                     </div>
-                    <p className="text-sm font-medium">{build.ram.model}</p>
-                    <p className="text-xs text-muted-foreground">{build.ram.recommended_price}</p>
-                    {build.ram.where_to_buy.length > 0 && (
+                    <p className="text-sm font-medium">{build.ram?.model}</p>
+                    <p className="text-xs text-muted-foreground">{build.ram?.recommended_price}</p>
+                    {build.ram?.where_to_buy?.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         Buy at: {build.ram.where_to_buy.join(", ")}
                       </p>
                     )}
-                    {build.ram.video_link && (
+                    {build.ram?.video_link && (
                       <a 
                         href={build.ram.video_link} 
                         target="_blank" 
@@ -248,14 +248,14 @@ export const BuildReport = ({ recommendation, ai_report, metadata, sessionId, re
                       <HardDrive className="h-4 w-4 text-primary" />
                       Storage
                     </div>
-                    <p className="text-sm font-medium">{build.storage.model}</p>
-                    <p className="text-xs text-muted-foreground">{build.storage.recommended_price}</p>
-                    {build.storage.where_to_buy.length > 0 && (
+                    <p className="text-sm font-medium">{build.storage?.model}</p>
+                    <p className="text-xs text-muted-foreground">{build.storage?.recommended_price}</p>
+                    {build.storage?.where_to_buy?.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         Buy at: {build.storage.where_to_buy.join(", ")}
                       </p>
                     )}
-                    {build.storage.video_link && (
+                    {build.storage?.video_link && (
                       <a 
                         href={build.storage.video_link} 
                         target="_blank" 
@@ -275,14 +275,14 @@ export const BuildReport = ({ recommendation, ai_report, metadata, sessionId, re
                       <Zap className="h-4 w-4 text-primary" />
                       Power Supply
                     </div>
-                    <p className="text-sm font-medium">{build.power_supply.model}</p>
-                    <p className="text-xs text-muted-foreground">{build.power_supply.recommended_price}</p>
-                    {build.power_supply.where_to_buy.length > 0 && (
+                    <p className="text-sm font-medium">{build.power_supply?.model}</p>
+                    <p className="text-xs text-muted-foreground">{build.power_supply?.recommended_price}</p>
+                    {build.power_supply?.where_to_buy?.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         Buy at: {build.power_supply.where_to_buy.join(", ")}
                       </p>
                     )}
-                    {build.power_supply.video_link && (
+                    {build.power_supply?.video_link && (
                       <a 
                         href={build.power_supply.video_link} 
                         target="_blank" 

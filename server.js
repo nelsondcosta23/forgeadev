@@ -236,9 +236,45 @@ app.post('/api/quiz/analyze', authenticateProxy, ensurePbAuth, async (req, res) 
             builds: {
               type: "object",
               properties: {
-                "Best Value": { type: "object", properties: { processor: { type: "string" }, graphics_card: { type: "string" }, ram: { type: "string" }, storage: { type: "string" }, power_supply: { type: "string" }, motherboard: { type: "string" }, case: { type: "string" }, cooler: { type: "string" }, estimated_price_range: { type: "string" }, performance_tier: { type: "string" } }, required: ["processor", "graphics_card", "ram", "storage", "estimated_price_range"] },
-                "Balanced": { type: "object", properties: { processor: { type: "string" }, graphics_card: { type: "string" }, ram: { type: "string" }, storage: { type: "string" }, power_supply: { type: "string" }, motherboard: { type: "string" }, case: { type: "string" }, cooler: { type: "string" }, estimated_price_range: { type: "string" }, performance_tier: { type: "string" } }, required: ["processor", "graphics_card", "ram", "storage", "estimated_price_range"] },
-                "High Performance": { type: "object", properties: { processor: { type: "string" }, graphics_card: { type: "string" }, ram: { type: "string" }, storage: { type: "string" }, power_supply: { type: "string" }, motherboard: { type: "string" }, case: { type: "string" }, cooler: { type: "string" }, estimated_price_range: { type: "string" }, performance_tier: { type: "string" } }, required: ["processor", "graphics_card", "ram", "storage", "estimated_price_range"] }
+                "Best Value": {
+                  type: "object",
+                  properties: {
+                    processor: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    graphics_card: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    ram: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    storage: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    power_supply: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    estimated_price_range: { type: "string" },
+                    performance_tier: { type: "string" }
+                  },
+                  required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
+                },
+                "Balanced": {
+                  type: "object",
+                  properties: {
+                    processor: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    graphics_card: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    ram: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    storage: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    power_supply: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    estimated_price_range: { type: "string" },
+                    performance_tier: { type: "string" }
+                  },
+                  required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
+                },
+                "High Performance": {
+                  type: "object",
+                  properties: {
+                    processor: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    graphics_card: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    ram: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    storage: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    power_supply: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } }, video_link: { type: "string" } }, required: ["model", "recommended_price", "where_to_buy"] },
+                    estimated_price_range: { type: "string" },
+                    performance_tier: { type: "string" }
+                  },
+                  required: ["processor", "graphics_card", "ram", "storage", "power_supply", "estimated_price_range", "performance_tier"]
+                }
               },
               required: ["Best Value", "Balanced", "High Performance"]
             },
