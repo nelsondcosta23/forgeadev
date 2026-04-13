@@ -217,7 +217,7 @@ app.post('/api/quiz/analyze', authenticateProxy, ensurePbAuth, async (req, res) 
     
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
       }
@@ -293,7 +293,7 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
           performance_level: 'Standard',
           upgrade_priority: answers.upgradability === 'yes' ? 'High' : 'Low'
         },
-        metadata: { model_used: 'gemini-1.5-flash' }
+        metadata: { model_used: 'gemini-2.5-flash' }
       },
       recommendations: functionArgs.builds || functionArgs.recommendations,
       explanation: functionArgs.recommendation || functionArgs.explanation // Fallback for legacy
@@ -304,7 +304,7 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
       session_id: sessionId,
       recommendation_text: JSON.stringify(fullStructuredResponse),
       prompt_used: systemPrompt,
-      model_used: 'gemini-1.5-flash',
+      model_used: 'gemini-2.5-flash',
     });
 
     // Mark session as completed and store answers
