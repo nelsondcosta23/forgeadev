@@ -31,29 +31,29 @@ const App = () => (
   <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter future={{ v7_relativeSplatPath: true }}>
-            <DynamicMetaTags />
-            <AnalyticsWrapper>
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/build/:sessionId" element={<SharedResults />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/terms" element={<TermsAndConditions />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/admin" element={<Admin />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </AnalyticsWrapper>
-          </BrowserRouter>
-          </TooltipProvider>
-        </LanguageProvider>
+        <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+          <LanguageProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter future={{ v7_relativeSplatPath: true }}>
+                <DynamicMetaTags />
+                <AnalyticsWrapper>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/build/:sessionId" element={<SharedResults />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/terms" element={<TermsAndConditions />} />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/admin" element={<Admin />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AnalyticsWrapper>
+              </BrowserRouter>
+            </TooltipProvider>
+          </LanguageProvider>
+        </Suspense>
       </QueryClientProvider>
     </ThemeProvider>
   </ErrorBoundary>
