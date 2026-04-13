@@ -6,9 +6,9 @@ services:
       args:
         - VITE_INTERNAL_PROXY_KEY=${VITE_INTERNAL_PROXY_KEY}
     ports:
-      - "8115:8115"
+      - "3000:3000"
     environment:
-      - PORT=8115
+      - PORT=3000
       - POCKETBASE_URL=http://pb:8090
       - INTERNAL_PROXY_KEY=${INTERNAL_PROXY_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
