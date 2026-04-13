@@ -7,23 +7,32 @@ dist
 dist-ssr
 
 # PocketBase local data (managed by Docker volumes in compose)
-pb_data
-pb_public
+pb_data/
+pb_public/
+pb_backups/
+storage/
 
 # Environment and Secrets
 .env
 .env.*
 
 # Temporary, scratch, and local files
-scratch
+scratch/
 test_*.js
 *.log
 *.pdf
 *.sql
 *.json
+*.sqlite
+*.db
+*.sqlite3
+*.db-journal
 !package.json
 !tsconfig*.json
 !components.json
+jspdf/
+html2canvas/
+node_modules/
 
 # Local IDE/Configuration
 .git

@@ -21,6 +21,8 @@ pb_public/
 *.sql
 *.sqlite
 *.db
+*.sqlite3
+*.db-journal
 *.json
 !package.json
 !tsconfig.json
