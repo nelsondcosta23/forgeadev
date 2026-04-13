@@ -329,7 +329,8 @@ app.get('/api/results/:sessionId', ensurePbAuth, async (req, res) => {
     let recommendation = null;
     try {
       const aiRecommendation = await pb.collection('ai_recommendations').getFirstListItem(`session_id="${sessionId}"`);
-      recommendation = JSON.parse(aiRecommendation.recommendation_text);
+      const rawText = aiRecommendation.recommendation_text;
+      recommendation = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
       console.log(`[DEBUG] Found recommendation in DB for ${sessionId}`);
     } catch (e) {
       console.log(`[DEBUG] No recommendation found in DB for session ${sessionId}:`, e.message);
