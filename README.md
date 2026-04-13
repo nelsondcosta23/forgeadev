@@ -1,70 +1,96 @@
-# Forgea — AI-Powered PC Build Recommender
+# Forgeadev — AI-Powered PC Build Advisor 🚀
 
-Forgea is a high-performance web application that helps users find their perfect PC build in under a minute. By answering a simple quiz about their goals, budget, and preferences, users receive professional, AI-generated build recommendations tailored to their specific needs.
+**Forgeadev** é uma plataforma de alto desempenho projetada para ajudar utilizadores a encontrar a configuração de PC ideal em menos de um minuto. Utilizando inteligência artificial de última geração, a plataforma analisa as necessidades do utilizador e gera recomendações detalhadas e compatíveis.
 
-## 🚀 Features
+---
 
-*   **1-Minute Quiz**: Streamlined questionnaire to capture technical requirements.
-*   **AI Engine**: Powered by **Google Gemini 1.5 Flash** for intelligent, balanced, and compatible component selection.
-*   **Multi-Store Support**: Dynamic regional links (Amazon.com, Amazon.es, etc.) based on user location.
-*   **High-Fidelity PDF Export**: Professional build reports for offline reference.
-*   **Administrative Panel**: Complete dashboard for managing prompts, store links, SEO, and viewing detailed project analytics.
-*   **Real-time Telemetry**: Integrated tracking for user sessions and conversion metrics.
+## 🛠️ Stack Tecnológica
 
-## 🛠️ Technology Stack
+A aplicação utiliza uma arquitetura moderna dividida em três camadas principais:
 
-*   **Frontend**: React + Vite + TypeScript + Tailwind CSS (UI: shadcn/ui)
-*   **Backend (BFF)**: Node.js + Express
-*   **Database**: PocketBase (SQLite-based backend-as-a-service)
-*   **AI Agent**: Google Gemini API
-*   **Infrastructure**: Docker + Docker Compose
+### Frontend (User Experience)
+- **React 18 + Vite**: Para um desenvolvimento ultra-rápido e uma aplicação fluida.
+- **TypeScript**: Garantia de robustez e segurança de tipos em todo o código.
+- **Tailwind CSS + Shadcn UI**: Interface premium, responsiva e com estética "glassmorphism".
+- **Framer Motion**: Micro-animações para uma experiência de utilizador dinâmica.
 
-## 📦 Setup & Installation
+### Backend & Proxy (BFF - Backend For Frontend)
+- **Node.js + Express**: Atua como um servidor de segurança (Proxy) que protege a base de dados.
+- **Security Layer**: Implementação de `INTERNAL_PROXY_KEY` para garantir que apenas o frontend oficial comunica com a API.
+- **AI Integration**: Integração direta com o SDK oficial da Google para processamento de IA.
 
-### Prerequisites
-*   [Docker](https://www.docker.com/) and Docker Compose installed.
-*   A Google Gemini API Key.
+### Data & AI (The Brain)
+- **Google Gemini 2.5 Flash**: O modelo de IA mais rápido e capaz da Google, configurado com **Strict Response Schema** para garantir que as recomendações são sempre enviadas no formato JSON correto.
+- **PocketBase**: Solução Open Source para base de dados (SQLite), autenticação e gestão de conteúdos.
 
-### 1. Environment Configuration
-Create a `.env` file in the root directory based on the `.env.example` provided:
+---
+
+## 🚀 Funcionalidades Principais
+
+- **Quiz Inteligente**: Capta objetivos, orçamento e preferências de upgrade.
+- **Relatório de Builds Detalhado**: Gera 3 opções (Best Value, Balanced, High Performance) com links de compra automáticos.
+- **Detecção Geográfica**: Adapta os links de lojas (Amazon.es, Amazon.com, etc.) conforme a localização do utilizador.
+- **Painel Administrativo**:
+    - Edição de Prompts de IA em tempo real.
+    - CRM de sessões de utilizadores.
+    - Gestão de parcerias e links de afiliados por país.
+    - Exportação de dados para Excel/JSON.
+- **Exportação para PDF**: Relatórios profissionais gerados diretamente no browser.
+
+---
+
+## ⚙️ Guia de Setup
+
+### Pré-requisitos
+- **Node.js** (v18 ou superior)
+- **PocketBase** (executável local ou via Docker)
+- **Google Gemini API Key**
+
+### 1. Configuração de Variáveis de Ambiente
+Crie um ficheiro `.env` na raiz do projeto:
 
 ```env
-# Server Config
-PORT=8085
-INTERNAL_PROXY_KEY=your_secure_random_key_here
+# Configuração do Servidor
+PORT=3000
+INTERNAL_PROXY_KEY=uma_chave_secreta_longa
 
-# PocketBase Config
-POCKETBASE_URL=http://pb:8090
-PB_ADMIN_EMAIL=admin@forgea.com
-PB_ADMIN_PASSWORD=secure_password_here
+# PocketBase (Produção ou Local)
+POCKETBASE_URL=http://localhost:8090
+PB_ADMIN_EMAIL=admin@exemplo.com
+PB_ADMIN_PASSWORD=sua_senha_forte
 
-# AI Config
-GEMINI_API_KEY=your_google_gemini_key
+# Inteligência Artificial (Google AI)
+GEMINI_API_KEY=sua_chave_da_google_aqui
 
-# Frontend Build
-VITE_INTERNAL_PROXY_KEY=your_secure_random_key_here
+# Frontend (Build Time)
+VITE_INTERNAL_PROXY_KEY=a_mesma_chave_secreta_acima
 ```
 
-### 2. Run with Docker
-Start the entire stack (PocketBase + BFF + Frontend) using:
+### 2. Instalação Manual
+```bash
+# 1. Instalar dependências
+npm install
 
+# 2. Iniciar o PocketBase (num terminal separado)
+./pocketbase serve
+
+# 3. Iniciar o servidor BFF e o Frontend em modo dev
+npm run dev
+```
+
+### 3. Setup via Docker (Produção)
+O projeto está pronto para o **Coolify** ou Docker puro:
 ```bash
 docker compose up -d --build
 ```
 
-The application will be available at `http://localhost:8085` and the PocketBase admin UI at `http://localhost:8090/_/`.
+---
 
-## 📂 Project Structure
+## 🛡️ Segurança e Estabilidade
 
-*   `/src`: Frontend source code (React components, hooks, pages).
-*   `/server.js`: BFF (Backend For Frontend) handle proxying to PocketBase and AI requests.
-*   `/pb_data`: Local volume for PocketBase data storage (ignored by git).
-*   `/public`: Static assets and icons.
-
-## 🛡️ Security
-*   Credentials and API keys are strictly managed via environment variables.
-*   The BFF acts as a security proxy, preventing direct exposure of the database to the public web.
-*   Sensitive files (backups, logs, local DBs) are excluded via `.gitignore`.
+- **Zero Exposure**: O PocketBase nunca é exposto diretamente à internet; todos os pedidos passam pelo `server.js` que valida a `INTERNAL_PROXY_KEY`.
+- **Error Resilience**: O sistema foi blindado contra erros de JSON da IA, utilizando esquemas estritos e validações defensivas no frontend.
+- **Model Migration**: Migrado com sucesso de `gemini-1.5-flash` (deprecated) para `gemini-2.5-flash`.
 
 ---
-© 2026 Forgea. Created by building high-performance PC solutions.
+© 2026 Forgeadev. Construído para a melhor performance.
