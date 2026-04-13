@@ -12,9 +12,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8085;
-const INTERNAL_KEY = process.env.INTERNAL_PROXY_KEY;
+const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || '').trim();
 if (!INTERNAL_KEY) {
   console.warn('WARNING: INTERNAL_PROXY_KEY is not defined in .env! API endpoints will be inaccessible.');
+} else {
+  console.log('INTERNAL_PROXY_KEY loaded successfully (length: ' + INTERNAL_KEY.length + ')');
 }
 const PB_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
 
@@ -91,8 +93,9 @@ const ensurePbAuth = async (req, res, next) => {
 
 // Authenticate via internal key middleware
 const authenticateProxy = (req, res, next) => {
-  const key = req.headers['x-internal-key'];
+  const key = (req.headers['x-internal-key'] || '').trim();
   if (!key || key !== INTERNAL_KEY) {
+    console.error(`[Auth Error] Expected key: ${INTERNAL_KEY ? '***' + INTERNAL_KEY.slice(-4) : 'undefined'}, Received: ${key ? '***' + key.slice(-4) : 'empty'}`);
     return res.status(401).json({ error: 'Unauthorized: Invalid internal proxy key' });
   }
   next();

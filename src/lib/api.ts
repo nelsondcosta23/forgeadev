@@ -1,4 +1,4 @@
-const INTERNAL_KEY = import.meta.env.VITE_INTERNAL_PROXY_KEY || '';
+const INTERNAL_KEY = (import.meta.env.VITE_INTERNAL_PROXY_KEY || '').trim();
 
 export async function bffFetch(url: string, options: RequestInit = {}) {
   const headers = {
