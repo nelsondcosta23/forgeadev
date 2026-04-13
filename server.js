@@ -286,10 +286,11 @@ Use ${userLanguage} for the recommendation field.
         metadata: { model_used: 'gemini-2.5-flash' }
       },
       recommendations: functionArgs.builds,
-      explanation: functionArgs.recommendation 
+      explanation: functionArgs.recommendation,
+      recommendation: functionArgs.recommendation // Root redundancy
     };
 
-    console.log('Sending final response for session:', sessionId);
+    console.log(`[DEBUG] Finalizing analysis for ${sessionId}. Recommendation length: ${fullStructuredResponse.explanation?.length || 0}`);
 
     // 7. Persist to PocketBase
     await pb.collection('ai_recommendations').create({
@@ -304,12 +305,13 @@ Use ${userLanguage} for the recommendation field.
       await pb.collection('quiz_sessions').update(session.id, { 
         completed: true, 
         completed_at: new Date().toISOString(),
-        answers: JSON.stringify(answers) // Store the full answers object
+        answers: JSON.stringify(answers) 
       });
     } catch (e) {
       console.warn('Failed to update session completion status:', e.message);
     }
 
+    console.log(`[DEBUG] Sending response for session ${sessionId}`);
     res.json(fullStructuredResponse);
   } catch (error) {
     console.error('Quiz analysis failed:', error.message);
@@ -320,17 +322,17 @@ Use ${userLanguage} for the recommendation field.
 // Public endpoint for shared results
 app.get('/api/results/:sessionId', ensurePbAuth, async (req, res) => {
   const { sessionId } = req.params;
+  console.log(`[DEBUG] Fetching results to display for ${sessionId}`);
   try {
-    // 1. Get the session first
     const quizSession = await pb.collection('quiz_sessions').getFirstListItem(`session_id="${sessionId}"`);
     
-    // 2. Try to get the recommendation, but don't fail if missing
     let recommendation = null;
     try {
       const aiRecommendation = await pb.collection('ai_recommendations').getFirstListItem(`session_id="${sessionId}"`);
       recommendation = JSON.parse(aiRecommendation.recommendation_text);
+      console.log(`[DEBUG] Found recommendation in DB for ${sessionId}`);
     } catch (e) {
-      console.log(`No active recommendation found for session ${sessionId}`);
+      console.log(`[DEBUG] No recommendation found in DB for session ${sessionId}:`, e.message);
     }
     
     res.json({
@@ -338,7 +340,7 @@ app.get('/api/results/:sessionId', ensurePbAuth, async (req, res) => {
       answers: typeof quizSession.answers === 'string' ? JSON.parse(quizSession.answers) : quizSession.answers
     });
   } catch (error) {
-    console.error(`Error fetching results for session ${sessionId}:`, error.message);
+    console.error(`[DEBUG] Error for ${sessionId}:`, error.message);
     res.status(404).json({ error: 'Results not found', details: error.message });
   }
 });
