@@ -7,6 +7,8 @@ import PocketBase from 'pocketbase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
 import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
+import compression from 'compression';
 
 dotenv.config();
 
@@ -89,6 +91,18 @@ const countryToCurrency = {
   'UA': { symbol: '₴', code: 'UAH' }, 'OTHER': { symbol: '$', code: 'USD' },
 };
 
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      "default-src": ["'self'"],
+      "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "img-src": ["'self'", "data:", "https:", "http:"],
+      "connect-src": ["'self'", "https:", "http:", "ws:", "wss:"],
+    },
+  },
+}));
+app.use(compression());
 app.use(cors());
 app.use(express.json());
 
@@ -328,4 +342,20 @@ app.get('/build/:sessionId', async (req, res) => {
 
 app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
 
-app.listen(PORT, () => console.log(`BFF listening on ${PORT}`));
+const server = app.listen(PORT, () => console.log(`BFF listening on ${PORT}`));
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Cleaning up...');
+  server.close(() => {
+    console.log('Server closed. Process exit.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received. Cleaning up...');
+  server.close(() => {
+    console.log('Server closed. Process exit.');
+    process.exit(0);
+  });
+});
