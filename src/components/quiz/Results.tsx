@@ -10,7 +10,6 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import TrackableLink from "./TrackableLink";
-import { AIResultsView } from "./AIResultsView";
 import { BuildCard, BuildData } from "./BuildCard";
 import { BuildReport } from "./BuildReport";
 
@@ -27,7 +26,6 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
   const [copied, setCopied] = useState(false);
   const shareUrl = `${window.location.origin}/build/${sessionId}`;
 
-  // Validate sessionId
   if (!sessionId || sessionId === "" || sessionId === "undefined") {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
@@ -35,9 +33,7 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
           <AlertCircle className="w-16 h-16 text-destructive mx-auto" />
           <div className="space-y-2">
             <h2 className="text-2xl font-bold">Invalid Session</h2>
-            <p className="text-muted-foreground">
-              Unable to load results. Please restart the quiz.
-            </p>
+            <p className="text-muted-foreground">Unable to load results. Please restart the quiz.</p>
           </div>
           <Button onClick={onRestart}>Restart Quiz</Button>
         </Card>
@@ -45,58 +41,44 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
     );
   }
 
-  // Try to parse AI recommendation as structured JSON
-  const parseAIRecommendation = (): {
-    session_info: any; 
-    recommendations: { "Best Value": BuildData; "Balanced": BuildData; "High Performance": BuildData };
-    explanation?: string;
-  } | null => {
+  const structuredRecommendation = (() => {
     if (!aiRecommendation) return null;
     try {
       const parsed = JSON.parse(aiRecommendation);
-      if (parsed.session_info && parsed.recommendations) {
-        return parsed;
-      }
-    } catch (e) {}
-    return null;
-  };
-
-  const structuredRecommendation = parseAIRecommendation();
-
-  const handleShare = () => setShareDialogOpen(true);
+      return (parsed.session_info && parsed.recommendations) ? parsed : null;
+    } catch (e) {
+      return null;
+    }
+  })();
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Link copied to clipboard!");
+      toast.success("Link copied!");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error("Error copying link");
+      toast.error("Copy failed");
     }
   };
 
   const handleExport = async () => {
     const element = document.getElementById('pdf-content');
-    if (!element) {
-      toast.error("Could not find content to export");
-      return;
-    }
+    if (!element) return;
 
-    const toastId = toast.loading("Generating high-quality PDF...");
+    const toastId = toast.loading("Preparing build report PDF...");
 
     try {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        logging: false,
         backgroundColor: "#ffffff",
         onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.getElementById('pdf-content');
-          if (clonedElement) {
-            clonedElement.style.padding = "40px";
-            clonedElement.style.color = "#000000";
-            clonedElement.querySelectorAll('.no-print').forEach(el => (el as HTMLElement).style.display = 'none');
+          const el = clonedDoc.getElementById('pdf-content');
+          if (el) {
+            el.style.padding = "40px";
+            el.style.color = "#000000";
+            el.querySelectorAll('.no-print').forEach(e => (e as HTMLElement).style.display = 'none');
           }
         }
       });
@@ -106,6 +88,7 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
       const imgWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
       let heightLeft = imgHeight;
       let position = 0;
 
@@ -121,18 +104,16 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
 
       doc.save(`Forgea-PC-Builds-${new Date().toISOString().split('T')[0]}.pdf`);
       toast.dismiss(toastId);
-      toast.success("PDF exported successfully!");
+      toast.success("Report exported");
     } catch (error) {
-      console.error("PDF generation failed:", error);
       toast.dismiss(toastId);
-      toast.error("Failed to generate PDF");
+      toast.error("Export failure");
     }
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <div className="container mx-auto px-4 py-8 flex-1">
-        {/* Header */}
         <div className="max-w-6xl mx-auto mb-12">
           <div className="flex justify-between items-center mb-6">
             <h1 
@@ -141,11 +122,7 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
             >
               FORGEA
             </h1>
-            <Button
-              variant="outline"
-              onClick={onRestart}
-              className="border-primary text-foreground hover:bg-primary hover:text-primary-foreground"
-            >
+            <Button variant="outline" onClick={onRestart} className="border-primary text-foreground hover:bg-primary">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Retake Quiz
             </Button>
@@ -154,28 +131,22 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl lg:text-5xl font-bold">
               Your Custom
-              <span className="block mt-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Builds
-              </span>
+              <span className="block mt-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Builds</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Based on your answers, we recommend these configurations
             </p>
             
-            {/* Action Buttons */}
             <div className="flex justify-center gap-4 pt-4">
-              <Button variant="outline" onClick={handleShare} className="gap-2">
-                <Share2 className="w-4 h-4" />
-                Share
+              <Button variant="outline" onClick={() => setShareDialogOpen(true)} className="gap-2">
+                <Share2 className="w-4 h-4" /> Share
               </Button>
               <Button variant="outline" onClick={handleExport} className="gap-2">
-                <Download className="w-4 h-4" />
-                Export PDF
+                <Download className="w-4 h-4" /> Export PDF
               </Button>
             </div>
           </div>
 
-          {/* Unique URL Section */}
           <Card className="mb-8 p-6 bg-card/50 border-primary/20">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
@@ -193,61 +164,47 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Save or share this unique link to access your custom PC build recommendations anytime.
+                Save or share this unique link to access your recommendations anytime.
               </p>
             </div>
           </Card>
 
-          {/* Main Results Content (captured by PDF) */}
           <div id="pdf-content" className="space-y-8 bg-background">
             <div className="text-center space-y-2 mb-12 hidden print:block">
               <h1 className="text-3xl font-bold">FORGEA PC BUILD REPORT</h1>
               <p className="text-sm text-muted-foreground">{shareUrl}</p>
             </div>
 
-            {(() => {
-              if (structuredRecommendation) {
-                return (
-                  <BuildReport
-                    recommendation={structuredRecommendation.session_info.recommendation}
-                    ai_report={structuredRecommendation.session_info.ai_report}
-                    metadata={structuredRecommendation.session_info.metadata}
-                    sessionId={sessionId}
-                    recommendations={structuredRecommendation.recommendations}
-                  />
-                );
-              }
-
-              return (
-                <div className="space-y-8">
-                  {aiRecommendation && (
-                    <Card className="p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
-                      <div className="prose prose-lg max-w-none dark:prose-invert">
-                        <ReactMarkdown 
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            a: ({ href, children }) => (
-                              <TrackableLink href={href} sessionId={sessionId}>
-                                {children}
-                              </TrackableLink>
-                            ),
-                          }}
-                        >
-                          {aiRecommendation.startsWith('{') ? JSON.parse(aiRecommendation).explanation : aiRecommendation}
-                        </ReactMarkdown>
-                      </div>
-                    </Card>
-                  )}
-                  
-                  {/* Additional Build Cards for legacy support */}
-                  {!structuredRecommendation && (
-                    <div className="text-center p-8 border-2 border-dashed rounded-xl">
-                      <p className="text-muted-foreground italic">Scroll up to view your personalized AI recommendations</p>
-                    </div>
-                  )}
+            {structuredRecommendation ? (
+              <BuildReport
+                recommendation={structuredRecommendation.session_info.recommendation}
+                ai_report={structuredRecommendation.session_info.ai_report}
+                metadata={structuredRecommendation.session_info.metadata}
+                sessionId={sessionId}
+                recommendations={structuredRecommendation.recommendations}
+              />
+            ) : aiRecommendation && (
+              <Card className="p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
+                <div className="prose prose-lg max-w-none dark:prose-invert">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      a: ({ href, children }) => (
+                        <TrackableLink href={href} sessionId={sessionId}>{children}</TrackableLink>
+                      ),
+                    }}
+                  >
+                    {aiRecommendation.startsWith('{') ? JSON.parse(aiRecommendation).explanation : aiRecommendation}
+                  </ReactMarkdown>
                 </div>
-              );
-            })()}
+              </Card>
+            )}
+            
+            {!structuredRecommendation && (
+              <div className="text-center p-8 border-2 border-dashed rounded-xl">
+                <p className="text-muted-foreground italic">Scroll up to view recommendations</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -257,18 +214,14 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <p>© 2026 Forgea. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="/terms" className="hover:text-primary">Terms & Conditions</a>
-              <a href="/privacy" className="hover:text-primary">Privacy Policy</a>
+              <a href="/terms" className="hover:text-primary">Terms</a>
+              <a href="/privacy" className="hover:text-primary">Privacy</a>
             </div>
           </div>
         </div>
       </footer>
 
-      <ShareDialog
-        open={shareDialogOpen}
-        onOpenChange={setShareDialogOpen}
-        shareUrl={shareUrl}
-      />
+      <ShareDialog open={shareDialogOpen} onOpenChange={setShareDialogOpen} shareUrl={shareUrl} />
     </div>
   );
 };
