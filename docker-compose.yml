@@ -9,6 +9,7 @@ services:
       - "3000"
     labels:
       - "coolify.port=3000"
+      - "traefik.http.routers.web.rule=Host(`forgea.dev`)"
     environment:
       - PORT=3000
       - POCKETBASE_URL=http://pb:8090
@@ -26,6 +27,7 @@ services:
       - "8118:8090"
     labels:
       - "coolify.port=8090"
+      - "traefik.http.routers.pb.rule=Host(`po.forgea.dev`)"
     volumes:
       - pb_data:/pb_data
     networks:
