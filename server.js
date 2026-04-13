@@ -6,8 +6,25 @@ import { fileURLToPath } from 'url';
 import PocketBase from 'pocketbase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
+import { rateLimit } from 'express-rate-limit';
 
 dotenv.config();
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
+
+const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Analysis limit reached for this hour. Please wait.' }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -86,6 +103,8 @@ const authenticateProxy = (req, res, next) => {
   next();
 };
 
+app.use('/api/', apiLimiter);
+
 app.post('/api/admin/login', authenticateProxy, async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -105,7 +124,7 @@ app.post('/api/analytics/track', authenticateProxy, ensurePbAuth, async (req, re
   }
 });
 
-app.post('/api/quiz/analyze', authenticateProxy, ensurePbAuth, async (req, res) => {
+app.post('/api/quiz/analyze', aiLimiter, authenticateProxy, ensurePbAuth, async (req, res) => {
   try {
     const { answers, questions, sessionId } = req.body;
     
