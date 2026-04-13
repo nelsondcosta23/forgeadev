@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8085;
-const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || '').trim();
+const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || process.env.VITE_INTERNAL_PROXY_KEY || '').trim();
 if (!INTERNAL_KEY) {
   console.warn('WARNING: INTERNAL_PROXY_KEY is not defined in .env! API endpoints will be inaccessible.');
 } else {
