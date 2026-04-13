@@ -220,26 +220,38 @@ app.post('/api/quiz/analyze', authenticateProxy, ensurePbAuth, async (req, res) 
       model: "gemini-2.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            ai_report: {
+              type: "object",
+              properties: {
+                budget_range: { type: "string" },
+                primary_use: { type: "string" },
+                performance_level: { type: "string" },
+                upgrade_priority: { type: "string" }
+              },
+              required: ["budget_range", "primary_use", "performance_level", "upgrade_priority"]
+            },
+            builds: {
+              type: "object",
+              properties: {
+                "Best Value": { type: "object", properties: { processor: { type: "string" }, graphics_card: { type: "string" }, ram: { type: "string" }, storage: { type: "string" }, power_supply: { type: "string" }, motherboard: { type: "string" }, case: { type: "string" }, cooler: { type: "string" }, estimated_price_range: { type: "string" }, performance_tier: { type: "string" } }, required: ["processor", "graphics_card", "ram", "storage", "estimated_price_range"] },
+                "Balanced": { type: "object", properties: { processor: { type: "string" }, graphics_card: { type: "string" }, ram: { type: "string" }, storage: { type: "string" }, power_supply: { type: "string" }, motherboard: { type: "string" }, case: { type: "string" }, cooler: { type: "string" }, estimated_price_range: { type: "string" }, performance_tier: { type: "string" } }, required: ["processor", "graphics_card", "ram", "storage", "estimated_price_range"] },
+                "High Performance": { type: "object", properties: { processor: { type: "string" }, graphics_card: { type: "string" }, ram: { type: "string" }, storage: { type: "string" }, power_supply: { type: "string" }, motherboard: { type: "string" }, case: { type: "string" }, cooler: { type: "string" }, estimated_price_range: { type: "string" }, performance_tier: { type: "string" } }, required: ["processor", "graphics_card", "ram", "storage", "estimated_price_range"] }
+              },
+              required: ["Best Value", "Balanced", "High Performance"]
+            },
+            recommendation: { type: "string" }
+          },
+          required: ["ai_report", "builds", "recommendation"]
+        }
       }
     });
 
-    // Explicitly request JSON format in the prompt
     const jsonSchemaInstructions = `
-CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure:
-{
-  "ai_report": {
-    "budget_range": "...",
-    "primary_use": "...",
-    "performance_level": "...",
-    "upgrade_priority": "..."
-  },
-  "builds": {
-    "Best Value": { "processor": "...", "graphics_card": "...", "ram": "...", "storage": "...", "power_supply": "...", "motherboard": "...", "case": "...", "cooler": "...", "estimated_price_range": "...", "performance_tier": "..." },
-    "Balanced": { ... },
-    "High Performance": { ... }
-  },
-  "recommendation": "A detailed explanation in ${userLanguage}..."
-}
+CRITICAL: Your response MUST BE A VALID JSON OBJECT.
+Use ${userLanguage} for the recommendation field.
 `;
 
     const finalSystemPrompt = `${systemPrompt}\n\n${jsonSchemaInstructions}`;
@@ -257,28 +269,11 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
     // Robust JSON parsing
     let functionArgs;
     try {
-      // Clean up any potential markdown junk and parse
-      let cleanedJson = resultText.trim();
-      
-      // Handle ```json ... ``` or just ``` ... ```
-      if (cleanedJson.includes('```')) {
-        const parts = cleanedJson.split('```');
-        // Find the part that looks like JSON (usually after the first ``` or inside the markers)
-        for (const part of parts) {
-          const possible = part.replace(/^json/, '').trim();
-          if (possible.startsWith('{') && possible.endsWith('}')) {
-            cleanedJson = possible;
-            break;
-          }
-        }
-      }
-      
-      functionArgs = JSON.parse(cleanedJson);
+      functionArgs = JSON.parse(resultText);
     } catch (e) {
-      console.error('JSON Parse Failed.');
-      console.error('Raw text:', resultText);
+      console.error('JSON Parse Failed. Raw text:', resultText);
       res.status(500).json({ error: 'Failed to analyze quiz', details: 'AI returned invalid JSON format' });
-      return; // Stop execution
+      return; 
     }
     
     // Map response to the structure expected by the frontend
@@ -286,18 +281,15 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
       session_info: {
         session_id: sessionId,
         completed_at: new Date().toISOString(),
-        recommendation: functionArgs.recommendation || functionArgs.explanation, // Try both names
-        ai_report: functionArgs.ai_report || {
-          budget_range: String(answers.budget || 'N/A'),
-          primary_use: String(answers.purpose || 'N/A'),
-          performance_level: 'Standard',
-          upgrade_priority: answers.upgradability === 'yes' ? 'High' : 'Low'
-        },
+        recommendation: functionArgs.recommendation,
+        ai_report: functionArgs.ai_report,
         metadata: { model_used: 'gemini-2.5-flash' }
       },
-      recommendations: functionArgs.builds || functionArgs.recommendations,
-      explanation: functionArgs.recommendation || functionArgs.explanation // Fallback for legacy
+      recommendations: functionArgs.builds,
+      explanation: functionArgs.recommendation 
     };
+
+    console.log('Sending final response for session:', sessionId);
 
     // 7. Persist to PocketBase
     await pb.collection('ai_recommendations').create({
