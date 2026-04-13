@@ -24,6 +24,8 @@ services:
     image: ghcr.io/muchobien/pocketbase:latest
     ports:
       - "8118:8090"
+    labels:
+      - "coolify.port=8090"
     volumes:
       - pb_data:/pb_data
     networks:
