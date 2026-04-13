@@ -17,19 +17,19 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       try {
         const storedLanguage = localStorage.getItem('i18nextLng');
         if (storedLanguage && storedLanguage !== 'en-US') {
+          console.log('[LanguageProvider] Using stored language:', storedLanguage);
+          await i18n.changeLanguage(storedLanguage);
           return;
         }
 
-        // Fallback to avoid external API dependencies that can be blocked or error out
-        const countryCode = 'PT';
-        const language = mapCountryToLanguage(countryCode);
-        console.log('Detected country:', countryCode, '-> Language:', language);
+        // Default to PT but ensure it actually changes
+        const language = 'pt-PT';
+        console.log('[LanguageProvider] Fallback language set to:', language);
         await i18n.changeLanguage(language);
         localStorage.setItem('i18nextLng', language);
       } catch (error) {
-        if ((error as Error)?.name !== 'AbortError') {
-          console.error('Error in language detection:', error);
-        }
+        console.error('[LanguageProvider] Error setting language, forcing pt-PT:', error);
+        await i18n.changeLanguage('pt-PT').catch(() => {});
       } finally {
         clearTimeout(timeoutId);
       }
