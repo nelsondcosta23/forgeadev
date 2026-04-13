@@ -292,16 +292,17 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
       session_info: {
         session_id: sessionId,
         completed_at: new Date().toISOString(),
+        recommendation: functionArgs.recommendation || functionArgs.explanation, // Try both names
         ai_report: functionArgs.ai_report || {
           budget_range: String(answers.budget || 'N/A'),
           primary_use: String(answers.purpose || 'N/A'),
           performance_level: 'Standard',
           upgrade_priority: answers.upgradability === 'yes' ? 'High' : 'Low'
-        }
+        },
+        metadata: { model_used: 'gemini-1.5-flash' }
       },
-      recommendations: functionArgs.builds,
-      explanation: functionArgs.recommendation,
-      metadata: { model_used: 'gemini-1.5-flash' }
+      recommendations: functionArgs.builds || functionArgs.recommendations,
+      explanation: functionArgs.recommendation || functionArgs.explanation // Fallback for legacy
     };
 
     // 7. Persist to PocketBase
