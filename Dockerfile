@@ -1,5 +1,5 @@
 # Stage 1: Build React PWA
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ ENV VITE_INTERNAL_PROXY_KEY=$VITE_INTERNAL_PROXY_KEY
 RUN npm run build
 
 # Stage 2: Production Proxy & Static Server
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
