@@ -264,11 +264,27 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
     let functionArgs;
     try {
       // Clean up any potential markdown junk and parse
-      const cleanedJson = resultText.replace(/```json\n?|\n?```/g, '').trim();
+      let cleanedJson = resultText.trim();
+      
+      // Handle ```json ... ``` or just ``` ... ```
+      if (cleanedJson.includes('```')) {
+        const parts = cleanedJson.split('```');
+        // Find the part that looks like JSON (usually after the first ``` or inside the markers)
+        for (const part of parts) {
+          const possible = part.replace(/^json/, '').trim();
+          if (possible.startsWith('{') && possible.endsWith('}')) {
+            cleanedJson = possible;
+            break;
+          }
+        }
+      }
+      
       functionArgs = JSON.parse(cleanedJson);
     } catch (e) {
-      console.error('JSON Parse Failed. Raw text:', resultText);
-      throw new Error('AI returned invalid JSON format');
+      console.error('JSON Parse Failed.');
+      console.error('Raw text:', resultText);
+      res.status(500).json({ error: 'Failed to analyze quiz', details: 'AI returned invalid JSON format' });
+      return; // Stop execution
     }
     
     // Map response to the structure expected by the frontend
