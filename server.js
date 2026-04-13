@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import PocketBase from 'pocketbase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -113,6 +114,20 @@ app.post('/api/quiz/analyze', authenticateProxy, ensurePbAuth, async (req, res) 
     }
 
     const session = await pb.collection('quiz_sessions').getFirstListItem(`session_id="${sessionId}"`);
+
+    // Cache-First: Check if recommendation already exists for this session
+    try {
+      const existingRec = await pb.collection('ai_recommendations').getFirstListItem(`session_id="${sessionId}"`);
+      if (existingRec) {
+        console.log(`Cache Hit: Returning existing recommendation for session ${sessionId}`);
+        const parsedRec = typeof existingRec.recommendation_text === 'string' 
+          ? JSON.parse(existingRec.recommendation_text) 
+          : existingRec.recommendation_text;
+        return res.json(parsedRec);
+      }
+    } catch (e) {
+      // Not found in cache, proceed to analysis
+    }
 
     let customPrompt = '';
     try {
@@ -257,6 +272,41 @@ app.use('/api/pb/:collection', authenticateProxy, ensurePbAuth, async (req, res)
 
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
+
+app.get('/build/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+  const indexPath = path.join(distPath, 'index.html');
+  
+  try {
+    let html = fs.readFileSync(indexPath, 'utf8');
+    
+    try {
+      const session = await pb.collection('quiz_sessions').getFirstListItem(`session_id="${sessionId}"`);
+      const country = session.country_name || 'Global';
+      
+      const title = `Forgea - Custom PC Build for ${country}`;
+      const description = `Check out this personalized PC configuration generated for a user in ${country}. Generate yours at Forgea.`;
+      
+      // Basic meta tag injection for social crawlers
+      html = html.replace('<title>Forgea</title>', `<title>${title}</title>`);
+      html = html.replace('</head>', `
+        <meta property="og:title" content="${title}" />
+        <meta property="og:description" content="${description}" />
+        <meta name="description" content="${description}" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="${process.env.PUBLIC_URL || ''}/build/${sessionId}" />
+        </head>
+      `);
+    } catch (e) {
+      console.log(`Meta injection skipped for ${sessionId}: Session not found`);
+    }
+
+    res.send(html);
+  } catch (error) {
+    res.sendFile(indexPath);
+  }
+});
+
 app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
 
 app.listen(PORT, () => console.log(`BFF listening on ${PORT}`));
