@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import PocketBase from 'pocketbase';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config();
 
@@ -209,12 +210,20 @@ app.post('/api/quiz/analyze', authenticateProxy, ensurePbAuth, async (req, res) 
     const systemPrompt = filledPrompt || `You are an expert PC building advisor... (Fallback System Prompt)`;
     const userPrompt = `Based on these quiz responses, provide comprehensive PC build recommendations:\n\n${JSON.stringify(questions.map(q => ({ question: q.question, answer: answers[q.id] })), null, 2)}`;
 
-    // 6. Call Gemini AI
-    console.log('Sending request to Gemini AI (v1beta)...');
+    // 6. Call Gemini AI via official SDK
+    console.log('Sending request to Gemini AI (SDK)...');
     const geminiApiKey = (process.env.GEMINI_API_KEY || '').trim();
     if (!geminiApiKey) throw new Error('GEMINI_API_KEY is missing or empty');
     
-    // Explicitly request JSON format in the prompt if not already there
+    const genAI = new GoogleGenerativeAI(geminiApiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        responseMimeType: "application/json",
+      }
+    });
+
+    // Explicitly request JSON format in the prompt
     const jsonSchemaInstructions = `
 CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure:
 {
@@ -235,28 +244,13 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
 
     const finalSystemPrompt = `${systemPrompt}\n\n${jsonSchemaInstructions}`;
 
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: finalSystemPrompt }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 8192,
-          response_mime_type: 'application/json'
-        }
-      })
-    });
+    const result = await model.generateContent([
+      { text: finalSystemPrompt },
+      { text: userPrompt }
+    ]);
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('Gemini API Error:', errorText);
-      throw new Error(`AI Gateway Error: ${aiResponse.status}`);
-    }
-
-    const aiData = await aiResponse.json();
-    let resultText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    const resultResponse = await result.response;
+    let resultText = resultResponse.text();
     
     if (!resultText) throw new Error('AI failed to generate a response');
 
