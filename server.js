@@ -16,10 +16,17 @@ const PORT = process.env.PORT || 8085;
 const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || process.env.VITE_INTERNAL_PROXY_KEY || '').trim();
 
 if (!INTERNAL_KEY) {
-  console.warn('CRITICAL: INTERNAL_PROXY_KEY missing. API will be inaccessible.');
-} else {
-  console.log(`Internal key loaded. Verification length: ${INTERNAL_KEY.length}`);
+  console.error('ERROR: INTERNAL_PROXY_KEY missing. API will be inaccessible.');
+  process.exit(1);
 }
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
+if (!GEMINI_API_KEY) {
+  console.error('ERROR: GEMINI_API_KEY missing. AI features will fail.');
+  process.exit(1);
+}
+
+console.log(`Server environment validated. Internal key length: ${INTERNAL_KEY.length}`);
 
 const PB_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
 const pb = new PocketBase(PB_URL);

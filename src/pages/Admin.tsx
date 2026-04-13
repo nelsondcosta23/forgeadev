@@ -106,6 +106,14 @@ interface StoreLink {
   updated_at: string;
 }
 
+interface PromptRecord {
+  id: string;
+  prompt_text: string;
+  is_active: boolean;
+  name?: string;
+  created: string;
+}
+
 
 const safeFormatDate = (dateStr: string | null | undefined, formatStr: string = "dd/MM/yyyy - HH:mm") => {
   if (!dateStr) return "N/A";
@@ -130,7 +138,7 @@ const Admin = () => {
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [promptText, setPromptText] = useState("");
-  const [promptHistory, setPromptHistory] = useState<any[]>([]);
+  const [promptHistory, setPromptHistory] = useState<PromptRecord[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [storeLinks, setStoreLinks] = useState<StoreLink[]>([]);
   const [storeLinkSearch, setStoreLinkSearch] = useState("");
@@ -196,7 +204,7 @@ const Admin = () => {
       const data = await api.get("/api/pb/admin_prompts");
       if (data && data.length > 0) {
         // Double-check sorting in frontend with safe date parsing
-        const sorted = data.sort((a: any, b: any) => {
+        const sorted = data.sort((a: PromptRecord, b: PromptRecord) => {
           const dateB = b.created ? new Date(b.created).getTime() : 0;
           const dateA = a.created ? new Date(a.created).getTime() : 0;
           return dateB - dateA;
@@ -1411,8 +1419,9 @@ const Admin = () => {
                             toast.success("Prompt guardado com sucesso!");
                             fetchPrompt(); // Refresh history
                           } catch (error: any) {
-                            console.error("Error saving prompt:", error);
-                            toast.error("Erro ao guardar prompt: " + (error.message || ""));
+                            const apiError = error as Error;
+                            console.error("Error saving prompt:", apiError);
+                            toast.error("Erro ao guardar prompt: " + apiError.message);
                           }
                         }}
                       >

@@ -3,8 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { QuizAnswers } from "./questions";
 import { ArrowLeft, Share2, Download, Copy, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { ShareDialog } from "./ShareDialog";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -69,6 +67,12 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
     const toastId = toast.loading("Preparing build report PDF...");
 
     try {
+      // Lazy load heavy PDF libraries
+      const [jsPDF, html2canvas] = await Promise.all([
+        import('jspdf').then(m => m.default),
+        import('html2canvas').then(m => m.default)
+      ]);
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -106,6 +110,7 @@ const Results = ({ answers, onRestart, onBack, sessionId, aiRecommendation }: Re
       toast.dismiss(toastId);
       toast.success("Report exported");
     } catch (error) {
+      console.error("PDF Export Error:", error);
       toast.dismiss(toastId);
       toast.error("Export failure");
     }
