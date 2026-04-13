@@ -340,7 +340,7 @@ app.get('/build/:sessionId', async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
+app.get('*splat', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
 
 const server = app.listen(PORT, () => console.log(`BFF listening on ${PORT}`));
 
