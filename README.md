@@ -1,96 +1,96 @@
-# Forgeadev — AI-Powered PC Build Advisor 🚀
+# Forgeadev — AI-Powered PC Build Advisor
 
-**Forgeadev** é uma plataforma de alto desempenho projetada para ajudar utilizadores a encontrar a configuração de PC ideal em menos de um minuto. Utilizando inteligência artificial de última geração, a plataforma analisa as necessidades do utilizador e gera recomendações detalhadas e compatíveis.
+Forgeadev is a high-performance platform designed to help users find their ideal PC configuration in under a minute. Using state-of-the-art artificial intelligence, the platform analyzes user needs and generates detailed, compatible, and optimized hardware recommendations.
 
 ---
 
-## 🛠️ Stack Tecnológica
+## Technical Stack
 
-A aplicação utiliza uma arquitetura moderna dividida em três camadas principais:
+The application utilizes a modern architecture divided into three main layers:
 
 ### Frontend (User Experience)
-- **React 18 + Vite**: Para um desenvolvimento ultra-rápido e uma aplicação fluida.
-- **TypeScript**: Garantia de robustez e segurança de tipos em todo o código.
-- **Tailwind CSS + Shadcn UI**: Interface premium, responsiva e com estética "glassmorphism".
-- **Framer Motion**: Micro-animações para uma experiência de utilizador dinâmica.
+- React 18 + Vite: For ultra-fast development and a fluid user interface.
+- TypeScript: Ensuring robustness and type safety throughout the codebase.
+- Tailwind CSS + Shadcn UI: Premium, responsive interface with a modern aesthetic.
+- Framer Motion: Dynamic micro-animations for an enhanced user experience.
 
 ### Backend & Proxy (BFF - Backend For Frontend)
-- **Node.js + Express**: Atua como um servidor de segurança (Proxy) que protege a base de dados.
-- **Security Layer**: Implementação de `INTERNAL_PROXY_KEY` para garantir que apenas o frontend oficial comunica com a API.
-- **AI Integration**: Integração direta com o SDK oficial da Google para processamento de IA.
+- Node.js + Express: Acts as a security proxy server that protects the database.
+- Security Layer: Implementation of INTERNAL_PROXY_KEY to ensure only the official frontend communicates with the API.
+- AI Integration: Direct integration with the official Google AI SDK for professional-grade processing.
 
-### Data & AI (The Brain)
-- **Google Gemini 2.5 Flash**: O modelo de IA mais rápido e capaz da Google, configurado com **Strict Response Schema** para garantir que as recomendações são sempre enviadas no formato JSON correto.
-- **PocketBase**: Solução Open Source para base de dados (SQLite), autenticação e gestão de conteúdos.
-
----
-
-## 🚀 Funcionalidades Principais
-
-- **Quiz Inteligente**: Capta objetivos, orçamento e preferências de upgrade.
-- **Relatório de Builds Detalhado**: Gera 3 opções (Best Value, Balanced, High Performance) com links de compra automáticos.
-- **Detecção Geográfica**: Adapta os links de lojas (Amazon.es, Amazon.com, etc.) conforme a localização do utilizador.
-- **Painel Administrativo**:
-    - Edição de Prompts de IA em tempo real.
-    - CRM de sessões de utilizadores.
-    - Gestão de parcerias e links de afiliados por país.
-    - Exportação de dados para Excel/JSON.
-- **Exportação para PDF**: Relatórios profissionais gerados diretamente no browser.
+### Data & AI (The Engine)
+- Google Gemini 2.5 Flash: Google's fastest and most capable model, configured with a Strict Response Schema to ensure recommendations are always delivered in the correct JSON format.
+- PocketBase: Open-source backend solution providing SQLite database, authentication, and content management.
 
 ---
 
-## ⚙️ Guia de Setup
+## Core Features
 
-### Pré-requisitos
-- **Node.js** (v18 ou superior)
-- **PocketBase** (executável local ou via Docker)
-- **Google Gemini API Key**
+- Intelligent Quiz: Captures user goals, budget, and upgrade preferences.
+- Detailed Build Reports: Generates three unique options (Best Value, Balanced, High Performance) with automated component lists.
+- Geographic Awareness: Adapts store links based on the user's location (e.g., Amazon.es, Amazon.com).
+- Administrative Panel:
+    - Real-time AI prompt management.
+    - CRM for user session tracking.
+    - Affiliate link management by country.
+    - Data export functionality (Excel/JSON).
+- PDF Export: High-fidelity build reports generated directly in the browser.
 
-### 1. Configuração de Variáveis de Ambiente
-Crie um ficheiro `.env` na raiz do projeto:
+---
+
+## Setup Guide
+
+### Prerequisites
+- Node.js (v18 or higher)
+- PocketBase (local executable or via Docker)
+- Google Gemini API Key
+
+### 1. Environment Configuration
+Create a .env file in the project root:
 
 ```env
-# Configuração do Servidor
+# Server Configuration
 PORT=3000
-INTERNAL_PROXY_KEY=uma_chave_secreta_longa
+INTERNAL_PROXY_KEY=your_secure_random_key
 
-# PocketBase (Produção ou Local)
+# PocketBase (Production or Local)
 POCKETBASE_URL=http://localhost:8090
-PB_ADMIN_EMAIL=admin@exemplo.com
-PB_ADMIN_PASSWORD=sua_senha_forte
+PB_ADMIN_EMAIL=admin@example.com
+PB_ADMIN_PASSWORD=your_strong_password
 
-# Inteligência Artificial (Google AI)
-GEMINI_API_KEY=sua_chave_da_google_aqui
+# Artificial Intelligence (Google AI)
+GEMINI_API_KEY=your_google_ai_key_here
 
 # Frontend (Build Time)
-VITE_INTERNAL_PROXY_KEY=a_mesma_chave_secreta_acima
+VITE_INTERNAL_PROXY_KEY=the_same_secret_key_above
 ```
 
-### 2. Instalação Manual
+### 2. Manual Installation
 ```bash
-# 1. Instalar dependências
+# 1. Install dependencies
 npm install
 
-# 2. Iniciar o PocketBase (num terminal separado)
+# 2. Start PocketBase (in a separate terminal)
 ./pocketbase serve
 
-# 3. Iniciar o servidor BFF e o Frontend em modo dev
+# 3. Start the BFF server and Frontend in dev mode
 npm run dev
 ```
 
-### 3. Setup via Docker (Produção)
-O projeto está pronto para o **Coolify** ou Docker puro:
+### 3. Docker Setup (Production)
+The project is ready for Docker-based deployment:
 ```bash
 docker compose up -d --build
 ```
 
 ---
 
-## 🛡️ Segurança e Estabilidade
+## Security and Stability
 
-- **Zero Exposure**: O PocketBase nunca é exposto diretamente à internet; todos os pedidos passam pelo `server.js` que valida a `INTERNAL_PROXY_KEY`.
-- **Error Resilience**: O sistema foi blindado contra erros de JSON da IA, utilizando esquemas estritos e validações defensivas no frontend.
-- **Model Migration**: Migrado com sucesso de `gemini-1.5-flash` (deprecated) para `gemini-2.5-flash`.
+- Zero Exposure Architecture: PocketBase is never directly exposed to the internet; all requests are proxied via server.js which validates the INTERNAL_PROXY_KEY.
+- Error Resilience: The system is hardened against AI-generated JSON errors using strict schemas and defensive frontend validations.
+- Model Integrity: Successfully migrated to Gemini 2.5 Flash for superior reasoning and reliability.
 
 ---
-© 2026 Forgeadev. Construído para a melhor performance.
+© 2026 Forgeadev. Built for peak performance.
