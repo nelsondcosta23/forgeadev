@@ -32,6 +32,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8085;
 const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || process.env.VITE_INTERNAL_PROXY_KEY || '').trim();
 
