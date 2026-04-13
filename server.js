@@ -235,7 +235,7 @@ CRITICAL: Your response MUST BE A VALID JSON OBJECT conforming to this structure
 
     const finalSystemPrompt = `${systemPrompt}\n\n${jsonSchemaInstructions}`;
 
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
