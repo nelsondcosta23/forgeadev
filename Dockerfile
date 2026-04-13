@@ -34,6 +34,6 @@ COPY --chown=node:node server.js ./
 COPY --chown=node:node --from=build /app/dist ./dist
 
 # Avoid running on privileged port
-EXPOSE 8085
+EXPOSE 8115
 
 CMD ["node", "server.js"]

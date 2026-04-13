@@ -6,9 +6,9 @@ services:
       args:
         - VITE_INTERNAL_PROXY_KEY=${VITE_INTERNAL_PROXY_KEY}
     ports:
-      - "8085:8085"
+      - "8115:8115"
     environment:
-      - PORT=8085
+      - PORT=8115
       - POCKETBASE_URL=http://pb:8090
       - INTERNAL_PROXY_KEY=${INTERNAL_PROXY_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
@@ -21,11 +21,9 @@ services:
   pb:
     image: ghcr.io/muchobien/pocketbase:latest
     ports:
-      - "8090:8090"
+      - "8118:8090"
     volumes:
       - pb_data:/pb_data
-    # For initial setup, you might temporarily map port 8090 to localhost 
-    # to hit the UI via internal IPs, but Coolify sub-domains are standard.
     networks:
       - internal
     restart: always
