@@ -107,16 +107,32 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       "default-src": ["'self'"],
-      "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      "script-src": ["'self'", "'unsafe-inline'"],
       "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      "img-src": ["'self'", "data:", "https:", "http:"],
-      "connect-src": ["'self'", "https:", "http:", "ws:", "wss:"],
+      "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
+      "img-src": ["'self'", "data:", "https:"],
+      "connect-src": ["'self'", "https:", "wss:"],
+      "object-src": ["'none'"],
+      "base-uri": ["'self'"],
+      "frame-ancestors": ["'none'"],
     },
   },
 }));
 app.use(compression());
 app.use(cors());
 app.use(express.json());
+
+const SESSION_ID_REGEX = /^[0-9a-zA-Z_-]{8,64}$/;
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // Administrative authentication middleware: validates PocketBase user/admin JWT
 const verifyAdminAuth = async (req, res, next) => {
@@ -629,6 +645,11 @@ app.use(express.static(distPath));
 
 app.get('/build/:sessionId', async (req, res) => {
   const { sessionId } = req.params;
+
+  if (!SESSION_ID_REGEX.test(sessionId)) {
+    return res.status(400).json({ error: 'Invalid session ID format' });
+  }
+
   const indexPath = path.join(distPath, 'index.html');
   
   try {
@@ -638,17 +659,19 @@ app.get('/build/:sessionId', async (req, res) => {
       const session = await pb.collection('quiz_sessions').getFirstListItem(`session_id="${sessionId}"`);
       const country = session.country_name || 'Global';
       
-      const title = `Forgea - Custom PC Build for ${country}`;
-      const description = `Check out this personalized PC configuration generated for a user in ${country}. Generate yours at Forgea.`;
+      const safeCountry = escapeHtml(country);
+      const safeTitle = escapeHtml(`Forgea - Custom PC Build for ${safeCountry}`);
+      const safeDescription = escapeHtml(`Check out this personalized PC configuration generated for a user in ${safeCountry}. Generate yours at Forgea.`);
+      const safeUrl = escapeHtml(`${process.env.PUBLIC_URL || ''}/build/${sessionId}`);
       
       // Basic meta tag injection for social crawlers
-      html = html.replace('<title>Forgea</title>', `<title>${title}</title>`);
+      html = html.replace('<title>Forgea</title>', `<title>${safeTitle}</title>`);
       html = html.replace('</head>', `
-        <meta property="og:title" content="${title}" />
-        <meta property="og:description" content="${description}" />
-        <meta name="description" content="${description}" />
+        <meta property="og:title" content="${safeTitle}" />
+        <meta property="og:description" content="${safeDescription}" />
+        <meta name="description" content="${safeDescription}" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="${process.env.PUBLIC_URL || ''}/build/${sessionId}" />
+        <meta property="og:url" content="${safeUrl}" />
         </head>
       `);
     } catch (e) {
