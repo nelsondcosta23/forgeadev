@@ -30,6 +30,14 @@ const aiLimiter = rateLimit({
   message: { error: 'Analysis limit reached for this hour. Please wait.' }
 });
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts, please try again in 15 minutes.' }
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -63,6 +71,10 @@ if (process.env.NODE_ENV !== 'test') {
 
 const PB_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
 const pb = new PocketBase(PB_URL);
+pb.beforeSend = (url, options) => {
+  options.signal = AbortSignal.timeout(1500);
+  return { url, options };
+};
 
 const countryToLanguage = {
   'PT': 'Portuguese (Portugal)', 'BR': 'Portuguese (Brazil)', 'ES': 'Spanish', 'FR': 'French',
@@ -120,7 +132,32 @@ app.use(helmet({
   },
 }));
 app.use(compression());
-app.use(cors());
+
+const allowedOrigins = [
+  process.env.PUBLIC_URL,
+  'https://forgea.dev',
+  'https://www.forgea.dev',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:8085',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:8085',
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const SESSION_ID_REGEX = /^[0-9a-zA-Z_-]{8,64}$/;
@@ -197,7 +234,7 @@ const verifyAdminAuth = async (req, res, next) => {
 app.use('/api/', apiLimiter);
 
 // Admin login: verifies credentials directly with PocketBase
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
