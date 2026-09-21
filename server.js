@@ -10,6 +10,7 @@ import fs from 'fs';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import compression from 'compression';
+import { z } from 'zod';
 
 dotenv.config();
 
@@ -133,6 +134,15 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+const quizAnalyzeSchema = z.object({
+  sessionId: z.string().regex(SESSION_ID_REGEX, 'Invalid session ID format'),
+  answers: z.record(z.any()),
+  questions: z.array(z.object({
+    id: z.string(),
+    question: z.string(),
+  })).min(1, 'At least one question is required'),
+});
 
 // Administrative authentication middleware: validates PocketBase user/admin JWT
 const verifyAdminAuth = async (req, res, next) => {
@@ -409,11 +419,15 @@ async function generateWithGemini({ apiKey, prompt, userPrompt, language }) {
 
 app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
   try {
-    const { answers, questions, sessionId } = req.body;
-    
-    if (!answers || !questions || !sessionId) {
-      return res.status(400).json({ error: 'Payload incomplete' });
+    const parseResult = quizAnalyzeSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        error: 'Invalid request payload',
+        details: parseResult.error.flatten()
+      });
     }
+
+    const { answers, questions, sessionId } = parseResult.data;
 
     const session = await pb.collection('quiz_sessions').getFirstListItem(`session_id="${sessionId}"`);
 
@@ -561,6 +575,11 @@ app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
 
 app.get('/api/results/:sessionId', async (req, res) => {
   const { sessionId } = req.params;
+
+  if (!SESSION_ID_REGEX.test(sessionId)) {
+    return res.status(400).json({ error: 'Invalid session ID format' });
+  }
+
   try {
     const quizSession = await pb.collection('quiz_sessions').getFirstListItem(`session_id="${sessionId}"`);
     let recommendation = null;
