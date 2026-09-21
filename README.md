@@ -17,10 +17,11 @@ The application utilizes a modern architecture divided into three main layers:
 ### Backend & Proxy (BFF - Backend For Frontend)
 - Node.js + Express: Acts as a security proxy server that protects the database.
 - Security Layer: Implementation of INTERNAL_PROXY_KEY to ensure only the official frontend communicates with the API.
-- AI Integration: Direct integration with the official Google AI SDK for professional-grade processing.
+- AI Integration: Dual-engine architecture with Mistral AI (Primary) and Google Gemini (Fallback).
 
 ### Data & AI (The Engine)
-- Google Gemini 2.5 Flash: Google's fastest and most capable model, configured with a Strict Response Schema to ensure recommendations are always delivered in the correct JSON format.
+- Mistral AI (`mistral-large-latest`): Primary AI engine delivering frontier-grade reasoning, hardware synergy, and strict JSON output.
+- Google Gemini 2.5 Flash: Automated resilient fallback engine guaranteeing 100% uptime even during rate limits or provider downtime.
 - PocketBase: Open-source backend solution providing SQLite database, authentication, and content management.
 
 ---
@@ -44,7 +45,8 @@ The application utilizes a modern architecture divided into three main layers:
 ### Prerequisites
 - Node.js (v18 or higher)
 - PocketBase (local executable or via Docker)
-- Google Gemini API Key
+- Mistral AI API Key (Primary)
+- Google Gemini API Key (Fallback)
 
 ### 1. Environment Configuration
 Create a .env file in the project root:
@@ -59,7 +61,11 @@ POCKETBASE_URL=http://localhost:8090
 PB_ADMIN_EMAIL=admin@example.com
 PB_ADMIN_PASSWORD=your_strong_password
 
-# Artificial Intelligence (Google AI)
+# Artificial Intelligence (Primary: Mistral AI)
+MISTRAL_API_KEY=your_mistral_api_key_here
+MISTRAL_MODEL=mistral-large-latest
+
+# Artificial Intelligence (Fallback: Google Gemini)
 GEMINI_API_KEY=your_google_ai_key_here
 
 # Frontend (Build Time)

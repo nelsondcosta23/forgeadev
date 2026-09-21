@@ -1486,11 +1486,11 @@ const Admin = () => {
     
     PreparePayload --> AICall
     
-    subgraph "4️⃣ CHAMADA À AI - Lovable AI Gateway"
-        AICall[🤖 Chamar Lovable AI Gateway] --> AIPayload
-        AIPayload[📤 Enviar para AI:<br/>- System Prompt com instruções<br/>- User answers JSON<br/>- Country/Currency info<br/>- Store URLs disponíveis] 
-        AIPayload --> AIProcessing[⚙️ AI Processing<br/>Model: google/gemini-2.5-flash<br/>via ai.gateway.lovable.dev]
-        AIProcessing --> AIResponse[📥 AI Responde com Tool Call]
+    subgraph "4️⃣ MOTOR DE INTELIGÊNCIA ARTIFICIAL"
+        AICall[🤖 Chamar Motor de IA] --> AIPayload
+        AIPayload[📤 Enviar para IA:<br/>- System Prompt com regras de hardware<br/>- Respostas do utilizador<br/>- País, Moeda e Lojas locais<br/>- JSON Schema Estrito] 
+        AIPayload --> AIProcessing[⚙️ Processamento de IA<br/>Primário: Mistral AI (mistral-large-latest)<br/>Fallback: Google Gemini 2.5 Flash]
+        AIProcessing --> AIResponse[📥 IA Responde com JSON Estruturado]
     end
     
     AIResponse --> ParseResponse
