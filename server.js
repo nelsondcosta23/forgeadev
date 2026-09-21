@@ -231,7 +231,11 @@ const verifyAdminAuth = async (req, res, next) => {
   }
 };
 
-app.use('/api/', apiLimiter);
+app.use('/api/', apiLimiter, (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  next();
+});
 
 // Admin login: verifies credentials directly with PocketBase
 app.post('/api/admin/login', loginLimiter, async (req, res) => {
