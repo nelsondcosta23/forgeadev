@@ -57,7 +57,6 @@ const Quiz = ({ onBack }: QuizProps) => {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json', 
-            'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || ''
           },
           body: JSON.stringify({
             session_id: newSessionId,
@@ -132,7 +131,7 @@ const Quiz = ({ onBack }: QuizProps) => {
 
         const res = await fetch('/api/pb/quiz_responses', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || 'default-dev-key' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(responseData)
         });
 
@@ -182,7 +181,7 @@ const Quiz = ({ onBack }: QuizProps) => {
       console.log('Calling /api/quiz/analyze endpoint...');
       const res = await fetch('/api/quiz/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || 'default-dev-key' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           answers: finalAnswers,
           questions: answeredQuestions,
@@ -358,7 +357,7 @@ const Quiz = ({ onBack }: QuizProps) => {
       try {
         await fetch('/api/pb/quiz_sessions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || 'default-dev-key' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             session_id: newSessionId,
             country_code: countryCode,

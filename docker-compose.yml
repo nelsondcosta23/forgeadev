@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - VITE_INTERNAL_PROXY_KEY=${VITE_INTERNAL_PROXY_KEY}
     ports:
       - "3000"
     labels:

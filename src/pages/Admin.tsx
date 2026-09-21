@@ -174,12 +174,26 @@ const Admin = () => {
       }
 
       try {
-        // In a "Lite Stack", we trust the token in localStorage for the UI
-        // and let the BFF validate it on every request.
+        const parsed = JSON.parse(authData);
+        if (!parsed.token) {
+          throw new Error("No admin token found");
+        }
+
+        const res = await fetch('/api/admin/verify', {
+          headers: {
+            'Authorization': `Bearer ${parsed.token}`
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("Invalid or expired session");
+        }
+
         setIsAuthenticated(true);
         fetchQuizData();
         fetchPrompt();
-      } catch (e) {
+      } catch {
+        localStorage.removeItem('pb_auth');
         setIsAuthenticated(false);
       } finally {
         setIsCheckingAuth(false);

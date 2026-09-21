@@ -35,35 +35,30 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8085;
-const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || process.env.VITE_INTERNAL_PROXY_KEY || '').trim();
-
-if (!INTERNAL_KEY) {
-  console.error('ERROR: INTERNAL_PROXY_KEY missing. API will be inaccessible.');
-  process.exit(1);
-}
+const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || '').trim();
 
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY?.trim();
 const MISTRAL_MODEL = process.env.MISTRAL_MODEL?.trim() || 'mistral-large-latest';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
 
-if (!MISTRAL_API_KEY && !GEMINI_API_KEY) {
-  console.error('ERROR: Neither MISTRAL_API_KEY nor GEMINI_API_KEY configured. At least one AI key is required.');
-  process.exit(1);
-}
+if (process.env.NODE_ENV !== 'test') {
+  if (!MISTRAL_API_KEY && !GEMINI_API_KEY) {
+    console.error('ERROR: Neither MISTRAL_API_KEY nor GEMINI_API_KEY configured. At least one AI key is required.');
+    process.exit(1);
+  }
 
-if (MISTRAL_API_KEY) {
-  console.log(`[AI Engine] Mistral AI configured as PRIMARY provider (${MISTRAL_MODEL}).`);
-} else {
-  console.warn('[AI Engine] MISTRAL_API_KEY not provided. Running on Gemini fallback only.');
-}
+  if (MISTRAL_API_KEY) {
+    console.log(`[AI Engine] Mistral AI configured as PRIMARY provider (${MISTRAL_MODEL}).`);
+  } else {
+    console.warn('[AI Engine] MISTRAL_API_KEY not provided. Running on Gemini fallback only.');
+  }
 
-if (GEMINI_API_KEY) {
-  console.log('[AI Engine] Google Gemini configured as FALLBACK provider (gemini-2.5-flash).');
-} else {
-  console.warn('[AI Engine] GEMINI_API_KEY not provided. No fallback available if primary AI fails.');
+  if (GEMINI_API_KEY) {
+    console.log('[AI Engine] Google Gemini configured as FALLBACK provider (gemini-2.5-flash).');
+  } else {
+    console.warn('[AI Engine] GEMINI_API_KEY not provided. No fallback available if primary AI fails.');
+  }
 }
-
-console.log(`Server environment validated. Internal key length: ${INTERNAL_KEY.length}`);
 
 const PB_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
 const pb = new PocketBase(PB_URL);
@@ -123,30 +118,101 @@ app.use(compression());
 app.use(cors());
 app.use(express.json());
 
-const ensurePbAuth = async (req, res, next) => next();
-
-const authenticateProxy = (req, res, next) => {
-  const key = (req.headers['x-internal-key'] || '').trim();
-  if (!key || key !== INTERNAL_KEY) {
-    console.error(`Unauthorized access attempt. Received: ${key.slice(-4) || 'none'}`);
-    return res.status(401).json({ error: 'Invalid internal proxy key' });
+// Administrative authentication middleware: validates PocketBase user/admin JWT
+const verifyAdminAuth = async (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required: missing or invalid authorization header' });
   }
-  next();
+
+  const token = authHeader.substring(7).trim();
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required: missing bearer token' });
+  }
+
+  try {
+    const clientPb = new PocketBase(PB_URL);
+    clientPb.beforeSend = (url, options) => {
+      options.signal = AbortSignal.timeout(1500);
+      return { url, options };
+    };
+    clientPb.authStore.save(token, null);
+
+    let authRecord = null;
+    try {
+      const refreshed = await clientPb.collection('users').authRefresh();
+      authRecord = refreshed.record;
+    } catch (userErr) {
+      try {
+        if (clientPb.admins && typeof clientPb.admins.authRefresh === 'function') {
+          const adminRefreshed = await clientPb.admins.authRefresh();
+          authRecord = adminRefreshed.admin;
+        } else if (clientPb.collection('_superusers')) {
+          const superRefreshed = await clientPb.collection('_superusers').authRefresh();
+          authRecord = superRefreshed.record;
+        }
+      } catch (adminErr) {
+        return res.status(401).json({ error: 'Invalid or expired administrative token' });
+      }
+    }
+
+    if (!authRecord) {
+      return res.status(401).json({ error: 'Invalid or expired administrative token' });
+    }
+
+    req.adminUser = authRecord;
+    req.pbClient = clientPb;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Authentication verification failed', details: error.message });
+  }
 };
 
 app.use('/api/', apiLimiter);
 
-app.post('/api/admin/login', authenticateProxy, async (req, res) => {
+// Admin login: verifies credentials directly with PocketBase
+app.post('/api/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const authData = await pb.collection('users').authWithPassword(email, password);
-    res.json(authData);
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    let authData;
+    try {
+      authData = await pb.collection('users').authWithPassword(email, password);
+    } catch (userErr) {
+      if (pb.admins && typeof pb.admins.authWithPassword === 'function') {
+        authData = await pb.admins.authWithPassword(email, password);
+      } else if (pb.collection('_superusers')) {
+        authData = await pb.collection('_superusers').authWithPassword(email, password);
+      } else {
+        throw userErr;
+      }
+    }
+
+    res.json({
+      token: authData.token,
+      record: authData.record || authData.admin
+    });
   } catch (error) {
-    res.status(401).json({ error: 'Auth failed', details: error.message });
+    res.status(401).json({ error: 'Authentication failed', details: error.message });
   }
 });
 
-app.post('/api/analytics/track', authenticateProxy, ensurePbAuth, async (req, res) => {
+// Admin verify: validates token on client boot
+app.get('/api/admin/verify', verifyAdminAuth, (req, res) => {
+  res.json({
+    valid: true,
+    user: {
+      id: req.adminUser.id,
+      email: req.adminUser.email
+    }
+  });
+});
+
+// Analytics tracking: public endpoint
+app.post('/api/analytics/track', async (req, res) => {
   try {
     const record = await pb.collection('analytics_events').create(req.body);
     res.json({ success: true, record });
@@ -154,6 +220,7 @@ app.post('/api/analytics/track', authenticateProxy, ensurePbAuth, async (req, re
     res.status(500).json({ error: 'Analytics failure', details: error.message });
   }
 });
+
 
 async function generateWithMistral({ apiKey, model, systemPrompt, userPrompt, language, storeInstructions }) {
   const mistral = new Mistral({ apiKey });
@@ -324,7 +391,7 @@ async function generateWithGemini({ apiKey, prompt, userPrompt, language }) {
   return JSON.parse(response.text());
 }
 
-app.post('/api/quiz/analyze', aiLimiter, authenticateProxy, ensurePbAuth, async (req, res) => {
+app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
   try {
     const { answers, questions, sessionId } = req.body;
     
@@ -476,7 +543,7 @@ app.post('/api/quiz/analyze', aiLimiter, authenticateProxy, ensurePbAuth, async 
   }
 });
 
-app.get('/api/results/:sessionId', ensurePbAuth, async (req, res) => {
+app.get('/api/results/:sessionId', async (req, res) => {
   const { sessionId } = req.params;
   try {
     const quizSession = await pb.collection('quiz_sessions').getFirstListItem(`session_id="${sessionId}"`);
@@ -498,27 +565,63 @@ app.get('/api/results/:sessionId', ensurePbAuth, async (req, res) => {
   }
 });
 
-app.use('/api/pb/:collection', authenticateProxy, ensurePbAuth, async (req, res) => {
+app.use('/api/pb/:collection', async (req, res) => {
   const { collection } = req.params;
-  try {
-    if (req.method === 'GET') {
-      const records = await pb.collection(collection).getFullList(req.query.sort ? { sort: req.query.sort } : {});
-      return res.json(records.map(r => ({ ...r, created: r.created, updated: r.updated, id: r.id })));
-    } else if (req.method === 'POST') {
-      const record = await pb.collection(collection).create(req.body);
-      return res.json({ ...record, id: record.id });
-    } else if (req.method === 'PATCH') {
-      const id = req.query.id || req.body.id;
-      if (!id) return res.status(400).json({ error: 'ID required' });
-      return res.json(await pb.collection(collection).update(id, req.body));
-    } else if (req.method === 'DELETE') {
-      const id = req.query.id;
-      if (!id) return res.status(400).json({ error: 'ID required' });
-      return res.json({ success: await pb.collection(collection).delete(id) });
+
+  // Allow public creation of quiz sessions and responses
+  if (req.method === 'POST' && (collection === 'quiz_sessions' || collection === 'quiz_responses')) {
+    try {
+      if (collection === 'quiz_sessions') {
+        const { session_id, country_code, country_name } = req.body;
+        if (!session_id) {
+          return res.status(400).json({ error: 'session_id is required' });
+        }
+        const record = await pb.collection('quiz_sessions').create({
+          session_id,
+          country_code: country_code || 'XX',
+          country_name: country_name || 'Global',
+          completed: false
+        });
+        return res.json({ id: record.id, session_id: record.session_id });
+      }
+
+      if (collection === 'quiz_responses') {
+        const { session_id, question_id } = req.body;
+        if (!session_id || !question_id) {
+          return res.status(400).json({ error: 'session_id and question_id are required' });
+        }
+        const record = await pb.collection('quiz_responses').create(req.body);
+        return res.json({ id: record.id });
+      }
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to record quiz data', details: error.message });
     }
-  } catch (error) {
-    res.status(500).json({ error: 'Proxy operation failed' });
   }
+
+  // All other operations and collections require verified admin authentication
+  return verifyAdminAuth(req, res, async () => {
+    try {
+      const targetPb = req.pbClient || pb;
+      if (req.method === 'GET') {
+        const records = await targetPb.collection(collection).getFullList(req.query.sort ? { sort: req.query.sort } : {});
+        return res.json(records.map(r => ({ ...r, created: r.created, updated: r.updated, id: r.id })));
+      } else if (req.method === 'POST') {
+        const record = await targetPb.collection(collection).create(req.body);
+        return res.json({ ...record, id: record.id });
+      } else if (req.method === 'PATCH') {
+        const id = req.query.id || req.body.id;
+        if (!id) return res.status(400).json({ error: 'ID required' });
+        return res.json(await targetPb.collection(collection).update(id, req.body));
+      } else if (req.method === 'DELETE') {
+        const id = req.query.id;
+        if (!id) return res.status(400).json({ error: 'ID required' });
+        return res.json({ success: await targetPb.collection(collection).delete(id) });
+      }
+      return res.status(405).json({ error: 'Method not allowed' });
+    } catch (error) {
+      res.status(500).json({ error: 'Proxy operation failed', details: error.message });
+    }
+  });
 });
 
 const distPath = path.join(__dirname, 'dist');
@@ -560,20 +663,37 @@ app.get('/build/:sessionId', async (req, res) => {
 
 app.get(/^(?!\/pb).*$/, (req, res) => res.sendFile(path.join(distPath, 'index.html')));
 
-const server = app.listen(PORT, () => console.log(`BFF listening on ${PORT}`));
+const isDirectRun = Boolean(
+  process.argv[1] && (
+    fileURLToPath(import.meta.url) === path.resolve(process.argv[1]) ||
+    process.argv[1].endsWith('server.js')
+  )
+);
+
+let server;
+if (isDirectRun && process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => console.log(`BFF listening on ${PORT}`));
+}
 
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Cleaning up...');
-  server.close(() => {
-    console.log('Server closed. Process exit.');
-    process.exit(0);
-  });
+  if (server) {
+    console.log('SIGTERM received. Cleaning up...');
+    server.close(() => {
+      console.log('Server closed. Process exit.');
+      process.exit(0);
+    });
+  }
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received. Cleaning up...');
-  server.close(() => {
-    console.log('Server closed. Process exit.');
-    process.exit(0);
-  });
+  if (server) {
+    console.log('SIGINT received. Cleaning up...');
+    server.close(() => {
+      console.log('Server closed. Process exit.');
+      process.exit(0);
+    });
+  }
 });
+
+export { app };
+

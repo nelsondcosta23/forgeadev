@@ -65,7 +65,6 @@ const invokeTrackAnalytics = async (event: Record<string, unknown>) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Internal-Key': import.meta.env.VITE_INTERNAL_PROXY_KEY || '',
     },
     body: JSON.stringify(event),
   }).then(res => res.json());

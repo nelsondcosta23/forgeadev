@@ -67,9 +67,6 @@ MISTRAL_MODEL=mistral-large-latest
 
 # Artificial Intelligence (Fallback: Google Gemini)
 GEMINI_API_KEY=your_google_ai_key_here
-
-# Frontend (Build Time)
-VITE_INTERNAL_PROXY_KEY=the_same_secret_key_above
 ```
 
 ### 2. Manual Installation

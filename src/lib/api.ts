@@ -1,10 +1,22 @@
-const INTERNAL_KEY = (import.meta.env.VITE_INTERNAL_PROXY_KEY || '').trim();
-
 export async function bffFetch(url: string, options: RequestInit = {}) {
+  const customHeaders: Record<string, string> = {};
+
+  try {
+    const rawAuth = localStorage.getItem('pb_auth');
+    if (rawAuth) {
+      const parsed = JSON.parse(rawAuth);
+      if (parsed.token) {
+        customHeaders['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    }
+  } catch {
+    // Ignore JSON parse error
+  }
+
   const headers = {
-    ...options.headers,
-    'x-internal-key': INTERNAL_KEY,
     'Content-Type': 'application/json',
+    ...customHeaders,
+    ...options.headers,
   };
 
   const response = await fetch(url, { ...options, headers });

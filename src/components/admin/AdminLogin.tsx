@@ -23,7 +23,6 @@ export const AdminLogin = ({ onLogin }: AdminLoginProps) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-internal-key': import.meta.env.VITE_INTERNAL_PROXY_KEY || ''
         },
         body: JSON.stringify({ email, password }),
       });

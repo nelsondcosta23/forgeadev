@@ -52,6 +52,7 @@ pnpm-debug.log*
 scratch/
 test_*.js
 *.tmp
+.cache_ggshield
 
 # User-specific or generated assets
 *.pdf
