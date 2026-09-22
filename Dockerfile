@@ -28,8 +28,8 @@ COPY --chown=node:node package*.json ./
 # Make sure to install production dependencies only for the node server
 RUN npm install --omit=dev
 
-# Copy the server file
-COPY --chown=node:node server.js ./
+# Copy server and instrumentation files
+COPY --chown=node:node server.js instrument.js ./
 
 # Copy the static dist folder built in Stage 1
 COPY --chown=node:node --from=build /app/dist ./dist
@@ -37,4 +37,4 @@ COPY --chown=node:node --from=build /app/dist ./dist
 # Avoid running on privileged port
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["node", "--import", "./instrument.js", "server.js"]

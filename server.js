@@ -11,8 +11,32 @@ import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import compression from 'compression';
 import { z } from 'zod';
+import * as Sentry from '@sentry/node';
 
 dotenv.config();
+
+const SENTRY_DSN = (process.env.SENTRY_DSN || 'http://994ebcb62592da248c0fa74514c61fa7@localhost:9000/8').trim();
+
+let sentryHost = '';
+let sentryProjectId = '';
+if (SENTRY_DSN) {
+  try {
+    const parsedDsn = new URL(SENTRY_DSN);
+    sentryHost = `${parsedDsn.protocol}//${parsedDsn.host}`;
+    sentryProjectId = parsedDsn.pathname.replace(/^\//, '').replace(/\/$/, '');
+  } catch (e) {
+    console.warn('[Monitoring] Invalid SENTRY_DSN format:', e.message);
+  }
+
+  if (process.env.NODE_ENV !== 'test' && !Sentry.isInitialized()) {
+    Sentry.init({
+      dsn: SENTRY_DSN,
+      environment: process.env.NODE_ENV || 'production',
+      tracesSampleRate: 1.0,
+    });
+    console.log('[Monitoring] Sentry initialized for Node.js backend.');
+  }
+}
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -158,6 +182,63 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+const tunnelLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many monitoring events.' }
+});
+
+app.post('/api/sentry-tunnel', tunnelLimiter, express.raw({ type: () => true, limit: '2mb' }), async (req, res) => {
+  if (!sentryHost || !sentryProjectId) {
+    return res.status(503).json({ error: 'Sentry monitoring not configured' });
+  }
+
+  if (!req.body || req.body.length === 0) {
+    return res.status(400).json({ error: 'Empty envelope payload' });
+  }
+
+  try {
+    const envelopeStr = req.body.toString('utf8');
+    const firstLine = envelopeStr.split('\n')[0];
+    let header;
+    try {
+      header = JSON.parse(firstLine);
+    } catch {
+      return res.status(400).json({ error: 'Invalid envelope header' });
+    }
+
+    if (header.dsn) {
+      try {
+        const envelopeDsn = new URL(header.dsn);
+        const envelopeProjectId = envelopeDsn.pathname.replace(/^\//, '').replace(/\/$/, '');
+        if (envelopeProjectId !== sentryProjectId) {
+          return res.status(403).json({ error: 'Project ID mismatch' });
+        }
+      } catch {
+        return res.status(400).json({ error: 'Invalid envelope DSN' });
+      }
+    }
+
+    const upstreamUrl = `${sentryHost}/api/${sentryProjectId}/envelope/`;
+    const upstreamRes = await fetch(upstreamUrl, {
+      method: 'POST',
+      body: req.body,
+      headers: {
+        'Content-Type': 'application/x-sentry-envelope',
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const responseText = await upstreamRes.text();
+    return res.status(upstreamRes.status).send(responseText);
+  } catch (err) {
+    return res.status(502).json({ error: 'Failed to forward to Sentry upstream', details: err.message });
+  }
+});
+
 app.use(express.json());
 
 const SESSION_ID_REGEX = /^[0-9a-zA-Z_-]{8,64}$/;
@@ -750,6 +831,8 @@ app.get('/build/:sessionId', async (req, res) => {
 });
 
 app.get(/^(?!\/pb).*$/, (req, res) => res.sendFile(path.join(distPath, 'index.html')));
+
+Sentry.setupExpressErrorHandler(app);
 
 const isDirectRun = Boolean(
   process.argv[1] && (

@@ -16,6 +16,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL}
       - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD}
+      - SENTRY_DSN=${SENTRY_DSN}
     restart: always
 
   pb:
