@@ -76,3 +76,15 @@ test('FUNCTIONALITY: Public POST /api/pb/quiz_sessions is allowed without admin 
   const body = await res.json();
   assert.match(body.error, /session_id/i);
 });
+
+test('FUNCTIONALITY: Public POST /api/pb/quiz_responses is allowed without admin token', async () => {
+  const res = await fetch(`${baseUrl}/api/pb/quiz_responses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+  // Empty payload should return 400 (missing session_id), NOT 401 Unauthorized
+  assert.strictEqual(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /session_id/i);
+});

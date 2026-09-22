@@ -662,11 +662,16 @@ app.use('/api/pb/:collection', async (req, res) => {
       }
 
       if (collection === 'quiz_responses') {
-        const { session_id, question_id } = req.body;
-        if (!session_id || !question_id) {
-          return res.status(400).json({ error: 'session_id and question_id are required' });
+        const { session_id, question_number, question_text, selected_answer } = req.body;
+        if (!session_id) {
+          return res.status(400).json({ error: 'session_id is required' });
         }
-        const record = await pb.collection('quiz_responses').create(req.body);
+        const record = await pb.collection('quiz_responses').create({
+          session_id,
+          question_number: Number(question_number) || 1,
+          question_text: String(question_text || ''),
+          selected_answer: String(selected_answer || '')
+        });
         return res.json({ id: record.id });
       }
     } catch (error) {

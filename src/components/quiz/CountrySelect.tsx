@@ -43,7 +43,7 @@ export const CountrySelect = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (defaultValue && !value) {
+    if (defaultValue) {
       setValue(defaultValue);
       onSelect(defaultValue);
     }

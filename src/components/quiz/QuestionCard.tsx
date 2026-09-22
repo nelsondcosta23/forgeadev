@@ -17,8 +17,14 @@ interface QuestionCardProps {
 
 const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: QuestionCardProps) => {
   const { t } = useTranslation();
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(defaultValue || null);
   const [numberValue, setNumberValue] = useState<number>(question.min ?? 0);
+
+  useEffect(() => {
+    if (defaultValue) {
+      setSelectedOption(defaultValue);
+    }
+  }, [defaultValue]);
 
   const handleOptionSelect = (value: string) => {
     setSelectedOption(value);
@@ -32,8 +38,9 @@ const QuestionCard = ({ question, onAnswer, disabled = false, defaultValue }: Qu
   };
 
   const handleOptionSubmit = () => {
-    if (selectedOption) {
-      onAnswer(selectedOption);
+    const finalAnswer = selectedOption || defaultValue;
+    if (finalAnswer) {
+      onAnswer(finalAnswer);
     }
   };
 

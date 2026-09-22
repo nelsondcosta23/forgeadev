@@ -137,25 +137,13 @@ const Quiz = ({ onBack }: QuizProps) => {
 
         if (!res.ok) {
           if (import.meta.env.DEV) {
-            console.error('Error saving quiz response');
+            console.warn('Non-fatal: could not persist intermediate quiz response');
           }
-          toast({
-            title: "Error",
-            description: "Unable to save your response. Please try again.",
-            variant: "destructive",
-          });
-          return;
         }
       } catch (validationError) {
         if (import.meta.env.DEV) {
           console.error('Validation error:', validationError);
         }
-        toast({
-          title: "Error",
-          description: "Invalid response data.",
-          variant: "destructive",
-        });
-        return;
       }
     }
 
