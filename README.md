@@ -16,7 +16,7 @@ The application utilizes a modern architecture divided into three main layers:
 
 ### Backend & Proxy (BFF - Backend For Frontend)
 - Node.js + Express: Acts as a security proxy server that protects the database.
-- Security Layer: Implementation of INTERNAL_PROXY_KEY to ensure only the official frontend communicates with the API.
+- Security Layer: JWT authentication proxy with superuser and admin role verification, rate limiting, and collection whitelisting.
 - AI Integration: Dual-engine architecture with Mistral AI (Primary) and Google Gemini (Fallback).
 
 ### Data & AI (The Engine)
@@ -53,13 +53,10 @@ Create a .env file in the project root:
 
 ```env
 # Server Configuration
-PORT=3000
-INTERNAL_PROXY_KEY=your_secure_random_key
+PORT=8085
 
 # PocketBase (Production or Local)
 POCKETBASE_URL=http://localhost:8090
-PB_ADMIN_EMAIL=admin@example.com
-PB_ADMIN_PASSWORD=your_strong_password
 
 # Artificial Intelligence (Primary: Mistral AI)
 MISTRAL_API_KEY=your_mistral_api_key_here
@@ -67,6 +64,7 @@ MISTRAL_MODEL=mistral-large-latest
 
 # Artificial Intelligence (Fallback: Google Gemini)
 GEMINI_API_KEY=your_google_ai_key_here
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ### 2. Manual Installation
@@ -89,9 +87,21 @@ docker compose up -d --build
 
 ---
 
+## Legacy Supabase Migration & Key Revocation Guide
+
+The project has completely transitioned from Supabase to an internal PocketBase instance with a hardened Express BFF proxy.
+
+> [!WARNING]
+> If you previously provisioned or ran this project with Supabase:
+> 1. **Revoke Old API Keys**: Access your Supabase project dashboard, navigate to `Project Settings -> API`, and revoke or rotate all legacy `anon` and `service_role` keys.
+> 2. **Clean Environment Files**: Verify your local `.env` and deployment secrets contain no `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` variables.
+> 3. **Delete Stale Supabase Projects**: If the cloud database is no longer in use, delete the database instance to eliminate orphaned cloud attack surfaces.
+
+---
+
 ## Security and Stability
 
-- Zero Exposure Architecture: PocketBase is never directly exposed to the internet; all requests are proxied via server.js which validates the INTERNAL_PROXY_KEY.
+- Zero Exposure Architecture: PocketBase is never directly exposed to the internet; all requests are proxied via server.js with strict collection whitelisting and administrative role enforcement.
 - Error Resilience: The system is hardened against AI-generated JSON errors using strict schemas and defensive frontend validations.
 - Model Integrity: Successfully migrated to Gemini 2.5 Flash for superior reasoning and reliability.
 

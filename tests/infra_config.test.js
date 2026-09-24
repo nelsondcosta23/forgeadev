@@ -36,3 +36,16 @@ test('INFRA: Dockerfile must not contain build-time secret ARGs', () => {
   );
 });
 
+test('SECURITY: .env.example must not contain legacy Supabase keys or INTERNAL_PROXY_KEY', () => {
+  const envExample = fs.readFileSync('./.env.example', 'utf8');
+  assert.doesNotMatch(envExample, /INTERNAL_PROXY_KEY/i, '.env.example must not contain INTERNAL_PROXY_KEY');
+  assert.doesNotMatch(envExample, /SUPABASE/i, '.env.example must not contain legacy Supabase keys');
+});
+
+test('SECURITY: package.json must not have active supabase dependencies', () => {
+  const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+  const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+  assert.strictEqual(allDeps['@supabase/supabase-js'], undefined, 'Supabase client must not be a dependency');
+});
+
+
