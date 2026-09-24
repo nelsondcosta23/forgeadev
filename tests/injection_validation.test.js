@@ -77,3 +77,36 @@ test('SECURITY: /api/quiz/analyze rejects empty questions array with 400', async
   const body = await res.json();
   assert.strictEqual(body.error, 'Invalid request payload');
 });
+
+test('SECURITY: /api/quiz/analyze rejects PocketBase filter injection in answers.country with 400', async () => {
+  const res = await fetch(`${baseUrl}/api/quiz/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: '12345678-1234-1234-1234-123456789012',
+      answers: { country: 'PT" || 1=1 || country_code="' },
+      questions: [{ id: 'q1', question: 'Usage?' }],
+    }),
+  });
+  assert.strictEqual(res.status, 400, 'Expected 400 for filter injection in country');
+  const body = await res.json();
+  assert.strictEqual(body.error, 'Invalid request payload');
+  assert.ok(JSON.stringify(body.details).toLowerCase().includes('country'));
+});
+
+test('SECURITY: /api/quiz/analyze rejects non-ISO country code in answers.country with 400', async () => {
+  const res = await fetch(`${baseUrl}/api/quiz/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: '12345678-1234-1234-1234-123456789012',
+      answers: { country: 'INVALID_LONG_CODE' },
+      questions: [{ id: 'q1', question: 'Usage?' }],
+    }),
+  });
+  assert.strictEqual(res.status, 400, 'Expected 400 for non-ISO country code');
+  const body = await res.json();
+  assert.strictEqual(body.error, 'Invalid request payload');
+  assert.ok(JSON.stringify(body.details).toLowerCase().includes('country'));
+});
+

@@ -256,7 +256,10 @@ function escapeHtml(str) {
 
 const quizAnalyzeSchema = z.object({
   sessionId: z.string().regex(SESSION_ID_REGEX, 'Invalid session ID format'),
-  answers: z.record(z.any()),
+  answers: z.record(z.any()).refine(
+    (a) => !a.country || (typeof a.country === 'string' && /^[a-zA-Z]{2}$/.test(a.country.trim())),
+    { message: 'Invalid country code format in answers' }
+  ),
   questions: z.array(z.object({
     id: z.string(),
     question: z.string(),
@@ -579,14 +582,19 @@ app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
 
     const sanitizedPrompt = customPrompt.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
 
-    const countryCode = answers.country || 'US';
+    const rawCountry = answers.country ? String(answers.country).trim().toUpperCase() : 'US';
+    if (!/^[A-Z]{2}$/.test(rawCountry)) {
+      return res.status(400).json({ error: 'Invalid country code format in answers' });
+    }
+    const countryCode = rawCountry;
     const language = countryToLanguage[countryCode] || 'English';
 
     let storeInstructions = '';
     let storeUrls = 'Amazon.com: https://www.amazon.com';
     try {
+      const safeCountry = countryCode.replace(/[^A-Z]/g, '');
       const links = await pb.collection('country_store_links').getFullList({
-        filter: `country_code="${countryCode}" && status=true`
+        filter: `country_code="${safeCountry}" && status=true`
       });
 
       if (links?.length) {
