@@ -109,7 +109,11 @@ const PORT = process.env.PORT || 8085;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY?.trim();
 const MISTRAL_MODEL = process.env.MISTRAL_MODEL?.trim() || 'mistral-large-latest';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
-const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-flash-lite-latest';
+let configuredGeminiModel = process.env.GEMINI_MODEL?.trim();
+if (!configuredGeminiModel || configuredGeminiModel === 'gemini-2.5-flash') {
+  configuredGeminiModel = 'gemini-flash-lite-latest';
+}
+const GEMINI_MODEL = configuredGeminiModel;
 
 if (process.env.NODE_ENV !== 'test') {
   if (!MISTRAL_API_KEY && !GEMINI_API_KEY) {
