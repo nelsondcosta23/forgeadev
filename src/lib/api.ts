@@ -19,7 +19,7 @@ export async function bffFetch(url: string, options: RequestInit = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(url, { credentials: 'include', ...options, headers });
   
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Unknown API error' }));

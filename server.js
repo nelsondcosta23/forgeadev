@@ -302,13 +302,23 @@ const analyticsEventSchema = z.object({
 // Administrative authentication middleware: validates PocketBase user/admin JWT
 const verifyAdminAuth = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authentication required: missing or invalid authorization header' });
+  let token = null;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7).trim();
+  } else if (req.headers['cookie']) {
+    const cookies = req.headers['cookie'].split(';');
+    for (const cookie of cookies) {
+      const [name, val] = cookie.trim().split('=');
+      if (name === 'admin_token' && val) {
+        token = decodeURIComponent(val);
+        break;
+      }
+    }
   }
 
-  const token = authHeader.substring(7).trim();
   if (!token) {
-    return res.status(401).json({ error: 'Authentication required: missing bearer token' });
+    return res.status(401).json({ error: 'Authentication required: missing or invalid authorization header or session cookie' });
   }
 
   try {
@@ -397,6 +407,19 @@ app.post('/api/admin/login', loginLimiter, async (req, res) => {
       }
     }
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = [
+      `admin_token=${encodeURIComponent(authData.token)}`,
+      'HttpOnly',
+      'SameSite=Strict',
+      'Path=/',
+      'Max-Age=604800', // 7 days
+    ];
+    if (isProduction) {
+      cookieOptions.push('Secure');
+    }
+    res.setHeader('Set-Cookie', cookieOptions.join('; '));
+
     res.json({
       token: authData.token,
       record: authData.record || authData.admin
@@ -404,6 +427,23 @@ app.post('/api/admin/login', loginLimiter, async (req, res) => {
   } catch (error) {
     return sendSafeError(res, 401, 'Authentication failed', error);
   }
+});
+
+// Admin logout: clears HttpOnly session cookie
+app.post('/api/admin/logout', (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = [
+    'admin_token=',
+    'HttpOnly',
+    'SameSite=Strict',
+    'Path=/',
+    'Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+  ];
+  if (isProduction) {
+    cookieOptions.push('Secure');
+  }
+  res.setHeader('Set-Cookie', cookieOptions.join('; '));
+  res.json({ success: true });
 });
 
 // Admin verify: validates token on client boot

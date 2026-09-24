@@ -125,3 +125,32 @@ test('SECURITY: Request to arbitrary internal collection /api/pb/internal_logs m
   assert.match(body.error, /forbidden/i);
 });
 
+test('SECURITY: Calling /api/admin/verify with invalid token via HttpOnly cookie must be parsed and processed', async () => {
+  const res = await fetch(`${baseUrl}/api/admin/verify`, {
+    headers: { 'Cookie': 'admin_token=fake-cookie-jwt-token' }
+  });
+  assert.strictEqual(res.status, 401, 'Expected 401 for invalid admin token passed via cookie');
+  const body = await res.json();
+  assert.notStrictEqual(body.error, 'Authentication required: missing or invalid authorization header or session cookie');
+});
+
+test('SECURITY: Calling /api/admin/verify without token or cookie returns 401 missing credentials', async () => {
+  const res = await fetch(`${baseUrl}/api/admin/verify`);
+  assert.strictEqual(res.status, 401, 'Expected 401 when no auth header or cookie is provided');
+  const body = await res.json();
+  assert.match(body.error, /missing or invalid authorization header or session cookie/i);
+});
+
+test('SECURITY: POST /api/admin/logout clears HttpOnly admin_token cookie', async () => {
+  const res = await fetch(`${baseUrl}/api/admin/logout`, {
+    method: 'POST'
+  });
+  assert.strictEqual(res.status, 200, 'Expected 200 for logout');
+  const setCookie = res.headers.get('set-cookie') || '';
+  assert.match(setCookie, /admin_token=/, 'Set-Cookie should target admin_token');
+  assert.match(setCookie, /HttpOnly/i, 'Cookie must have HttpOnly');
+  assert.match(setCookie, /SameSite=Strict/i, 'Cookie must have SameSite=Strict');
+  assert.match(setCookie, /Expires=Thu, 01 Jan 1970/i, 'Cookie must be expired');
+});
+
+

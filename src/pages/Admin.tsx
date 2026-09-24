@@ -167,23 +167,24 @@ const Admin = () => {
   useEffect(() => {
     const checkAuth = async () => {
       const authData = localStorage.getItem('pb_auth');
-      
-      if (!authData) {
-        setIsCheckingAuth(false);
-        setIsAuthenticated(false);
-        return;
+      let token = '';
+      if (authData) {
+        try {
+          token = JSON.parse(authData)?.token || '';
+        } catch {
+          // ignore parsing error
+        }
       }
 
       try {
-        const parsed = JSON.parse(authData);
-        if (!parsed.token) {
-          throw new Error("No admin token found");
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
         }
 
         const res = await fetch('/api/admin/verify', {
-          headers: {
-            'Authorization': `Bearer ${parsed.token}`
-          }
+          credentials: 'include',
+          headers,
         });
 
         if (!res.ok) {
@@ -295,7 +296,12 @@ const Admin = () => {
     fetchPrompt();
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+    } catch {
+      // ignore network errors on logout
+    }
     localStorage.removeItem('pb_auth');
     setIsAuthenticated(false);
   };
