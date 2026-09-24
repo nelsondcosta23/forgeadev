@@ -243,11 +243,24 @@ app.post('/api/sentry-tunnel', tunnelLimiter, express.raw({ type: () => true, li
     const responseText = await upstreamRes.text();
     return res.status(upstreamRes.status).send(responseText);
   } catch (err) {
-    return res.status(502).json({ error: 'Failed to forward to Sentry upstream', details: err.message });
+    return sendSafeError(res, 502, 'Failed to forward to Sentry upstream', err);
   }
 });
 
 app.use(express.json());
+
+const isDev = process.env.NODE_ENV === 'development';
+
+function sendSafeError(res, status, publicMessage, err) {
+  if (err && err.message) {
+    console.error(`[Safe Error] Status ${status} - ${publicMessage}:`, err.message);
+  }
+  const body = { error: publicMessage };
+  if (isDev && err && err.message) {
+    body.details = err.message;
+  }
+  return res.status(status).json(body);
+}
 
 const SESSION_ID_REGEX = /^[0-9a-zA-Z_-]{8,64}$/;
 
@@ -353,7 +366,7 @@ const verifyAdminAuth = async (req, res, next) => {
     req.pbClient = clientPb;
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'Authentication verification failed', details: error.message });
+    return sendSafeError(res, 401, 'Authentication verification failed', error);
   }
 };
 
@@ -389,7 +402,7 @@ app.post('/api/admin/login', loginLimiter, async (req, res) => {
       record: authData.record || authData.admin
     });
   } catch (error) {
-    res.status(401).json({ error: 'Authentication failed', details: error.message });
+    return sendSafeError(res, 401, 'Authentication failed', error);
   }
 });
 
@@ -766,8 +779,7 @@ app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
 
     res.json(resultObj);
   } catch (error) {
-    console.error('Core Analysis Failure:', error.message);
-    res.status(500).json({ error: 'Analysis failed', details: error.message });
+    return sendSafeError(res, 500, 'Analysis failed', error);
   }
 });
 
@@ -881,7 +893,7 @@ app.use('/api/pb/:collection', async (req, res) => {
       }
       return res.status(405).json({ error: 'Method not allowed' });
     } catch (error) {
-      res.status(500).json({ error: 'Proxy operation failed', details: error.message });
+      return sendSafeError(res, 500, 'Proxy operation failed', error);
     }
   });
 });
