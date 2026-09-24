@@ -23,3 +23,18 @@ test('FUNCTIONALITY: jsPDF can be imported and initialized without errors', asyn
   const pdfOutput = doc.output('arraybuffer');
   assert.ok(pdfOutput.byteLength > 100, 'jsPDF should generate valid document buffer');
 });
+
+test('SECURITY: package.json must not have vulnerable or abandoned xlsx package', () => {
+  const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+  assert.strictEqual(
+    pkg.dependencies?.xlsx,
+    undefined,
+    'vulnerable xlsx package must not be present in dependencies'
+  );
+  assert.strictEqual(
+    pkg.devDependencies?.xlsx,
+    undefined,
+    'vulnerable xlsx package must not be present in devDependencies'
+  );
+});
+

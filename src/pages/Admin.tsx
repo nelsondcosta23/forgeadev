@@ -321,40 +321,48 @@ const Admin = () => {
 
   const downloadQuizzesExcel = async () => {
     try {
-      const XLSX = await import('xlsx');
-      
       // Fetch all quiz sessions via BFF
       const sessions = await api.get("/api/pb/quiz_sessions");
 
-      // Create worksheet data
-      const worksheetData = sessions?.map((session: any) => {
-        const answers = session.answers ? JSON.parse(session.answers) : {};
-        
-        return {
-          'Session ID': session.session_id,
-          'Country': session.country_name || 'Unknown',
-          'Country Code': session.country_code || 'XX',
-          'Started At': new Date(session.created).toLocaleString(),
-          'Completed At': session.completed_at ? new Date(session.completed_at).toLocaleString() : 'Not completed',
-          'Purpose': answers.purpose || 'N/A',
-          'Budget': answers.budget || 'N/A',
-        };
+      const sanitizeCsvField = (val: unknown): string => {
+        let str = String(val ?? '');
+        // Prevent CSV / Excel Formula Injection (CWE-1236)
+        if (/^[=+\-@\t\r]/.test(str)) {
+          str = `'${str}`;
+        }
+        return `"${str.replace(/"/g, '""')}"`;
+      };
+
+      const headers = ['Session ID', 'Country', 'Country Code', 'Started At', 'Completed At', 'Purpose', 'Budget'];
+      const rows = sessions?.map((session: any) => {
+        const answers = session.answers ? (typeof session.answers === 'string' ? JSON.parse(session.answers) : session.answers) : {};
+        return [
+          sanitizeCsvField(session.session_id),
+          sanitizeCsvField(session.country_name || 'Unknown'),
+          sanitizeCsvField(session.country_code || 'XX'),
+          sanitizeCsvField(new Date(session.created).toLocaleString()),
+          sanitizeCsvField(session.completed_at ? new Date(session.completed_at).toLocaleString() : 'Not completed'),
+          sanitizeCsvField(answers.purpose || 'N/A'),
+          sanitizeCsvField(answers.budget || 'N/A'),
+        ].join(',');
       }) || [];
 
-      // Create workbook and worksheet
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(worksheetData);
+      // Prepend UTF-8 BOM for seamless opening in Microsoft Excel
+      const csvContent = '\uFEFF' + [headers.map(h => `"${h}"`).join(','), ...rows].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `quiz_sessions_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
 
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, "Quiz Sessions");
-
-      // Generate file and download
-      XLSX.writeFile(wb, `quiz_sessions_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-      toast.success("Excel file downloaded successfully!");
+      toast.success("Dados de quiz exportados com sucesso!");
     } catch (error) {
-      console.error("Error generating Excel:", error);
-      toast.error("Error generating Excel file");
+      console.error("Error generating export:", error);
+      toast.error("Erro ao gerar exportação");
     }
   };
 
