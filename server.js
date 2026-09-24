@@ -109,7 +109,7 @@ const PORT = process.env.PORT || 8085;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY?.trim();
 const MISTRAL_MODEL = process.env.MISTRAL_MODEL?.trim() || 'mistral-large-latest';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
-const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash-lite';
+const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-flash-lite-latest';
 
 if (process.env.NODE_ENV !== 'test') {
   if (!MISTRAL_API_KEY && !GEMINI_API_KEY) {
@@ -718,11 +718,9 @@ Important: Respond with all explanations, notes, and values in ${language}.`;
 
 async function generateWithGemini({ apiKey, model: requestedModel, prompt, userPrompt, language }) {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const preferredModel = requestedModel || GEMINI_MODEL || "gemini-2.5-flash";
-  const modelsToTry = [preferredModel];
-  if (preferredModel !== 'gemini-2.5-flash-lite') {
-    modelsToTry.push('gemini-2.5-flash-lite');
-  }
+  const preferredModel = requestedModel || GEMINI_MODEL || "gemini-flash-lite-latest";
+  const defaultCascade = [preferredModel, "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+  const modelsToTry = Array.from(new Set(defaultCascade));
 
   const geminiSchema = {
     type: "object",

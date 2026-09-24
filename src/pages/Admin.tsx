@@ -1508,7 +1508,7 @@ const Admin = () => {
     subgraph "4️⃣ MOTOR DE INTELIGÊNCIA ARTIFICIAL"
         AICall[🤖 Chamar Motor de IA] --> AIPayload
         AIPayload[📤 Enviar para IA:<br/>- System Prompt com regras de hardware<br/>- Respostas do utilizador<br/>- País, Moeda e Lojas locais<br/>- JSON Schema Estrito] 
-        AIPayload --> AIProcessing[⚙️ Processamento de IA<br/>Primário: Mistral AI (mistral-large-latest)<br/>Fallback: Google Gemini 2.5 Flash]
+        AIPayload --> AIProcessing[⚙️ Processamento de IA<br/>Primário: Mistral AI (mistral-large-latest)<br/>Fallback: Google Gemini (gemini-flash-lite-latest)]
         AIProcessing --> AIResponse[📥 IA Responde com JSON Estruturado]
     end
     

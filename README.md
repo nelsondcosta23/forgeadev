@@ -9,54 +9,66 @@ Forgeadev is a high-performance platform designed to help users find their ideal
 The application utilizes a modern architecture divided into three main layers:
 
 ### Frontend (User Experience)
-- React 18 + Vite: For ultra-fast development and a fluid user interface.
-- TypeScript: Ensuring robustness and type safety throughout the codebase.
-- Tailwind CSS + Shadcn UI: Premium, responsive interface with a modern aesthetic.
-- Framer Motion: Dynamic micro-animations for an enhanced user experience.
+- **React 18 + Vite**: Ultra-fast development and fluid, high-performance rendering.
+- **TypeScript**: Complete type safety throughout the codebase.
+- **Tailwind CSS + Shadcn UI**: Modern, accessible, responsive interface.
+- **Framer Motion**: Dynamic micro-animations for high-fidelity user feedback.
+- **Sentry React SDK**: Frontend telemetry and error tracking routed via backend tunnel.
 
 ### Backend & Proxy (BFF - Backend For Frontend)
-- Node.js + Express: Acts as a security proxy server that protects the database.
-- Security Layer: JWT authentication proxy with superuser and admin role verification, rate limiting, and collection whitelisting.
-- AI Integration: Dual-engine architecture with Mistral AI (Primary) and Google Gemini (Fallback).
+- **Node.js + Express**: Reverse proxy securing the database and isolating API keys.
+- **Security Layer**:
+  - Strict Content Security Policy (CSP) blocking `unsafe-eval`.
+  - PocketBase BFF proxy with strict collection whitelisting and filter sanitization.
+  - Granular rate limiting on admin logins (`loginLimiter`) and AI generation (`aiLimiter`).
+  - Internal geolocation (`/api/geo`) eliminating third-party IP leaks (`ipapi.co`).
+  - CSV formula injection sanitization for administrative data exports.
+  - Safe error masking preventing internal stack and database leakage.
+- **Monitoring & Tunnel**: Reverse Sentry tunnel (`/api/sentry-tunnel`) ensuring 100% telemetry capture immune to client-side ad-blockers.
 
-### Data & AI (The Engine)
-- Mistral AI (`mistral-large-latest`): Primary AI engine delivering frontier-grade reasoning, hardware synergy, and strict JSON output.
-- Google Gemini 2.5 Flash: Automated resilient fallback engine guaranteeing 100% uptime even during rate limits or provider downtime.
-- PocketBase: Open-source backend solution providing SQLite database, authentication, and content management.
+### Data & AI (Dual-Engine Architecture)
+- **Mistral AI (`mistral-large-latest`)**: Primary AI engine delivering frontier-grade hardware reasoning and strict JSON schema generation.
+- **Google Gemini (`gemini-flash-lite-latest`)**: High-performance, low-latency fallback engine with automatic multi-tier cascade (`gemini-flash-lite-latest` -> `gemini-3.1-flash-lite` -> `gemini-2.5-flash-lite`) ensuring 100% uptime even under provider downtime or quota limits.
+- **PocketBase**: Local SQLite-powered backend managing sessions, recommendations, affiliate store links, and administrative settings.
 
 ---
 
 ## Core Features
 
-- Intelligent Quiz: Captures user goals, budget, and upgrade preferences.
-- Detailed Build Reports: Generates three unique options (Best Value, Balanced, High Performance) with automated component lists.
-- Geographic Awareness: Adapts store links based on the user's location (e.g., Amazon.es, Amazon.com).
-- Administrative Panel:
-    - Real-time AI prompt management.
-    - CRM for user session tracking.
-    - Affiliate link management by country.
-    - Data export functionality (Excel/JSON).
-- PDF Export: High-fidelity build reports generated directly in the browser.
+- **Intelligent Quiz**: 1-minute assessment capturing user goals, budget, country, and upgrade path.
+- **Automated 3-Tier Builds**: Produces 3 balanced configurations (*Best Value*, *Balanced*, *High Performance*) with component breakdown and estimated pricing.
+- **Localized Store Intelligence**: Adapts component purchase links based on the user's country (Amazon, Global Data, PC Componentes, etc.).
+- **Interactive Results & Sharing**: Unique shareable permalinks (`/build/:sessionId`) with dynamic OpenGraph meta tags.
+- **Administrative Panel**:
+  - Real-time AI system prompt editor.
+  - User session tracking and conversion analytics.
+  - Country store and affiliate link management.
+  - Sanitized CSV export functionality.
+- **Client-Side PDF Generation**: High-fidelity PDF build sheets generated directly in the browser.
 
 ---
 
-## Setup Guide
+## Setup & Configuration
 
 ### Prerequisites
 - Node.js (v18 or higher)
-- PocketBase (local executable or via Docker)
-- Mistral AI API Key (Primary)
-- Google Gemini API Key (Fallback)
+- PocketBase (local executable or Docker container)
+- Mistral AI API Key (Primary AI)
+- Google Gemini API Key (Fallback AI)
+- Self-Hosted Sentry DSN (Monitoring)
 
-### 1. Environment Configuration
-Create a .env file in the project root:
+### 1. Environment Variables (`.env`)
+Create a `.env` file in the project root:
 
 ```env
 # Server Configuration
 PORT=8085
+INTERNAL_PROXY_KEY=your_stack_proxy_secret
 
-# PocketBase (Production or Local)
-POCKETBASE_URL=http://localhost:8090
+# PocketBase (Internal or Docker URL)
+POCKETBASE_URL=http://pb:8090
+PB_ADMIN_EMAIL=admin@forgea.dev
+PB_ADMIN_PASSWORD=your_secure_password
 
 # Artificial Intelligence (Primary: Mistral AI)
 MISTRAL_API_KEY=your_mistral_api_key_here
@@ -64,46 +76,58 @@ MISTRAL_MODEL=mistral-large-latest
 
 # Artificial Intelligence (Fallback: Google Gemini)
 GEMINI_API_KEY=your_google_ai_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-flash-lite-latest
+
+# Monitoring (Self-Hosted Sentry)
+SENTRY_DSN=https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8
+VITE_SENTRY_DSN=https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8
 ```
 
-### 2. Manual Installation
+### 2. Local Development
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Start PocketBase (in a separate terminal)
-./pocketbase serve
+# 2. Run automated test suite
+npm test
 
-# 3. Start the BFF server and Frontend in dev mode
+# 3. Start development server (Frontend + BFF)
 npm run dev
 ```
 
-### 3. Docker Setup (Production)
-The project is ready for Docker-based deployment:
+### 3. Production Deployment (Docker / Coolify)
+The application includes a hardened multi-stage `Dockerfile` and `docker-compose.yml`:
 ```bash
 docker compose up -d --build
 ```
 
 ---
 
-## Legacy Supabase Migration & Key Revocation Guide
+## Health Check & Diagnostics
 
-The project has completely transitioned from Supabase to an internal PocketBase instance with a hardened Express BFF proxy.
-
-> [!WARNING]
-> If you previously provisioned or ran this project with Supabase:
-> 1. **Revoke Old API Keys**: Access your Supabase project dashboard, navigate to `Project Settings -> API`, and revoke or rotate all legacy `anon` and `service_role` keys.
-> 2. **Clean Environment Files**: Verify your local `.env` and deployment secrets contain no `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` variables.
-> 3. **Delete Stale Supabase Projects**: If the cloud database is no longer in use, delete the database instance to eliminate orphaned cloud attack surfaces.
+The server exposes a zero-leak health check endpoint for monitoring uptime and AI engines:
+```bash
+curl https://forgea.dev/api/health
+```
+Response:
+```json
+{
+  "status": "ok",
+  "primary_ai": "mistral",
+  "fallback_ai": "gemini",
+  "gemini_model": "gemini-flash-lite-latest",
+  "sentry_configured": true,
+  "sentry_host": "https://sentry.beecard.ovh"
+}
+```
 
 ---
 
-## Security and Stability
+## Security Hardening & Zero Exposure
 
-- Zero Exposure Architecture: PocketBase is never directly exposed to the internet; all requests are proxied via server.js with strict collection whitelisting and administrative role enforcement.
-- Error Resilience: The system is hardened against AI-generated JSON errors using strict schemas and defensive frontend validations.
-- Model Integrity: Successfully migrated to Gemini 2.5 Flash for superior reasoning and reliability.
+- **Zero Exposure PocketBase**: PocketBase is not exposed to public traffic. All requests pass through the Express BFF with route whitelisting, authentication token validation, and rate limiting.
+- **Privacy-First Geolocation**: Visitor IP addresses are resolved internally and never transmitted to external third-party services.
+- **Failover Cascade**: Fallback between Mistral AI and Google Gemini executes seamlessly on the backend without user disruption.
 
 ---
 © 2026 Forgeadev. Built for peak performance.
