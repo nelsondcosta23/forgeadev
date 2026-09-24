@@ -805,34 +805,43 @@ app.use('/api/pb/:collection', async (req, res) => {
   if (req.method === 'POST' && (collection === 'quiz_sessions' || collection === 'quiz_responses')) {
     try {
       if (collection === 'quiz_sessions') {
-        const { session_id, country_code, country_name } = req.body;
-        if (!session_id) {
-          return res.status(400).json({ error: 'session_id is required' });
+        const { session_id, country_code, country_name } = req.body || {};
+        if (!session_id || !SESSION_ID_REGEX.test(session_id)) {
+          return res.status(400).json({ error: 'Valid session_id matching required format is required' });
         }
+        const safeCountryCode = typeof country_code === 'string' && /^[a-zA-Z]{2}$/.test(country_code.trim())
+          ? country_code.trim().toUpperCase()
+          : 'XX';
+        const safeCountryName = typeof country_name === 'string' ? country_name.slice(0, 100).trim() : 'Global';
+
         const record = await pb.collection('quiz_sessions').create({
           session_id,
-          country_code: country_code || 'XX',
-          country_name: country_name || 'Global',
+          country_code: safeCountryCode,
+          country_name: safeCountryName,
           completed: false
         });
         return res.json({ id: record.id, session_id: record.session_id });
       }
 
       if (collection === 'quiz_responses') {
-        const { session_id, question_number, question_text, selected_answer } = req.body;
-        if (!session_id) {
-          return res.status(400).json({ error: 'session_id is required' });
+        const { session_id, question_number, question_text, selected_answer } = req.body || {};
+        if (!session_id || !SESSION_ID_REGEX.test(session_id)) {
+          return res.status(400).json({ error: 'Valid session_id matching required format is required' });
         }
+        const qNum = Math.max(1, Math.min(Number(question_number) || 1, 100));
+        const safeQuestionText = typeof question_text === 'string' ? question_text.slice(0, 300).trim() : '';
+        const safeSelectedAnswer = typeof selected_answer === 'string' ? selected_answer.slice(0, 300).trim() : '';
+
         const record = await pb.collection('quiz_responses').create({
           session_id,
-          question_number: Number(question_number) || 1,
-          question_text: String(question_text || ''),
-          selected_answer: String(selected_answer || '')
+          question_number: qNum,
+          question_text: safeQuestionText,
+          selected_answer: safeSelectedAnswer
         });
         return res.json({ id: record.id });
       }
     } catch (error) {
-      return res.status(500).json({ error: 'Failed to record quiz data', details: error.message });
+      return res.status(500).json({ error: 'Failed to record quiz data' });
     }
   }
 

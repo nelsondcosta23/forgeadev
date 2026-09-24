@@ -77,6 +77,17 @@ test('FUNCTIONALITY: Public POST /api/pb/quiz_sessions is allowed without admin 
   assert.match(body.error, /session_id/i);
 });
 
+test('SECURITY: Public POST /api/pb/quiz_sessions rejects invalid session_id format with 400', async () => {
+  const res = await fetch(`${baseUrl}/api/pb/quiz_sessions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: 'bad" OR 1=1 --' }),
+  });
+  assert.strictEqual(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /session_id/i);
+});
+
 test('FUNCTIONALITY: Public POST /api/pb/quiz_responses is allowed without admin token', async () => {
   const res = await fetch(`${baseUrl}/api/pb/quiz_responses`, {
     method: 'POST',
@@ -84,6 +95,17 @@ test('FUNCTIONALITY: Public POST /api/pb/quiz_responses is allowed without admin
     body: JSON.stringify({}),
   });
   // Empty payload should return 400 (missing session_id), NOT 401 Unauthorized
+  assert.strictEqual(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /session_id/i);
+});
+
+test('SECURITY: Public POST /api/pb/quiz_responses rejects invalid session_id format with 400', async () => {
+  const res = await fetch(`${baseUrl}/api/pb/quiz_responses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: 'short' }),
+  });
   assert.strictEqual(res.status, 400);
   const body = await res.json();
   assert.match(body.error, /session_id/i);
