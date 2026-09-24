@@ -18,6 +18,7 @@ export const MermaidLoader = ({ chart, className = "" }: MermaidLoaderProps) => 
 
         mermaid.initialize({
           startOnLoad: false,
+          securityLevel: "strict",
           theme: "dark",
           themeVariables: {
             primaryColor: "#3b82f6",
@@ -47,7 +48,12 @@ export const MermaidLoader = ({ chart, className = "" }: MermaidLoaderProps) => 
       } catch (error) {
         console.error("Failed to load/render Mermaid:", error);
         if (containerRef.current) {
-          containerRef.current.innerHTML = `<pre>${chart}</pre>`;
+          // Prevent DOM XSS (CWE-79) by using textContent inside a safe pre element
+          containerRef.current.replaceChildren();
+          const pre = document.createElement("pre");
+          pre.className = "text-xs text-muted-foreground whitespace-pre-wrap overflow-x-auto p-4";
+          pre.textContent = chart;
+          containerRef.current.appendChild(pre);
         }
       }
     };

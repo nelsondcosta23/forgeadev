@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
 import { app } from '../server.js';
 
 let testServer;
@@ -49,3 +51,23 @@ test('SECURITY: /build/:sessionId with valid UUID format is accepted', async () 
   const res = await fetch(`${baseUrl}/build/${validUuid}`);
   assert.notStrictEqual(res.status, 400, 'Valid UUID should not return 400 Bad Request');
 });
+
+test('SECURITY: MermaidLoader does not inject unescaped chart content into innerHTML', () => {
+  const fileContent = fs.readFileSync(path.resolve('src/components/MermaidLoader.tsx'), 'utf-8');
+  assert.doesNotMatch(
+    fileContent,
+    /innerHTML\s*=\s*`?<pre>\$\{chart\}<\/pre>`?/,
+    'MermaidLoader fallback must not use innerHTML with raw chart interpolation'
+  );
+  assert.match(
+    fileContent,
+    /textContent\s*=\s*chart/,
+    'MermaidLoader must use textContent for chart fallback to prevent XSS'
+  );
+  assert.match(
+    fileContent,
+    /securityLevel:\s*["']strict["']/,
+    'MermaidLoader must configure securityLevel: strict'
+  );
+});
+
