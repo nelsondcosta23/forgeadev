@@ -465,6 +465,37 @@ app.get('/api/admin/verify', verifyAdminAuth, (req, res) => {
   });
 });
 
+// Internal geolocation endpoint: determines country without leaking visitor IP to third parties
+app.get('/api/geo', (req, res) => {
+  let countryCode = (req.headers['cf-ipcountry'] || req.headers['x-country-code'] || '').trim().toUpperCase();
+
+  // Validate ISO 3166-1 alpha-2 code format
+  if (!countryCode || !/^[A-Z]{2}$/.test(countryCode) || countryCode === 'XX' || countryCode === 'T1') {
+    countryCode = 'PT'; // Default fallback
+  }
+
+  const currencyInfo = countryToCurrency[countryCode] || countryToCurrency['OTHER'];
+  const countryNames = {
+    'PT': 'Portugal',
+    'ES': 'Spain',
+    'FR': 'France',
+    'DE': 'Germany',
+    'IT': 'Italy',
+    'BR': 'Brazil',
+    'GB': 'United Kingdom',
+    'US': 'United States',
+    'CA': 'Canada',
+    'AU': 'Australia',
+  };
+
+  res.json({
+    country_code: countryCode,
+    country_name: countryNames[countryCode] || countryCode,
+    currency: currencyInfo.code,
+    symbol: currencyInfo.symbol,
+  });
+});
+
 // Analytics tracking: public endpoint with rate limiting and strict schema validation
 app.post('/api/analytics/track', analyticsLimiter, async (req, res) => {
   const parseResult = analyticsEventSchema.safeParse(req.body);

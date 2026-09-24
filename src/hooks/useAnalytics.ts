@@ -33,8 +33,8 @@ const getCountryInfo = async () => {
       }
     }
 
-    // 2. Detect via IP if not cached or stale
-    const res = await fetch('https://ipapi.co/json/');
+    // 2. Detect via internal server-side endpoint if not cached or stale
+    const res = await fetch('/api/geo');
     const data = await res.json();
     
     if (data.country_code && data.country_name) {
