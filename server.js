@@ -173,7 +173,7 @@ const countryToCurrency = {
   'UA': { symbol: '₴', code: 'UAH' }, 'OTHER': { symbol: '$', code: 'USD' },
 };
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = process.env.NODE_ENV === 'development';
 
 app.use(helmet({
   contentSecurityPolicy: {
