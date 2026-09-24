@@ -105,7 +105,7 @@ const PORT = process.env.PORT || 8085;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY?.trim();
 const MISTRAL_MODEL = process.env.MISTRAL_MODEL?.trim() || 'mistral-large-latest';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
-const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash-lite';
 
 if (process.env.NODE_ENV !== 'test') {
   if (!MISTRAL_API_KEY && !GEMINI_API_KEY) {
@@ -288,6 +288,15 @@ app.use(express.json());
 function sendSafeError(res, status, publicMessage, err) {
   if (err && err.message) {
     console.error(`[Safe Error] Status ${status} - ${publicMessage}:`, err.message);
+  }
+  if (status >= 500 && Sentry.isInitialized() && err) {
+    const errorToCapture = err instanceof Error ? err : new Error(typeof err === 'string' ? err : (err?.message || publicMessage));
+    Sentry.captureException(errorToCapture, {
+      extra: {
+        status,
+        publicMessage,
+      }
+    });
   }
   const body = { error: publicMessage };
   if (isDev && err && err.message) {
@@ -693,79 +702,97 @@ Important: Respond with all explanations, notes, and values in ${language}.`;
 
 async function generateWithGemini({ apiKey, model: requestedModel, prompt, userPrompt, language }) {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const selectedModel = requestedModel || GEMINI_MODEL || "gemini-2.5-flash";
-  const model = genAI.getGenerativeModel({ 
-    model: selectedModel,
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: {
+  const preferredModel = requestedModel || GEMINI_MODEL || "gemini-2.5-flash";
+  const modelsToTry = [preferredModel];
+  if (preferredModel !== 'gemini-2.5-flash-lite') {
+    modelsToTry.push('gemini-2.5-flash-lite');
+  }
+
+  const geminiSchema = {
+    type: "object",
+    properties: {
+      ai_report: { 
+        type: "object", 
+        properties: { 
+          budget_range: { type: "string" }, 
+          primary_use: { type: "string" }, 
+          performance_level: { type: "string" }, 
+          upgrade_priority: { type: "string" } 
+        }, 
+        required: ["budget_range", "primary_use", "performance_level", "upgrade_priority"] 
+      },
+      builds: {
         type: "object",
         properties: {
-          ai_report: { 
+          "Best Value": { 
             type: "object", 
             properties: { 
-              budget_range: { type: "string" }, 
-              primary_use: { type: "string" }, 
-              performance_level: { type: "string" }, 
-              upgrade_priority: { type: "string" } 
+              processor: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } } }, required: ["model", "recommended_price", "where_to_buy"] }, 
+              graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
+              ram: { type: "object", properties: { model: { type: "string" } } },
+              storage: { type: "object", properties: { model: { type: "string" } } },
+              power_supply: { type: "object", properties: { model: { type: "string" } } },
+              estimated_price_range: { type: "string" }, 
+              performance_tier: { type: "string" } 
             }, 
-            required: ["budget_range", "primary_use", "performance_level", "upgrade_priority"] 
+            required: ["processor", "graphics_card", "estimated_price_range"] 
           },
-          builds: {
-            type: "object",
-            properties: {
-              "Best Value": { 
-                type: "object", 
-                properties: { 
-                  processor: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } } }, required: ["model", "recommended_price", "where_to_buy"] }, 
-                  graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-                  ram: { type: "object", properties: { model: { type: "string" } } },
-                  storage: { type: "object", properties: { model: { type: "string" } } },
-                  power_supply: { type: "object", properties: { model: { type: "string" } } },
-                  estimated_price_range: { type: "string" }, 
-                  performance_tier: { type: "string" } 
-                }, 
-                required: ["processor", "graphics_card", "estimated_price_range"] 
-              },
-              "Balanced": { 
-                type: "object", 
-                properties: { 
-                  processor: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-                  graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-                  ram: { type: "object", properties: { model: { type: "string" } } },
-                  storage: { type: "object", properties: { model: { type: "string" } } },
-                  power_supply: { type: "object", properties: { model: { type: "string" } } },
-                  estimated_price_range: { type: "string" }, 
-                  performance_tier: { type: "string" } 
-                }, 
-                required: ["processor", "graphics_card", "estimated_price_range"] 
-              },
-              "High Performance": { 
-                type: "object", 
-                properties: { 
-                  processor: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-                  graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-                  ram: { type: "object", properties: { model: { type: "string" } } },
-                  storage: { type: "object", properties: { model: { type: "string" } } },
-                  power_supply: { type: "object", properties: { model: { type: "string" } } },
-                  estimated_price_range: { type: "string" }, 
-                  performance_tier: { type: "string" } 
-                }, 
-                required: ["processor", "graphics_card", "estimated_price_range"] 
-              }
-            },
-            required: ["Best Value", "Balanced", "High Performance"]
+          "Balanced": { 
+            type: "object", 
+            properties: { 
+              processor: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
+              graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
+              ram: { type: "object", properties: { model: { type: "string" } } },
+              storage: { type: "object", properties: { model: { type: "string" } } },
+              power_supply: { type: "object", properties: { model: { type: "string" } } },
+              estimated_price_range: { type: "string" }, 
+              performance_tier: { type: "string" } 
+            }, 
+            required: ["processor", "graphics_card", "estimated_price_range"] 
           },
-          recommendation: { type: "string" }
+          "High Performance": { 
+            type: "object", 
+            properties: { 
+              processor: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
+              graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
+              ram: { type: "object", properties: { model: { type: "string" } } },
+              storage: { type: "object", properties: { model: { type: "string" } } },
+              power_supply: { type: "object", properties: { model: { type: "string" } } },
+              estimated_price_range: { type: "string" }, 
+              performance_tier: { type: "string" } 
+            }, 
+            required: ["processor", "graphics_card", "estimated_price_range"] 
+          }
         },
-        required: ["ai_report", "builds", "recommendation"]
-      }
-    }
-  });
+        required: ["Best Value", "Balanced", "High Performance"]
+      },
+      recommendation: { type: "string" }
+    },
+    required: ["ai_report", "builds", "recommendation"]
+  };
 
-  const result = await model.generateContent([{ text: `${prompt}\nRespond in ${language}.` }, { text: userPrompt }]);
-  const response = await result.response;
-  return JSON.parse(response.text());
+  let lastError;
+  for (const currentModel of modelsToTry) {
+    try {
+      const model = genAI.getGenerativeModel({ 
+        model: currentModel,
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: geminiSchema
+        }
+      });
+
+      const result = await model.generateContent([{ text: `${prompt}\nRespond in ${language}.` }, { text: userPrompt }]);
+      const response = await result.response;
+      const parsed = JSON.parse(response.text());
+      return { data: parsed, modelUsed: currentModel };
+    } catch (err) {
+      console.warn(`[AI Engine] Gemini generation with ${currentModel} failed: ${err.message}`);
+      lastError = err;
+    }
+  }
+
+  throw lastError;
 }
 
 app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
@@ -890,14 +917,16 @@ app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
     if (!args && GEMINI_API_KEY) {
       try {
         console.log(`[AI Engine] Generating build recommendation via Gemini (${GEMINI_MODEL}) fallback...`);
-        args = await generateWithGemini({
+        const geminiResult = await generateWithGemini({
           apiKey: GEMINI_API_KEY,
           model: GEMINI_MODEL,
           prompt,
           userPrompt,
           language
         });
-        modelUsed = MISTRAL_API_KEY ? `${GEMINI_MODEL} (fallback)` : GEMINI_MODEL;
+        args = geminiResult.data;
+        const actualGeminiModel = geminiResult.modelUsed || GEMINI_MODEL;
+        modelUsed = MISTRAL_API_KEY ? `${actualGeminiModel} (fallback)` : actualGeminiModel;
         isFallback = Boolean(MISTRAL_API_KEY);
         console.log(`[AI Engine] Successfully generated build recommendation with Gemini (${modelUsed})`);
       } catch (geminiError) {
