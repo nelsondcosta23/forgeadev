@@ -7,8 +7,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Build frontend
+# Build frontend with Sentry DSN configuration
 COPY . .
+ARG VITE_SENTRY_DSN=https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8
+ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 RUN npm run build
 
 # Stage 2: Production Proxy & Static Server

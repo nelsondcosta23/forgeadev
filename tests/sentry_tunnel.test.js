@@ -64,7 +64,7 @@ test('MONITORING TUNNEL: rejects envelope with project ID mismatch with 403', as
 });
 
 test('MONITORING TUNNEL: forwards valid envelope to Sentry or returns 502 gracefully if upstream is unreachable', async () => {
-  const header = JSON.stringify({ dsn: 'http://994ebcb62592da248c0fa74514c61fa7@localhost:9000/8' });
+  const header = JSON.stringify({ dsn: 'https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8' });
   const envelope = `${header}\n{"type":"event"}\n{"message":"ping"}\n`;
 
   const res = await fetch(`${baseUrl}/api/sentry-tunnel`, {

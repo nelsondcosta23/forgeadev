@@ -15,7 +15,7 @@ import * as Sentry from '@sentry/node';
 
 dotenv.config();
 
-const SENTRY_DSN = (process.env.SENTRY_DSN || 'http://994ebcb62592da248c0fa74514c61fa7@localhost:9000/8').trim();
+const SENTRY_DSN = (process.env.SENTRY_DSN || 'https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8').trim();
 
 let sentryHost = '';
 let sentryProjectId = '';
@@ -185,6 +185,7 @@ app.use(helmet({
       "img-src": ["'self'", "data:", "https:"],
       "connect-src": [
         "'self'",
+        ...(sentryHost ? [sentryHost] : []),
         "https://*.sentry.io",
         "https://*.ingest.sentry.io",
         "https://*.ingest.de.sentry.io",
