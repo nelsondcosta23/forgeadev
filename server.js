@@ -15,7 +15,11 @@ import * as Sentry from '@sentry/node';
 
 dotenv.config();
 
-const SENTRY_DSN = (process.env.SENTRY_DSN || 'https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8').trim();
+let configuredDsn = (process.env.SENTRY_DSN || '').trim();
+if (!configuredDsn || configuredDsn.includes('100.x.y.z') || configuredDsn.includes('localhost:9000')) {
+  configuredDsn = 'https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8';
+}
+const SENTRY_DSN = configuredDsn;
 
 let sentryHost = '';
 let sentryProjectId = '';
@@ -554,6 +558,18 @@ app.get('/api/admin/verify', verifyAdminAuth, (req, res) => {
       id: req.adminUser.id,
       email: req.adminUser.email
     }
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    primary_ai: MISTRAL_API_KEY ? 'mistral' : 'none',
+    fallback_ai: GEMINI_API_KEY ? 'gemini' : 'none',
+    gemini_model: GEMINI_MODEL,
+    sentry_configured: Boolean(SENTRY_DSN),
+    sentry_host: sentryHost,
   });
 });
 
