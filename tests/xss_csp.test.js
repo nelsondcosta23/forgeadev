@@ -71,3 +71,18 @@ test('SECURITY: MermaidLoader does not inject unescaped chart content into inner
   );
 });
 
+test('SECURITY: CSP connect-src restricts connections and eliminates generic https:/wss: wildcards', async () => {
+  const res = await fetch(`${baseUrl}/`);
+  const csp = res.headers.get('content-security-policy') || '';
+  assert.ok(csp.length > 0, 'CSP header should be present');
+  
+  const match = csp.match(/connect-src\s+([^;]+)/);
+  assert.ok(match, 'connect-src directive must exist in CSP');
+  const connectSrc = match[1];
+  
+  assert.doesNotMatch(connectSrc, /(^|\s)https:(\s|$)/, "CSP connect-src must not contain generic 'https:' wildcard");
+  assert.doesNotMatch(connectSrc, /(^|\s)\*(\s|$)/, "CSP connect-src must not contain generic '*' wildcard");
+  assert.doesNotMatch(connectSrc, /(^|\s)wss:(\s|$)/, "CSP connect-src must not contain generic 'wss:' wildcard");
+});
+
+

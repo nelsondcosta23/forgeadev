@@ -148,6 +148,8 @@ const countryToCurrency = {
   'UA': { symbol: '₴', code: 'UAH' }, 'OTHER': { symbol: '$', code: 'USD' },
 };
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -156,7 +158,15 @@ app.use(helmet({
       "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
       "img-src": ["'self'", "data:", "https:"],
-      "connect-src": ["'self'", "https:", "wss:"],
+      "connect-src": [
+        "'self'",
+        "https://*.sentry.io",
+        "https://*.ingest.sentry.io",
+        "https://*.ingest.de.sentry.io",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com",
+        ...(isDev ? ["ws://localhost:*", "ws://127.0.0.1:*", "http://localhost:*", "http://127.0.0.1:*"] : [])
+      ],
       "object-src": ["'none'"],
       "base-uri": ["'self'"],
       "frame-ancestors": ["'none'"],
@@ -248,8 +258,6 @@ app.post('/api/sentry-tunnel', tunnelLimiter, express.raw({ type: () => true, li
 });
 
 app.use(express.json());
-
-const isDev = process.env.NODE_ENV === 'development';
 
 function sendSafeError(res, status, publicMessage, err) {
   if (err && err.message) {
