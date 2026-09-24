@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LogOut, Database, Activity, Trash2, Search, Globe, Calendar as CalendarIcon, X, Check, Settings, FileText, Map, Plus, Pencil, TrendingUp, History } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
+import { sanitizeCsvField } from "@/lib/utils";
 import { toast } from "sonner";
 import { RoadmapContent } from "@/components/admin/RoadmapContent";
 import { CRM } from "@/components/admin/CRM";
@@ -324,15 +325,6 @@ const Admin = () => {
       // Fetch all quiz sessions via BFF
       const sessions = await api.get("/api/pb/quiz_sessions");
 
-      const sanitizeCsvField = (val: unknown): string => {
-        let str = String(val ?? '');
-        // Prevent CSV / Excel Formula Injection (CWE-1236)
-        if (/^[=+\-@\t\r]/.test(str)) {
-          str = `'${str}`;
-        }
-        return `"${str.replace(/"/g, '""')}"`;
-      };
-
       const headers = ['Session ID', 'Country', 'Country Code', 'Started At', 'Completed At', 'Purpose', 'Budget'];
       const rows = sessions?.map((session: any) => {
         const answers = session.answers ? (typeof session.answers === 'string' ? JSON.parse(session.answers) : session.answers) : {};
@@ -395,8 +387,8 @@ const Admin = () => {
         return typeof value === 'string' ? value : key;
       };
 
-      // CSV Header - including all languages
-      let csvContent = "Path (Purpose),Question Number,Question ID,Question (EN-US),Question (EN-GB),Question (PT-PT),Question (PT-BR),Question (ES),Question (FR),Question (DE),Type,Options/Answers,Condition\n";
+      // CSV Header - including all languages (with UTF-8 BOM)
+      let csvContent = "\uFEFFPath (Purpose),Question Number,Question ID,Question (EN-US),Question (EN-GB),Question (PT-PT),Question (PT-BR),Question (ES),Question (FR),Question (DE),Type,Options/Answers,Condition\r\n";
 
       // Define paths based on purpose
       const paths = [
@@ -411,21 +403,19 @@ const Admin = () => {
         let questionNumber = 1;
         
         // Add separator row
-        csvContent += `\n"=== ${path.label} ===",,,,,,,,,,,\n`;
+        csvContent += `\r\n${sanitizeCsvField(`=== ${path.label} ===`)},,,,,,,,,,,\r\n`;
         
         // First question (purpose) - always included
         const purposeQ = questions.find(q => q.id === "purpose");
         if (purposeQ) {
-          const selectedOption = purposeQ.options?.find(opt => opt.value === path.purpose);
-          
           // Get question translations
           const questionTranslations = Object.keys(translations).map(lang => {
             const translatedQuestion = getTranslation(purposeQ.question, lang);
-            return `"${translatedQuestion.replace(/"/g, '""')}"`;
+            return sanitizeCsvField(translatedQuestion);
           }).join(',');
           
           // Get options translations
-          let optionsText = "";
+          let optionsText = '""';
           if (purposeQ.options) {
             const allLanguagesOptions = Object.keys(translations).map(lang => {
               const opts = purposeQ.options!.map(opt => {
@@ -435,10 +425,10 @@ const Admin = () => {
               }).join(' | ');
               return `[${lang.toUpperCase()}]: ${opts}`;
             }).join(' || ');
-            optionsText = `"${allLanguagesOptions.replace(/"/g, '""')}"`;
+            optionsText = sanitizeCsvField(allLanguagesOptions);
           }
           
-          csvContent += `"${path.label}",${questionNumber},"${purposeQ.id}",${questionTranslations},"${purposeQ.type}",${optionsText},""\n`;
+          csvContent += `${sanitizeCsvField(path.label)},${questionNumber},${sanitizeCsvField(purposeQ.id)},${questionTranslations},${sanitizeCsvField(purposeQ.type)},${optionsText},""\r\n`;
           questionNumber++;
         }
 
@@ -463,13 +453,13 @@ const Admin = () => {
           // Get question translations for all languages
           const questionTranslations = Object.keys(translations).map(lang => {
             const translatedQuestion = getTranslation(q.question, lang);
-            return `"${translatedQuestion.replace(/"/g, '""')}"`;
+            return sanitizeCsvField(translatedQuestion);
           }).join(',');
           
           const type = q.type;
           
           // Build options/answers text with all translations
-          let optionsText = "";
+          let optionsText = '""';
           if (q.type === "single" && q.options) {
             const allLanguagesOptions = Object.keys(translations).map(lang => {
               const opts = q.options!.map(opt => {
@@ -479,9 +469,9 @@ const Admin = () => {
               }).join(' | ');
               return `[${lang.toUpperCase()}]: ${opts}`;
             }).join(' || ');
-            optionsText = `"${allLanguagesOptions.replace(/"/g, '""')}"`;
+            optionsText = sanitizeCsvField(allLanguagesOptions);
           } else if (q.type === "number") {
-            optionsText = `"Number: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}"`;
+            optionsText = sanitizeCsvField(`Number: min=${q.min}, max=${q.max}, step=${q.step}${q.suffix ? ', suffix=' + q.suffix : ''}`);
           }
 
           // Build condition text
@@ -497,23 +487,24 @@ const Admin = () => {
             }
           }
 
-          csvContent += `"${path.label}",${questionNumber},"${q.id}",${questionTranslations},"${type}",${optionsText},"${conditionText}"\n`;
+          csvContent += `${sanitizeCsvField(path.label)},${questionNumber},${sanitizeCsvField(q.id)},${questionTranslations},${sanitizeCsvField(type)},${optionsText},${sanitizeCsvField(conditionText)}\r\n`;
           questionNumber++;
         });
 
-        csvContent += "\n"; // Empty line between paths
+        csvContent += "\r\n"; // Empty line between paths
       });
 
       // Create download
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(blob);
       link.setAttribute("href", url);
       link.setAttribute("download", `quiz_questions_multilang_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
       toast.success("CSV multilíngue gerado com sucesso!");
     } catch (error) {
