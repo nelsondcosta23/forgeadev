@@ -110,3 +110,30 @@ test('SECURITY: /api/quiz/analyze rejects non-ISO country code in answers.countr
   assert.ok(JSON.stringify(body.details).toLowerCase().includes('country'));
 });
 
+test('SECURITY: /api/analytics/track rejects payload missing event_type with 400', async () => {
+  const res = await fetch(`${baseUrl}/api/analytics/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_path: '/quiz' }),
+  });
+  assert.strictEqual(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /invalid analytics/i);
+});
+
+test('SECURITY: /api/analytics/track rejects unexpected injected fields with 400 (strict schema)', async () => {
+  const res = await fetch(`${baseUrl}/api/analytics/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_type: 'click',
+      injected_admin_field: 'malicious',
+      isAdmin: true,
+    }),
+  });
+  assert.strictEqual(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /invalid analytics/i);
+});
+
+

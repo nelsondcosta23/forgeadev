@@ -62,6 +62,14 @@ const loginLimiter = rateLimit({
   message: { error: 'Too many login attempts, please try again in 15 minutes.' }
 });
 
+const analyticsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many analytics events, please slow down.' }
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -265,6 +273,19 @@ const quizAnalyzeSchema = z.object({
   })).min(1, 'At least one question is required'),
 });
 
+const analyticsEventSchema = z.object({
+  event_type: z.string().min(1).max(50),
+  page_path: z.string().max(255).optional(),
+  page_title: z.string().max(255).optional(),
+  referrer: z.string().max(500).optional(),
+  user_agent: z.string().max(500).optional(),
+  language: z.string().max(20).optional(),
+  session_id: z.string().max(100).optional(),
+  country_code: z.string().max(10).optional(),
+  country_name: z.string().max(100).optional(),
+  metadata: z.record(z.any()).optional(),
+}).strict();
+
 // Administrative authentication middleware: validates PocketBase user/admin JWT
 const verifyAdminAuth = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -383,13 +404,21 @@ app.get('/api/admin/verify', verifyAdminAuth, (req, res) => {
   });
 });
 
-// Analytics tracking: public endpoint
-app.post('/api/analytics/track', async (req, res) => {
+// Analytics tracking: public endpoint with rate limiting and strict schema validation
+app.post('/api/analytics/track', analyticsLimiter, async (req, res) => {
+  const parseResult = analyticsEventSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      error: 'Invalid analytics event payload',
+      details: parseResult.error.flatten()
+    });
+  }
+
   try {
-    const record = await pb.collection('analytics_events').create(req.body);
-    res.json({ success: true, record });
+    const record = await pb.collection('analytics_events').create(parseResult.data);
+    res.json({ success: true, id: record.id });
   } catch (error) {
-    res.status(500).json({ error: 'Analytics failure', details: error.message });
+    res.status(500).json({ error: 'Analytics failure' });
   }
 });
 
