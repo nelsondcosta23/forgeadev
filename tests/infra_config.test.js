@@ -48,4 +48,28 @@ test('SECURITY: package.json must not have active supabase dependencies', () => 
   assert.strictEqual(allDeps['@supabase/supabase-js'], undefined, 'Supabase client must not be a dependency');
 });
 
+test('SECURITY: project root must not contain exposed database dumps or PDF reports', () => {
+  const rootFiles = fs.readdirSync('.');
+  const backupFiles = rootFiles.filter(file =>
+    file.endsWith('.sql') ||
+    file.endsWith('.sqlite') ||
+    file.endsWith('.db') ||
+    (file.startsWith('forgea-backup-') && !fs.statSync(file).isDirectory()) ||
+    file.startsWith('forgea-build-')
+  );
+  assert.deepStrictEqual(
+    backupFiles,
+    [],
+    `Found sensitive backup or PDF files in project root: ${backupFiles.join(', ')}`
+  );
+});
+
+test('SECURITY: root .gitignore must ignore backups directory and database dumps', () => {
+  const gitignore = fs.readFileSync('./.gitignore', 'utf8');
+  assert.match(gitignore, /backups\//, '.gitignore must ignore backups/ directory');
+  assert.match(gitignore, /\*\.sql/, '.gitignore must ignore *.sql');
+  assert.match(gitignore, /\*\.sqlite/, '.gitignore must ignore *.sqlite');
+});
+
+
 

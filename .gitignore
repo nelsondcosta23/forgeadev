@@ -29,6 +29,7 @@ pb_public/
 !components.json
 !composer.json
 forgea-backup-*/
+backups/
 
 # Local IDE and OS files
 .vscode/
