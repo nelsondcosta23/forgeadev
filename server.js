@@ -73,6 +73,7 @@ const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || '').trim();
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY?.trim();
 const MISTRAL_MODEL = process.env.MISTRAL_MODEL?.trim() || 'mistral-large-latest';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
+const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
 
 if (process.env.NODE_ENV !== 'test') {
   if (!MISTRAL_API_KEY && !GEMINI_API_KEY) {
@@ -87,7 +88,7 @@ if (process.env.NODE_ENV !== 'test') {
   }
 
   if (GEMINI_API_KEY) {
-    console.log('[AI Engine] Google Gemini configured as FALLBACK provider (gemini-2.5-flash).');
+    console.log(`[AI Engine] Google Gemini configured as FALLBACK provider (${GEMINI_MODEL}).`);
   } else {
     console.warn('[AI Engine] GEMINI_API_KEY not provided. No fallback available if primary AI fails.');
   }
@@ -463,10 +464,11 @@ Important: Respond with all explanations, notes, and values in ${language}.`;
   return parsed;
 }
 
-async function generateWithGemini({ apiKey, prompt, userPrompt, language }) {
+async function generateWithGemini({ apiKey, model: requestedModel, prompt, userPrompt, language }) {
   const genAI = new GoogleGenerativeAI(apiKey);
+  const selectedModel = requestedModel || GEMINI_MODEL || "gemini-2.5-flash";
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash",
+    model: selectedModel,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -632,21 +634,22 @@ app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
         if (!GEMINI_API_KEY) {
           throw new Error(`Mistral AI failed and GEMINI_API_KEY is not configured: ${mistralError.message}`);
         }
-        console.log('[AI Engine] Switching to Google Gemini 2.5 Flash fallback...');
+        console.log(`[AI Engine] Switching to Google Gemini (${GEMINI_MODEL}) fallback...`);
       }
     }
 
-    // 2. Fallback to Gemini 2.5 Flash if Mistral wasn't configured or failed
+    // 2. Fallback to Gemini if Mistral wasn't configured or failed
     if (!args && GEMINI_API_KEY) {
       try {
-        console.log('[AI Engine] Generating build recommendation via Gemini 2.5 Flash fallback...');
+        console.log(`[AI Engine] Generating build recommendation via Gemini (${GEMINI_MODEL}) fallback...`);
         args = await generateWithGemini({
           apiKey: GEMINI_API_KEY,
+          model: GEMINI_MODEL,
           prompt,
           userPrompt,
           language
         });
-        modelUsed = MISTRAL_API_KEY ? 'gemini-2.5-flash (fallback)' : 'gemini-2.5-flash';
+        modelUsed = MISTRAL_API_KEY ? `${GEMINI_MODEL} (fallback)` : GEMINI_MODEL;
         isFallback = Boolean(MISTRAL_API_KEY);
         console.log(`[AI Engine] Successfully generated build recommendation with Gemini (${modelUsed})`);
       } catch (geminiError) {
