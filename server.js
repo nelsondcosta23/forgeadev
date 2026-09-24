@@ -68,7 +68,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8085;
-const INTERNAL_KEY = (process.env.INTERNAL_PROXY_KEY || '').trim();
 
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY?.trim();
 const MISTRAL_MODEL = process.env.MISTRAL_MODEL?.trim() || 'mistral-large-latest';

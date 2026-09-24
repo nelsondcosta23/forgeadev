@@ -21,3 +21,18 @@ test('INFRA: docker-compose.yml must not expose pocketbase port or coolify label
     'pb service must not bind port 8090 to host'
   );
 });
+
+test('INFRA: Dockerfile must not contain build-time secret ARGs', () => {
+  const dockerfileContent = fs.readFileSync('./Dockerfile', 'utf8');
+  assert.doesNotMatch(
+    dockerfileContent,
+    /ARG\s+INTERNAL_PROXY_KEY/i,
+    'Dockerfile must not declare secret ARG INTERNAL_PROXY_KEY'
+  );
+  assert.doesNotMatch(
+    dockerfileContent,
+    /ENV\s+INTERNAL_PROXY_KEY/i,
+    'Dockerfile must not bake secret into ENV in image layer'
+  );
+});
+

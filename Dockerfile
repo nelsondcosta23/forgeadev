@@ -20,9 +20,6 @@ WORKDIR /app
 RUN chown -R node:node /app
 USER node
 
-ARG INTERNAL_PROXY_KEY
-ENV INTERNAL_PROXY_KEY=$INTERNAL_PROXY_KEY
-
 # We copy the bare minimum files for the proxy server
 COPY --chown=node:node package*.json ./
 # Make sure to install production dependencies only for the node server
