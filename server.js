@@ -287,19 +287,40 @@ const verifyAdminAuth = async (req, res, next) => {
     clientPb.authStore.save(token, null);
 
     let authRecord = null;
+
+    // 1. Try modern PocketBase _superusers collection first
     try {
-      const refreshed = await clientPb.collection('users').authRefresh();
-      authRecord = refreshed.record;
-    } catch (userErr) {
+      if (clientPb.collection('_superusers')) {
+        const superRefreshed = await clientPb.collection('_superusers').authRefresh();
+        authRecord = superRefreshed.record;
+      }
+    } catch {
+      // Not a superuser
+    }
+
+    // 2. Try legacy PocketBase admins collection
+    if (!authRecord) {
       try {
         if (clientPb.admins && typeof clientPb.admins.authRefresh === 'function') {
           const adminRefreshed = await clientPb.admins.authRefresh();
           authRecord = adminRefreshed.admin;
-        } else if (clientPb.collection('_superusers')) {
-          const superRefreshed = await clientPb.collection('_superusers').authRefresh();
-          authRecord = superRefreshed.record;
         }
-      } catch (adminErr) {
+      } catch {
+        // Not a legacy admin
+      }
+    }
+
+    // 3. If token is for users collection, strictly require role === 'admin'
+    if (!authRecord) {
+      try {
+        const userRefreshed = await clientPb.collection('users').authRefresh();
+        const record = userRefreshed.record;
+        if (record && (record.role === 'admin' || record.isAdmin === true)) {
+          authRecord = record;
+        } else {
+          return res.status(403).json({ error: 'Access forbidden: administrative role required' });
+        }
+      } catch (userErr) {
         return res.status(401).json({ error: 'Invalid or expired administrative token' });
       }
     }
@@ -769,6 +790,21 @@ app.use('/api/pb/:collection', async (req, res) => {
     } catch (error) {
       return res.status(500).json({ error: 'Failed to record quiz data', details: error.message });
     }
+  }
+
+  const ALLOWED_COLLECTIONS = new Set([
+    'quiz_sessions',
+    'quiz_responses',
+    'ai_recommendations',
+    'analytics_events',
+    'admin_roadmap',
+    'admin_prompts',
+    'country_store_links',
+    'languages'
+  ]);
+
+  if (!ALLOWED_COLLECTIONS.has(collection)) {
+    return res.status(403).json({ error: 'Access to this collection is forbidden' });
   }
 
   // All other operations and collections require verified admin authentication

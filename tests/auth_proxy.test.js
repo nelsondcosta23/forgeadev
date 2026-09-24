@@ -88,3 +88,18 @@ test('FUNCTIONALITY: Public POST /api/pb/quiz_responses is allowed without admin
   const body = await res.json();
   assert.match(body.error, /session_id/i);
 });
+
+test('SECURITY: Request to non-whitelisted collection /api/pb/_superusers must be rejected with 403', async () => {
+  const res = await fetch(`${baseUrl}/api/pb/_superusers`);
+  assert.strictEqual(res.status, 403, 'Expected 403 Forbidden for internal superusers collection');
+  const body = await res.json();
+  assert.match(body.error, /forbidden/i);
+});
+
+test('SECURITY: Request to arbitrary internal collection /api/pb/internal_logs must be rejected with 403', async () => {
+  const res = await fetch(`${baseUrl}/api/pb/internal_logs`);
+  assert.strictEqual(res.status, 403, 'Expected 403 Forbidden for arbitrary collection');
+  const body = await res.json();
+  assert.match(body.error, /forbidden/i);
+});
+
