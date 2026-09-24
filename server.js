@@ -38,6 +38,21 @@ if (SENTRY_DSN) {
   }
 }
 
+export function securityAuditLog(eventType, { ip, method, endpoint, status, details = {} } = {}) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level: 'SECURITY_AUDIT',
+    eventType,
+    ip: ip || 'unknown',
+    method: method || 'N/A',
+    endpoint: endpoint || 'N/A',
+    status: status || 0,
+    details,
+  };
+  console.warn(`[SECURITY AUDIT] ${JSON.stringify(logEntry)}`);
+  return logEntry;
+}
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -59,7 +74,17 @@ const loginLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many login attempts, please try again in 15 minutes.' }
+  message: { error: 'Too many login attempts, please try again in 15 minutes.' },
+  handler: (req, res, next, options) => {
+    securityAuditLog('RATE_LIMIT_EXCEEDED', {
+      ip: req.ip || req.socket?.remoteAddress,
+      method: req.method,
+      endpoint: req.originalUrl || req.url,
+      status: options.statusCode,
+      details: { limiter: 'loginLimiter' }
+    });
+    res.status(options.statusCode).json(options.message);
+  }
 });
 
 const analyticsLimiter = rateLimit({
@@ -326,6 +351,13 @@ const verifyAdminAuth = async (req, res, next) => {
   }
 
   if (!token) {
+    securityAuditLog('ADMIN_AUTH_FAILURE', {
+      ip: req.ip || req.socket?.remoteAddress,
+      method: req.method,
+      endpoint: req.originalUrl || req.url,
+      status: 401,
+      details: { reason: 'Missing administrative token or session cookie' }
+    });
     return res.status(401).json({ error: 'Authentication required: missing or invalid authorization header or session cookie' });
   }
 
@@ -369,14 +401,35 @@ const verifyAdminAuth = async (req, res, next) => {
         if (record && (record.role === 'admin' || record.isAdmin === true)) {
           authRecord = record;
         } else {
+          securityAuditLog('ADMIN_AUTH_FORBIDDEN', {
+            ip: req.ip || req.socket?.remoteAddress,
+            method: req.method,
+            endpoint: req.originalUrl || req.url,
+            status: 403,
+            details: { reason: 'User lacks administrative role', role: record?.role }
+          });
           return res.status(403).json({ error: 'Access forbidden: administrative role required' });
         }
       } catch (userErr) {
+        securityAuditLog('ADMIN_AUTH_FAILURE', {
+          ip: req.ip || req.socket?.remoteAddress,
+          method: req.method,
+          endpoint: req.originalUrl || req.url,
+          status: 401,
+          details: { reason: 'Token refresh failed' }
+        });
         return res.status(401).json({ error: 'Invalid or expired administrative token' });
       }
     }
 
     if (!authRecord) {
+      securityAuditLog('ADMIN_AUTH_FAILURE', {
+        ip: req.ip || req.socket?.remoteAddress,
+        method: req.method,
+        endpoint: req.originalUrl || req.url,
+        status: 401,
+        details: { reason: 'Invalid or expired administrative token' }
+      });
       return res.status(401).json({ error: 'Invalid or expired administrative token' });
     }
 
@@ -384,6 +437,13 @@ const verifyAdminAuth = async (req, res, next) => {
     req.pbClient = clientPb;
     next();
   } catch (error) {
+    securityAuditLog('ADMIN_AUTH_FAILURE', {
+      ip: req.ip || req.socket?.remoteAddress,
+      method: req.method,
+      endpoint: req.originalUrl || req.url,
+      status: 401,
+      details: { reason: 'Token verification exception' }
+    });
     return sendSafeError(res, 401, 'Authentication verification failed', error);
   }
 };
@@ -399,6 +459,13 @@ app.post('/api/admin/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
+      securityAuditLog('ADMIN_LOGIN_FAILURE', {
+        ip: req.ip || req.socket?.remoteAddress,
+        method: req.method,
+        endpoint: req.originalUrl || req.url,
+        status: 400,
+        details: { reason: 'Missing email or password' }
+      });
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
@@ -428,11 +495,26 @@ app.post('/api/admin/login', loginLimiter, async (req, res) => {
     }
     res.setHeader('Set-Cookie', cookieOptions.join('; '));
 
+    securityAuditLog('ADMIN_LOGIN_SUCCESS', {
+      ip: req.ip || req.socket?.remoteAddress,
+      method: req.method,
+      endpoint: req.originalUrl || req.url,
+      status: 200,
+      details: { email }
+    });
+
     res.json({
       token: authData.token,
       record: authData.record || authData.admin
     });
   } catch (error) {
+    securityAuditLog('ADMIN_LOGIN_FAILURE', {
+      ip: req.ip || req.socket?.remoteAddress,
+      method: req.method,
+      endpoint: req.originalUrl || req.url,
+      status: 401,
+      details: { email: req.body?.email, reason: 'Invalid credentials' }
+    });
     return sendSafeError(res, 401, 'Authentication failed', error);
   }
 });
@@ -948,6 +1030,13 @@ app.use('/api/pb/:collection', async (req, res) => {
   ]);
 
   if (!ALLOWED_COLLECTIONS.has(collection)) {
+    securityAuditLog('FORBIDDEN_COLLECTION_ACCESS', {
+      ip: req.ip || req.socket?.remoteAddress,
+      method: req.method,
+      endpoint: req.originalUrl || req.url,
+      status: 403,
+      details: { collection }
+    });
     return res.status(403).json({ error: 'Access to this collection is forbidden' });
   }
 
