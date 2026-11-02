@@ -27,7 +27,7 @@ The application utilizes a modern architecture divided into three main layers:
 - **Monitoring & Tunnel**: Reverse Sentry tunnel (`/api/sentry-tunnel`) ensuring 100% telemetry capture immune to client-side ad-blockers.
 
 ### Data & AI (Anthropic Claude Engine)
-- **Anthropic Claude (`claude-sonnet-4-6`)**: Premier AI reasoning engine delivering world-class PC hardware architecture analysis and strict JSON recommendations. Multi-model resilience (`claude-sonnet-4-6` -> `claude-haiku-4-5-20251001` -> `claude-sonnet-4-5-20250929`).
+- **Anthropic Claude (`claude-sonnet-5-5`)**: Premier AI reasoning engine delivering world-class PC hardware architecture analysis and strict JSON recommendations. Multi-model resilience (`claude-sonnet-5-5` -> `claude-haiku-5-5` -> `claude-sonnet-4-6`).
 - **PocketBase**: Local SQLite-powered backend managing sessions, recommendations, affiliate store links, and administrative settings.
 
 ---
@@ -70,7 +70,7 @@ PB_ADMIN_PASSWORD=your_secure_password
 
 # Artificial Intelligence (Anthropic Claude AI)
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
-ANTHROPIC_MODEL=claude-sonnet-4-6
+ANTHROPIC_MODEL=claude-sonnet-5-5
 
 # Monitoring (Self-Hosted Sentry)
 SENTRY_DSN=https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8
@@ -108,7 +108,7 @@ Response:
 {
   "status": "ok",
   "primary_ai": "claude",
-  "claude_model": "claude-sonnet-4-6",
+  "claude_model": "claude-sonnet-5-5",
   "sentry_configured": true,
   "sentry_host": "https://sentry.beecard.ovh"
 }

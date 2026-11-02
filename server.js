@@ -106,7 +106,7 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8085;
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY?.trim();
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL?.trim() || 'claude-sonnet-4-6';
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL?.trim() || 'claude-sonnet-5-5';
 
 if (process.env.NODE_ENV !== 'test') {
   if (!ANTHROPIC_API_KEY) {
@@ -610,8 +610,8 @@ app.post('/api/analytics/track', analyticsLimiter, async (req, res) => {
 
 async function generateWithClaude({ apiKey, model: requestedModel, systemPrompt, userPrompt, language, storeInstructions }) {
   const anthropic = new Anthropic({ apiKey });
-  const preferredModel = requestedModel || ANTHROPIC_MODEL || 'claude-sonnet-4-6';
-  const defaultCascade = [preferredModel, 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001', 'claude-sonnet-4-5-20250929'];
+  const preferredModel = requestedModel || ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+  const defaultCascade = [preferredModel, 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-sonnet-4-6'];
   const modelsToTry = Array.from(new Set(defaultCascade));
 
   const systemInstruction = `You are a world-class Senior PC Hardware Architect and Build Consultant.
