@@ -4,8 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import PocketBase from 'pocketbase';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Mistral } from '@mistralai/mistralai';
+import Anthropic from '@anthropic-ai/sdk';
 import fs from 'fs';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
@@ -106,32 +105,15 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8085;
 
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY?.trim();
-const MISTRAL_MODEL = process.env.MISTRAL_MODEL?.trim() || 'mistral-large-latest';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
-let configuredGeminiModel = process.env.GEMINI_MODEL?.trim();
-if (!configuredGeminiModel || configuredGeminiModel === 'gemini-2.5-flash') {
-  configuredGeminiModel = 'gemini-flash-lite-latest';
-}
-const GEMINI_MODEL = configuredGeminiModel;
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY?.trim();
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL?.trim() || 'claude-sonnet-4-6';
 
 if (process.env.NODE_ENV !== 'test') {
-  if (!MISTRAL_API_KEY && !GEMINI_API_KEY) {
-    console.error('ERROR: Neither MISTRAL_API_KEY nor GEMINI_API_KEY configured. At least one AI key is required.');
+  if (!ANTHROPIC_API_KEY) {
+    console.error('ERROR: ANTHROPIC_API_KEY not configured. Claude AI key is required.');
     process.exit(1);
   }
-
-  if (MISTRAL_API_KEY) {
-    console.log(`[AI Engine] Mistral AI configured as PRIMARY provider (${MISTRAL_MODEL}).`);
-  } else {
-    console.warn('[AI Engine] MISTRAL_API_KEY not provided. Running on Gemini fallback only.');
-  }
-
-  if (GEMINI_API_KEY) {
-    console.log(`[AI Engine] Google Gemini configured as FALLBACK provider (${GEMINI_MODEL}).`);
-  } else {
-    console.warn('[AI Engine] GEMINI_API_KEY not provided. No fallback available if primary AI fails.');
-  }
+  console.log(`[AI Engine] Anthropic Claude configured (${ANTHROPIC_MODEL}).`);
 }
 
 const PB_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
@@ -569,9 +551,8 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    primary_ai: MISTRAL_API_KEY ? 'mistral' : 'none',
-    fallback_ai: GEMINI_API_KEY ? 'gemini' : 'none',
-    gemini_model: GEMINI_MODEL,
+    primary_ai: ANTHROPIC_API_KEY ? 'claude' : 'none',
+    claude_model: ANTHROPIC_MODEL,
     sentry_configured: Boolean(SENTRY_DSN),
     sentry_host: sentryHost,
   });
@@ -627,9 +608,12 @@ app.post('/api/analytics/track', analyticsLimiter, async (req, res) => {
 });
 
 
-async function generateWithMistral({ apiKey, model, systemPrompt, userPrompt, language, storeInstructions }) {
-  const mistral = new Mistral({ apiKey });
-  
+async function generateWithClaude({ apiKey, model: requestedModel, systemPrompt, userPrompt, language, storeInstructions }) {
+  const anthropic = new Anthropic({ apiKey });
+  const preferredModel = requestedModel || ANTHROPIC_MODEL || 'claude-sonnet-4-6';
+  const defaultCascade = [preferredModel, 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001', 'claude-sonnet-4-5-20250929'];
+  const modelsToTry = Array.from(new Set(defaultCascade));
+
   const systemInstruction = `You are a world-class Senior PC Hardware Architect and Build Consultant.
 Your task is to analyze the user's requirements, country, budget, and use case, and recommend 3 distinct, perfectly balanced, and 100% compatible PC configurations:
 1. "Best Value": Maximum price-to-performance ratio for the budget.
@@ -685,127 +669,38 @@ You MUST return ONLY a valid JSON object matching this exact schema:
 
 Important: Respond with all explanations, notes, and values in ${language}.`;
 
-  const chatResponse = await mistral.chat.complete({
-    model: model || 'mistral-large-latest',
-    temperature: 0.2,
-    responseFormat: { type: 'json_object' },
-    messages: [
-      { role: 'system', content: systemInstruction },
-      { role: 'user', content: userPrompt }
-    ]
-  });
-
-  const content = chatResponse.choices?.[0]?.message?.content;
-  if (!content) {
-    throw new Error('Mistral AI returned an empty response content.');
-  }
-
-  const rawText = typeof content === 'string'
-    ? content
-    : Array.isArray(content)
-      ? content.map(c => (typeof c === 'string' ? c : c?.text || '')).join('')
-      : String(content);
-
-  const cleanedText = rawText.replace(/```json\s*|\s*```/g, '').trim();
-  const parsed = JSON.parse(cleanedText);
-
-  if (!parsed.builds || !parsed.builds["Best Value"] || !parsed.builds["Balanced"] || !parsed.builds["High Performance"]) {
-    throw new Error('Mistral response missing required build configurations (Best Value, Balanced, High Performance).');
-  }
-
-  if (!parsed.ai_report || !parsed.recommendation) {
-    throw new Error('Mistral response missing ai_report or recommendation fields.');
-  }
-
-  return parsed;
-}
-
-async function generateWithGemini({ apiKey, model: requestedModel, prompt, userPrompt, language }) {
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const preferredModel = requestedModel || GEMINI_MODEL || "gemini-flash-lite-latest";
-  const defaultCascade = [preferredModel, "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
-  const modelsToTry = Array.from(new Set(defaultCascade));
-
-  const geminiSchema = {
-    type: "object",
-    properties: {
-      ai_report: { 
-        type: "object", 
-        properties: { 
-          budget_range: { type: "string" }, 
-          primary_use: { type: "string" }, 
-          performance_level: { type: "string" }, 
-          upgrade_priority: { type: "string" } 
-        }, 
-        required: ["budget_range", "primary_use", "performance_level", "upgrade_priority"] 
-      },
-      builds: {
-        type: "object",
-        properties: {
-          "Best Value": { 
-            type: "object", 
-            properties: { 
-              processor: { type: "object", properties: { model: { type: "string" }, recommended_price: { type: "string" }, where_to_buy: { type: "array", items: { type: "string" } } }, required: ["model", "recommended_price", "where_to_buy"] }, 
-              graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-              ram: { type: "object", properties: { model: { type: "string" } } },
-              storage: { type: "object", properties: { model: { type: "string" } } },
-              power_supply: { type: "object", properties: { model: { type: "string" } } },
-              estimated_price_range: { type: "string" }, 
-              performance_tier: { type: "string" } 
-            }, 
-            required: ["processor", "graphics_card", "estimated_price_range"] 
-          },
-          "Balanced": { 
-            type: "object", 
-            properties: { 
-              processor: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-              graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-              ram: { type: "object", properties: { model: { type: "string" } } },
-              storage: { type: "object", properties: { model: { type: "string" } } },
-              power_supply: { type: "object", properties: { model: { type: "string" } } },
-              estimated_price_range: { type: "string" }, 
-              performance_tier: { type: "string" } 
-            }, 
-            required: ["processor", "graphics_card", "estimated_price_range"] 
-          },
-          "High Performance": { 
-            type: "object", 
-            properties: { 
-              processor: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-              graphics_card: { type: "object", properties: { model: { type: "string" } }, required: ["model"] }, 
-              ram: { type: "object", properties: { model: { type: "string" } } },
-              storage: { type: "object", properties: { model: { type: "string" } } },
-              power_supply: { type: "object", properties: { model: { type: "string" } } },
-              estimated_price_range: { type: "string" }, 
-              performance_tier: { type: "string" } 
-            }, 
-            required: ["processor", "graphics_card", "estimated_price_range"] 
-          }
-        },
-        required: ["Best Value", "Balanced", "High Performance"]
-      },
-      recommendation: { type: "string" }
-    },
-    required: ["ai_report", "builds", "recommendation"]
-  };
-
   let lastError;
   for (const currentModel of modelsToTry) {
     try {
-      const model = genAI.getGenerativeModel({ 
+      const response = await anthropic.messages.create({
         model: currentModel,
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: geminiSchema
-        }
+        max_tokens: 4096,
+        system: systemInstruction,
+        messages: [
+          { role: 'user', content: userPrompt }
+        ]
       });
 
-      const result = await model.generateContent([{ text: `${prompt}\nRespond in ${language}.` }, { text: userPrompt }]);
-      const response = await result.response;
-      const parsed = JSON.parse(response.text());
+      const textBlock = response.content?.find(block => block.type === 'text');
+      const rawText = textBlock ? textBlock.text : '';
+      if (!rawText) {
+        throw new Error('Claude AI returned an empty response content.');
+      }
+
+      const cleanedText = rawText.replace(/```json\s*|\s*```/g, '').trim();
+      const parsed = JSON.parse(cleanedText);
+
+      if (!parsed.builds || !parsed.builds["Best Value"] || !parsed.builds["Balanced"] || !parsed.builds["High Performance"]) {
+        throw new Error('Claude response missing required build configurations (Best Value, Balanced, High Performance).');
+      }
+
+      if (!parsed.ai_report || !parsed.recommendation) {
+        throw new Error('Claude response missing ai_report or recommendation fields.');
+      }
+
       return { data: parsed, modelUsed: currentModel };
     } catch (err) {
-      console.warn(`[AI Engine] Gemini generation with ${currentModel} failed: ${err.message}`);
+      console.warn(`[AI Engine] Claude generation with ${currentModel} failed: ${err.message}`);
       lastError = err;
     }
   }
@@ -906,57 +801,29 @@ app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
 
     let args = null;
     let modelUsed = null;
-    let isFallback = false;
 
-    // 1. Attempt generation with Mistral AI (Primary)
-    if (MISTRAL_API_KEY) {
-      try {
-        console.log(`[AI Engine] Requesting build recommendation from Mistral AI (${MISTRAL_MODEL})...`);
-        args = await generateWithMistral({
-          apiKey: MISTRAL_API_KEY,
-          model: MISTRAL_MODEL,
-          systemPrompt: prompt,
-          userPrompt,
-          language,
-          storeInstructions
-        });
-        modelUsed = MISTRAL_MODEL;
-        console.log(`[AI Engine] Successfully generated build recommendation with Mistral AI (${MISTRAL_MODEL})`);
-      } catch (mistralError) {
-        console.warn(`[AI Engine] Mistral AI failed: ${mistralError.message}`);
-        if (!GEMINI_API_KEY) {
-          throw new Error(`Mistral AI failed and GEMINI_API_KEY is not configured: ${mistralError.message}`);
-        }
-        console.log(`[AI Engine] Switching to Google Gemini (${GEMINI_MODEL}) fallback...`);
-      }
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY is not configured. Cannot process AI analysis without Claude API.');
     }
 
-    // 2. Fallback to Gemini if Mistral wasn't configured or failed
-    if (!args && GEMINI_API_KEY) {
-      try {
-        console.log(`[AI Engine] Generating build recommendation via Gemini (${GEMINI_MODEL}) fallback...`);
-        const geminiResult = await generateWithGemini({
-          apiKey: GEMINI_API_KEY,
-          model: GEMINI_MODEL,
-          prompt,
-          userPrompt,
-          language
-        });
-        args = geminiResult.data;
-        const actualGeminiModel = geminiResult.modelUsed || GEMINI_MODEL;
-        modelUsed = MISTRAL_API_KEY ? `${actualGeminiModel} (fallback)` : actualGeminiModel;
-        isFallback = Boolean(MISTRAL_API_KEY);
-        console.log(`[AI Engine] Successfully generated build recommendation with Gemini (${modelUsed})`);
-      } catch (geminiError) {
-        console.error(`[AI Engine] Gemini fallback also failed: ${geminiError.message}`);
-        throw new Error(`All AI providers failed. Mistral: failed. Gemini: ${geminiError.message}`);
-      }
+    try {
+      console.log(`[AI Engine] Requesting build recommendation from Claude AI (${ANTHROPIC_MODEL})...`);
+      const claudeResult = await generateWithClaude({
+        apiKey: ANTHROPIC_API_KEY,
+        model: ANTHROPIC_MODEL,
+        systemPrompt: prompt,
+        userPrompt,
+        language,
+        storeInstructions
+      });
+      args = claudeResult.data;
+      modelUsed = claudeResult.modelUsed || ANTHROPIC_MODEL;
+      console.log(`[AI Engine] Successfully generated build recommendation with Claude AI (${modelUsed})`);
+    } catch (claudeError) {
+      console.error(`[AI Engine] Claude AI failed: ${claudeError.message}`);
+      throw new Error(`Claude AI analysis failed: ${claudeError.message}`);
     }
 
-    if (!args) {
-      throw new Error('No AI provider available or configured.');
-    }
-    
     const resultObj = {
       session_info: { 
         session_id: sessionId, 
@@ -965,8 +832,8 @@ app.post('/api/quiz/analyze', aiLimiter, async (req, res) => {
         ai_report: args.ai_report, 
         metadata: { 
           model: modelUsed,
-          provider: isFallback ? 'google_gemini_fallback' : (modelUsed?.includes('gemini') ? 'google_gemini' : 'mistral_ai'),
-          is_fallback: isFallback
+          provider: 'anthropic_claude',
+          is_fallback: false
         } 
       },
       recommendations: args.builds,

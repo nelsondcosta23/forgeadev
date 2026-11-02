@@ -26,9 +26,8 @@ The application utilizes a modern architecture divided into three main layers:
   - Safe error masking preventing internal stack and database leakage.
 - **Monitoring & Tunnel**: Reverse Sentry tunnel (`/api/sentry-tunnel`) ensuring 100% telemetry capture immune to client-side ad-blockers.
 
-### Data & AI (Dual-Engine Architecture)
-- **Mistral AI (`mistral-large-latest`)**: Primary AI engine delivering frontier-grade hardware reasoning and strict JSON schema generation.
-- **Google Gemini (`gemini-flash-lite-latest`)**: High-performance, low-latency fallback engine with automatic multi-tier cascade (`gemini-flash-lite-latest` -> `gemini-3.1-flash-lite` -> `gemini-2.5-flash-lite`) ensuring 100% uptime even under provider downtime or quota limits.
+### Data & AI (Anthropic Claude Engine)
+- **Anthropic Claude (`claude-sonnet-4-6`)**: Premier AI reasoning engine delivering world-class PC hardware architecture analysis and strict JSON recommendations. Multi-model resilience (`claude-sonnet-4-6` -> `claude-haiku-4-5-20251001` -> `claude-sonnet-4-5-20250929`).
 - **PocketBase**: Local SQLite-powered backend managing sessions, recommendations, affiliate store links, and administrative settings.
 
 ---
@@ -53,8 +52,7 @@ The application utilizes a modern architecture divided into three main layers:
 ### Prerequisites
 - Node.js (v18 or higher)
 - PocketBase (local executable or Docker container)
-- Mistral AI API Key (Primary AI)
-- Google Gemini API Key (Fallback AI)
+- Anthropic Claude API Key (`ANTHROPIC_API_KEY`)
 - Self-Hosted Sentry DSN (Monitoring)
 
 ### 1. Environment Variables (`.env`)
@@ -70,13 +68,9 @@ POCKETBASE_URL=http://pb:8090
 PB_ADMIN_EMAIL=admin@forgea.dev
 PB_ADMIN_PASSWORD=your_secure_password
 
-# Artificial Intelligence (Primary: Mistral AI)
-MISTRAL_API_KEY=your_mistral_api_key_here
-MISTRAL_MODEL=mistral-large-latest
-
-# Artificial Intelligence (Fallback: Google Gemini)
-GEMINI_API_KEY=your_google_ai_key_here
-GEMINI_MODEL=gemini-flash-lite-latest
+# Artificial Intelligence (Anthropic Claude AI)
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_MODEL=claude-sonnet-4-6
 
 # Monitoring (Self-Hosted Sentry)
 SENTRY_DSN=https://994ebcb62592da248c0fa74514c61fa7@sentry.beecard.ovh/8
@@ -113,9 +107,8 @@ Response:
 ```json
 {
   "status": "ok",
-  "primary_ai": "mistral",
-  "fallback_ai": "gemini",
-  "gemini_model": "gemini-flash-lite-latest",
+  "primary_ai": "claude",
+  "claude_model": "claude-sonnet-4-6",
   "sentry_configured": true,
   "sentry_host": "https://sentry.beecard.ovh"
 }
@@ -127,7 +120,7 @@ Response:
 
 - **Zero Exposure PocketBase**: PocketBase is not exposed to public traffic. All requests pass through the Express BFF with route whitelisting, authentication token validation, and rate limiting.
 - **Privacy-First Geolocation**: Visitor IP addresses are resolved internally and never transmitted to external third-party services.
-- **Failover Cascade**: Fallback between Mistral AI and Google Gemini executes seamlessly on the backend without user disruption.
+- **Claude Multi-Tier Resilience**: Automated fallback cascade between Claude models (`claude-3-7-sonnet` -> `claude-3-5-sonnet` -> `claude-3-5-haiku`) executes seamlessly on the backend without user disruption.
 
 ---
 © 2026 Forgeadev. Built for peak performance.
